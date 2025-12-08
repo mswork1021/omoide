@@ -6,8 +6,9 @@
 import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
 import type { NewspaperArticle, NewspaperData, GeminiResponse } from '@/types';
 
-// Gemini 3.0 Configuration
-const MODEL_NAME = 'gemini-2.0-flash-exp'; // Production: gemini-3.0-pro when available
+// Gemini Configuration
+// gemini-2.0-flash-exp は制限が厳しいため、安定版を使用
+const MODEL_NAME = 'gemini-1.5-flash';
 const GROUNDING_ENABLED = true;
 
 let genAI: GoogleGenerativeAI | null = null;
