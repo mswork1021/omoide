@@ -17,8 +17,10 @@ function getModel(): GenerativeModel {
   if (!model) {
     const apiKey = process.env.GOOGLE_AI_API_KEY;
     if (!apiKey) {
-      throw new Error('GOOGLE_AI_API_KEY is not configured');
+      console.error('GOOGLE_AI_API_KEY is not set. Available env vars:', Object.keys(process.env).filter(k => k.includes('GOOGLE') || k.includes('API')));
+      throw new Error('GOOGLE_AI_API_KEY is not configured. Please set it in Vercel environment variables.');
     }
+    console.log('Initializing Gemini with API key:', apiKey.substring(0, 10) + '...');
     genAI = new GoogleGenerativeAI(apiKey);
     model = genAI.getGenerativeModel({
       model: MODEL_NAME,
@@ -178,8 +180,21 @@ ${personalMessage ? `
       advertisements: newspaperContent.advertisements || [],
       personalMessage,
     };
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Gemini API Error:', error);
+    // より詳細なエラーメッセージを提供
+    if (error instanceof Error) {
+      if (error.message.includes('API_KEY')) {
+        throw new Error('APIキーが無効です。Vercelの環境変数を確認してください。');
+      }
+      if (error.message.includes('quota') || error.message.includes('rate')) {
+        throw new Error('API利用制限に達しました。しばらく待ってから再試行してください。');
+      }
+      if (error.message.includes('not found') || error.message.includes('model')) {
+        throw new Error('AIモデルが利用できません。');
+      }
+      throw new Error(`生成エラー: ${error.message}`);
+    }
     throw new Error('新聞コンテンツの生成に失敗しました');
   }
 }

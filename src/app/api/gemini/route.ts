@@ -60,10 +60,12 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Gemini API Error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Generation failed';
+    console.error('Error details:', errorMessage);
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Generation failed',
+        error: errorMessage,
       },
       { status: 500 }
     );
