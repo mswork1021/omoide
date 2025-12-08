@@ -3,11 +3,13 @@
  * 新SDK (@google/genai) を使用
  */
 
-import { GoogleGenAI, ThinkingLevel } from '@google/genai';
+import { GoogleGenAI } from '@google/genai';
 import type { NewspaperData, GeminiResponse } from '@/types';
 
 // Gemini Configuration
-const MODEL_NAME = 'gemini-3-pro-preview';
+// gemini-1.5-flash は無料枠で利用可能
+// 課金有効後は 'gemini-3-pro-preview' に変更推奨
+const MODEL_NAME = 'gemini-1.5-flash';
 
 let ai: GoogleGenAI | null = null;
 
@@ -141,11 +143,6 @@ ${personalMessage ? `
     const response = await genAI.models.generateContent({
       model: MODEL_NAME,
       contents: prompt,
-      config: {
-        thinkingConfig: {
-          thinkingLevel: ThinkingLevel.LOW,
-        },
-      },
     });
 
     const text = response.text || '';
