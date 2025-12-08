@@ -403,49 +403,55 @@ async function main() {
   }
 
   // TypeScriptファイルとして出力
-  const output = `/**
- * サンプル新聞データ
- *
- * このファイルは scripts/generate-samples.ts によって自動生成されました
- * 生成日時: ${new Date().toISOString()}
- *
- * Gemini API で生成:
- * - テキスト: Gemini 2.0 Flash
- * - 画像: Imagen 3 (Gemini 3 Pro Image)
- */
-
-import type { NewspaperData } from '@/types';
-
-export const sampleNewspapers: NewspaperData[] = ${JSON.stringify(samples, (key, value) => {
+  const jsonSamples = JSON.stringify(samples, (key, value) => {
     if (key === 'date' && value) {
-      return \`__DATE__\${value}__DATE__\`;
+      return '__DATE__' + value + '__DATE__';
     }
     if (key === '_generatedImage') {
       return undefined;
     }
     return value;
-  }, 2).replace(/"__DATE__([^"]+)__DATE__"/g, 'new Date("$1")')};
+  }, 2).replace(/"__DATE__([^"]+)__DATE__"/g, 'new Date("$1")');
 
-export const sampleMeta = ${JSON.stringify(metas, null, 2)};
+  const jsonMetas = JSON.stringify(metas, null, 2);
 
-// 生成された画像 (Base64 Data URL)
-export const sampleImages: Record<string, string | null> = ${JSON.stringify(
-    samples.reduce((acc: Record<string, string | null>, sample: any, i: number) => {
-      acc[metas[i].id] = sample._generatedImage || null;
-      return acc;
-    }, {}),
-    null,
-    2
-  )};
-`;
+  const imageMap: Record<string, string | null> = {};
+  samples.forEach((sample: any, i: number) => {
+    imageMap[metas[i].id] = sample._generatedImage || null;
+  });
+  const jsonImages = JSON.stringify(imageMap, null, 2);
+
+  const generatedDate = new Date().toISOString();
+
+  const output = [
+    '/**',
+    ' * サンプル新聞データ',
+    ' *',
+    ' * このファイルは scripts/generate-samples.ts によって自動生成されました',
+    ' * 生成日時: ' + generatedDate,
+    ' *',
+    ' * Gemini API で生成:',
+    ' * - テキスト: Gemini 2.0 Flash',
+    ' * - 画像: Imagen 3 (Gemini 3 Pro Image)',
+    ' */',
+    '',
+    "import type { NewspaperData } from '@/types';",
+    '',
+    'export const sampleNewspapers: NewspaperData[] = ' + jsonSamples + ';',
+    '',
+    'export const sampleMeta = ' + jsonMetas + ';',
+    '',
+    '// 生成された画像 (Base64 Data URL)',
+    'export const sampleImages: Record<string, string | null> = ' + jsonImages + ';',
+  ].join('\n');
 
   const outputPath = path.join(__dirname, '../src/lib/sampleData.ts');
   fs.writeFileSync(outputPath, output, 'utf-8');
 
-  console.log(\`\n=== 完了 ===\`);
-  console.log(\`\${samples.length} 件のサンプルを生成しました\`);
-  console.log(\`出力先: \${outputPath}\`);
-  console.log(\`\nGitにコミット & プッシュすればVercelに反映されます\`);
+  console.log('\n=== 完了 ===');
+  console.log(samples.length + ' 件のサンプルを生成しました');
+  console.log('出力先: ' + outputPath);
+  console.log('\nGitにコミット & プッシュすればVercelに反映されます');
 }
 
 main().catch(console.error);
