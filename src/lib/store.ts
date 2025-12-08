@@ -128,13 +128,10 @@ export const useGenerationFlow = () => {
         body: JSON.stringify(request),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to generate content');
-      }
-
       const data = await response.json();
-      if (!data.success) {
-        throw new Error(data.error || 'Generation failed');
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'コンテンツの生成に失敗しました');
       }
 
       store.setNewspaperData(data.newspaper);
