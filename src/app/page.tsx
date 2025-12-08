@@ -3,16 +3,15 @@
 /**
  * TimeTravel Press - Home Page
  * 記念日新聞生成サービス メインページ
+ *
+ * フロー: サンプル閲覧 → 日付選択 → 決済 → 生成 → PDF
  */
 
 import React from 'react';
-import { GenerationForm, NewspaperPreview, PaymentSection } from '@/components';
-import { useAppStore } from '@/lib/store';
-import { Newspaper, Clock, Sparkles, Gift, Printer, Shield } from 'lucide-react';
+import { SampleCarousel, OrderForm } from '@/components';
+import { Newspaper, Clock, Sparkles, Gift, Printer, Shield, CheckCircle } from 'lucide-react';
 
 export default function Home() {
-  const { newspaperData, generatedImages, isPaid } = useAppStore();
-
   return (
     <div className="min-h-screen bg-[#f5f0e6]">
       {/* ヘッダー */}
@@ -41,96 +40,115 @@ export default function Home() {
       </header>
 
       {/* ヒーローセクション */}
-      {!newspaperData && (
-        <section className="py-12 md:py-20 bg-gradient-to-b from-[#faf8f3] to-[#f5f0e6]">
-          <div className="max-w-4xl mx-auto px-4 text-center">
-            <h2 className="text-3xl md:text-5xl font-black mb-6 leading-tight font-serif">
-              あの日の新聞を、
-              <br />
-              <span className="text-[#8b4513]">AIで再現</span>
-            </h2>
-            <p className="text-lg md:text-xl text-[#1a1a1a]/70 mb-8 max-w-2xl mx-auto">
-              誕生日、結婚記念日、還暦祝い...
-              <br />
-              大切な記念日を、昭和・平成のレトロ新聞風にお届けします。
-            </p>
+      <section className="py-12 md:py-16 bg-gradient-to-b from-[#faf8f3] to-[#f5f0e6]">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <h2 className="text-3xl md:text-5xl font-black mb-6 leading-tight font-serif">
+            あの日の新聞を、
+            <br />
+            <span className="text-[#8b4513]">AIで再現</span>
+          </h2>
+          <p className="text-lg md:text-xl text-[#1a1a1a]/70 mb-8 max-w-2xl mx-auto">
+            誕生日、結婚記念日、還暦祝い...
+            <br />
+            大切な記念日を、昭和・平成のレトロ新聞風にお届けします。
+          </p>
 
-            {/* 特徴バッジ */}
-            <div className="flex flex-wrap justify-center gap-4 mb-12">
-              <div className="flex items-center gap-2 bg-white/80 px-4 py-2 rounded-full shadow-sm">
-                <Clock size={18} className="text-[#8b4513]" />
-                <span className="text-sm font-medium">1900年〜対応</span>
+          {/* 特徴バッジ */}
+          <div className="flex flex-wrap justify-center gap-4">
+            <div className="flex items-center gap-2 bg-white/80 px-4 py-2 rounded-full shadow-sm">
+              <Clock size={18} className="text-[#8b4513]" />
+              <span className="text-sm font-medium">1900年〜対応</span>
+            </div>
+            <div className="flex items-center gap-2 bg-white/80 px-4 py-2 rounded-full shadow-sm">
+              <Sparkles size={18} className="text-[#8b4513]" />
+              <span className="text-sm font-medium">Gemini 3.0搭載</span>
+            </div>
+            <div className="flex items-center gap-2 bg-white/80 px-4 py-2 rounded-full shadow-sm">
+              <Gift size={18} className="text-[#8b4513]" />
+              <span className="text-sm font-medium">メッセージ追加可</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* メインコンテンツ */}
+      <main className="max-w-6xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+          {/* 左側: サンプルカルーセル */}
+          <div>
+            <h3 className="text-xl font-bold mb-4 flex items-center gap-2 font-serif">
+              <Newspaper size={24} />
+              完成イメージ
+            </h3>
+            <SampleCarousel />
+          </div>
+
+          {/* 右側: 注文フォーム */}
+          <div>
+            <div className="bg-[#faf8f3] rounded-lg shadow-lg border-2 border-[#1a1a1a] p-6">
+              <h3 className="text-xl font-bold mb-6 flex items-center gap-2 font-serif">
+                <Gift size={24} />
+                あなたの記念日新聞を作成
+              </h3>
+              <OrderForm />
+            </div>
+          </div>
+        </div>
+
+        {/* 利用の流れ */}
+        <section className="mt-16 py-8">
+          <h3 className="text-2xl font-bold text-center mb-8 font-serif">ご利用の流れ</h3>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {[
+              { step: 1, title: '日付を選択', desc: '1900年〜現在まで対応' },
+              { step: 2, title: 'スタイルを選択', desc: '昭和・平成・令和風' },
+              { step: 3, title: 'お支払い', desc: 'Stripeで安全決済' },
+              { step: 4, title: 'PDFダウンロード', desc: 'AIが生成した新聞をお届け' },
+            ].map((item) => (
+              <div key={item.step} className="text-center">
+                <div className="w-12 h-12 rounded-full bg-[#8b4513] text-white flex items-center justify-center text-xl font-bold mx-auto mb-3">
+                  {item.step}
+                </div>
+                <h4 className="font-bold mb-1">{item.title}</h4>
+                <p className="text-sm text-[#1a1a1a]/60">{item.desc}</p>
               </div>
-              <div className="flex items-center gap-2 bg-white/80 px-4 py-2 rounded-full shadow-sm">
-                <Sparkles size={18} className="text-[#8b4513]" />
-                <span className="text-sm font-medium">Gemini 3.0搭載</span>
+            ))}
+          </div>
+        </section>
+
+        {/* 特徴セクション */}
+        <section className="mt-12 py-8 bg-[#faf8f3] rounded-lg border border-[#1a1a1a]/10">
+          <h3 className="text-2xl font-bold text-center mb-8 font-serif">TimeTravel Press の特徴</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-6">
+            <div className="flex gap-4">
+              <CheckCircle className="text-[#8b4513] flex-shrink-0" size={24} />
+              <div>
+                <h4 className="font-bold mb-1">事実に基づいた記事</h4>
+                <p className="text-sm text-[#1a1a1a]/60">
+                  Gemini 3.0のGoogle Grounding機能で、実際のその日の出来事を調査して記事を生成します。
+                </p>
               </div>
-              <div className="flex items-center gap-2 bg-white/80 px-4 py-2 rounded-full shadow-sm">
-                <Gift size={18} className="text-[#8b4513]" />
-                <span className="text-sm font-medium">メッセージ追加可</span>
+            </div>
+            <div className="flex gap-4">
+              <CheckCircle className="text-[#8b4513] flex-shrink-0" size={24} />
+              <div>
+                <h4 className="font-bold mb-1">ヴィンテージ画像</h4>
+                <p className="text-sm text-[#1a1a1a]/60">
+                  Nano Banana Proによる網点処理やインク滲み効果で、本物の古新聞のような質感を再現。
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <CheckCircle className="text-[#8b4513] flex-shrink-0" size={24} />
+              <div>
+                <h4 className="font-bold mb-1">印刷対応品質</h4>
+                <p className="text-sm text-[#1a1a1a]/60">
+                  高解像度PDFで出力。額装してプレゼントにも最適です。
+                </p>
               </div>
             </div>
           </div>
         </section>
-      )}
-
-      {/* メインコンテンツ */}
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        {!newspaperData ? (
-          /* 生成フォーム */
-          <div className="max-w-xl mx-auto">
-            <div className="bg-[#faf8f3] rounded-lg shadow-lg border-2 border-[#1a1a1a] p-6 md:p-8">
-              <h3 className="text-xl font-bold mb-6 flex items-center gap-2 font-serif">
-                <Clock size={24} />
-                記念日新聞を作成
-              </h3>
-              <GenerationForm />
-            </div>
-          </div>
-        ) : (
-          /* プレビュー + 決済 */
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* 新聞プレビュー */}
-            <div className="lg:col-span-2">
-              <div className="bg-white rounded-lg shadow-lg p-4 md:p-6 border-2 border-[#1a1a1a]">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold font-serif">プレビュー</h3>
-                  {!isPaid && (
-                    <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
-                      無料プレビュー
-                    </span>
-                  )}
-                </div>
-                <div className="overflow-auto max-h-[80vh]">
-                  <NewspaperPreview
-                    data={newspaperData}
-                    isPreview={!isPaid}
-                    images={generatedImages || undefined}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* サイドバー（決済・ダウンロード） */}
-            <div className="lg:col-span-1">
-              <div className="sticky top-4 space-y-4">
-                <div className="bg-[#faf8f3] rounded-lg shadow-lg p-6 border-2 border-[#1a1a1a]">
-                  <PaymentSection />
-                </div>
-
-                {/* もう一度作成ボタン */}
-                <button
-                  onClick={() => {
-                    useAppStore.getState().reset();
-                  }}
-                  className="w-full py-3 text-sm border-2 border-[#1a1a1a]/20 rounded-lg hover:border-[#1a1a1a]/40 transition-colors"
-                >
-                  別の日付で作成し直す
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </main>
 
       {/* フッター */}
@@ -176,7 +194,6 @@ export default function Home() {
                   <Shield size={14} />
                   Stripe による安全な決済
                 </li>
-                <li>プレビューは完全無料</li>
                 <li>データは自動削除</li>
               </ul>
             </div>
