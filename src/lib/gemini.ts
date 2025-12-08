@@ -7,9 +7,7 @@ import { GoogleGenAI } from '@google/genai';
 import type { NewspaperData, GeminiResponse } from '@/types';
 
 // Gemini Configuration
-// gemini-1.5-flash は無料枠で利用可能
-// 課金有効後は 'gemini-3-pro-preview' に変更推奨
-const MODEL_NAME = 'gemini-1.5-flash';
+const MODEL_NAME = 'gemini-2.5-flash';
 
 let ai: GoogleGenAI | null = null;
 
