@@ -1,21 +1,17 @@
 /**
- * Gemini Imagen 3 (Nano Banana Pro) API Client
+ * Gemini 2.5 Flash Image (Nano Banana Pro) API Client
  * ヴィンテージ新聞画像生成
  *
- * 実装: Gemini Imagen 3 (imagen-3.0-generate-002)
- * フォールバック: Gemini 2.0 Flash (画像生成モード)
- *
- * 特徴:
- * - モノクロ印刷の質感表現
- * - 網点処理（ハーフトーン）
- * - インクの滲み効果
- * - J-Retro スタイルプリセット
+ * 新SDK (@google/genai) + gemini-2.5-flash-image を使用
  */
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 import type { ImageGenerationRequest, ImageGenerationResponse } from '@/types';
 
 const GOOGLE_AI_API_KEY = process.env.GOOGLE_AI_API_KEY;
+
+// 画像生成モデル
+const IMAGE_MODEL = 'gemini-2.5-flash-image';
 
 // 画像生成用プロンプトテンプレート
 const IMAGE_PROMPT_TEMPLATE = `
@@ -56,8 +52,20 @@ const STYLE_MODIFIERS = {
   ],
 };
 
+let ai: GoogleGenAI | null = null;
+
+function getAI(): GoogleGenAI {
+  if (!ai) {
+    if (!GOOGLE_AI_API_KEY) {
+      throw new Error('GOOGLE_AI_API_KEY is not configured');
+    }
+    ai = new GoogleGenAI({ apiKey: GOOGLE_AI_API_KEY });
+  }
+  return ai;
+}
+
 /**
- * Gemini Imagen 3 を使用して画像を生成
+ * Gemini 2.5 Flash Image を使用して画像を生成
  */
 export async function generateNewspaperImage(
   request: ImageGenerationRequest
@@ -73,130 +81,52 @@ export async function generateNewspaperImage(
 
   const styleModifiers = STYLE_MODIFIERS[request.style] || STYLE_MODIFIERS['vintage-newspaper'];
   const enhancedPrompt = buildEnhancedPrompt(request.prompt, styleModifiers);
+  const fullPrompt = IMAGE_PROMPT_TEMPLATE.replace('{subject}', enhancedPrompt);
 
   try {
-    // まず Imagen 3 を試す
-    const result = await generateWithImagen3(enhancedPrompt);
-    if (result) {
-      return { success: true, imageUrl: result };
+    console.log('Calling Gemini Image API with model:', IMAGE_MODEL);
+
+    const genAI = getAI();
+    const response = await genAI.models.generateContent({
+      model: IMAGE_MODEL,
+      contents: fullPrompt,
+    });
+
+    // レスポンスから画像データを抽出
+    const candidates = response.candidates;
+    if (candidates && candidates.length > 0) {
+      const parts = candidates[0].content?.parts;
+      if (parts) {
+        for (const part of parts) {
+          // @ts-ignore - inlineData の型定義
+          if (part.inlineData) {
+            // @ts-ignore
+            const imageData = part.inlineData.data;
+            // @ts-ignore
+            const mimeType = part.inlineData.mimeType || 'image/png';
+            console.log('Image generated successfully');
+            return {
+              success: true,
+              imageUrl: `data:${mimeType};base64,${imageData}`,
+            };
+          }
+        }
+      }
     }
 
-    // フォールバック: Gemini 2.0 Flash
-    const fallbackResult = await generateWithGeminiFlash(enhancedPrompt);
-    if (fallbackResult) {
-      return { success: true, imageUrl: fallbackResult };
-    }
-
+    // テキストのみの応答の場合
+    console.log('No image in response, text:', response.text);
     return {
       success: false,
-      error: 'Image generation failed with both Imagen 3 and Gemini Flash',
+      error: 'No image generated in response',
     };
   } catch (error) {
     console.error('Image generation error:', error);
+    const rawMessage = error instanceof Error ? error.message : String(error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Image generation failed',
+      error: `画像生成エラー: ${rawMessage}`,
     };
-  }
-}
-
-/**
- * Imagen 3 で画像生成
- */
-async function generateWithImagen3(prompt: string): Promise<string | null> {
-  if (!GOOGLE_AI_API_KEY) return null;
-
-  const genAI = new GoogleGenerativeAI(GOOGLE_AI_API_KEY);
-  const imageModel = genAI.getGenerativeModel({
-    model: 'imagen-3.0-generate-002',
-  });
-
-  const fullPrompt = IMAGE_PROMPT_TEMPLATE.replace('{subject}', prompt);
-
-  try {
-    console.log('Calling Imagen 3 API...');
-
-    // @ts-ignore - 新しいAPIのため型定義がない場合がある
-    const result = await imageModel.generateContent({
-      contents: [{ role: 'user', parts: [{ text: fullPrompt }] }],
-      generationConfig: {
-        // @ts-ignore
-        responseModalities: ['image', 'text'],
-        // @ts-ignore
-        imageSizes: ['512x384'],
-      },
-    });
-
-    const response = result.response;
-
-    // 画像データを取得
-    for (const candidate of response.candidates || []) {
-      for (const part of candidate.content?.parts || []) {
-        // @ts-ignore
-        if (part.inlineData?.mimeType?.startsWith('image/')) {
-          // @ts-ignore
-          const base64Data = part.inlineData.data;
-          // @ts-ignore
-          const mimeType = part.inlineData.mimeType;
-          return `data:${mimeType};base64,${base64Data}`;
-        }
-      }
-    }
-
-    return null;
-  } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    if (errorMessage.includes('not found') || errorMessage.includes('not supported')) {
-      console.log('Imagen 3 not available, will try fallback...');
-      return null;
-    }
-    throw error;
-  }
-}
-
-/**
- * フォールバック: Gemini 2.0 Flash の画像生成機能
- */
-async function generateWithGeminiFlash(prompt: string): Promise<string | null> {
-  if (!GOOGLE_AI_API_KEY) return null;
-
-  const genAI = new GoogleGenerativeAI(GOOGLE_AI_API_KEY);
-  const model = genAI.getGenerativeModel({
-    model: 'gemini-2.0-flash-exp',
-  });
-
-  const fullPrompt = `Generate an image: ${IMAGE_PROMPT_TEMPLATE.replace('{subject}', prompt)}`;
-
-  try {
-    console.log('Calling Gemini 2.0 Flash for image generation...');
-
-    const result = await model.generateContent({
-      contents: [{ role: 'user', parts: [{ text: fullPrompt }] }],
-      generationConfig: {
-        // @ts-ignore
-        responseModalities: ['image', 'text'],
-      },
-    });
-
-    const response = result.response;
-
-    for (const candidate of response.candidates || []) {
-      for (const part of candidate.content?.parts || []) {
-        // @ts-ignore
-        if (part.inlineData?.data) {
-          // @ts-ignore
-          const base64Data = part.inlineData.data;
-          // @ts-ignore
-          const mimeType = part.inlineData.mimeType || 'image/png';
-          return `data:${mimeType};base64,${base64Data}`;
-        }
-      }
-    }
-
-    return null;
-  } catch (error) {
-    console.error('Gemini Flash image generation failed:', error);
-    return null;
   }
 }
 
@@ -277,11 +207,12 @@ export async function checkApiHealth(): Promise<boolean> {
   }
 
   try {
-    const genAI = new GoogleGenerativeAI(GOOGLE_AI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
-    // 簡単なテストリクエスト
-    const result = await model.generateContent('Say OK');
-    return !!result.response.text();
+    const genAI = getAI();
+    const result = await genAI.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: 'Say OK',
+    });
+    return !!result.text;
   } catch {
     return false;
   }
