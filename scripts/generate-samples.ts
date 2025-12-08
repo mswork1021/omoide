@@ -1,15 +1,17 @@
 /**
  * サンプル新聞生成スクリプト
  *
- * Gemini 3.0 + Nano Banana Pro を使用してサンプル新聞を生成し、
- * sampleData.ts に保存する
+ * Gemini API を使用してサンプル新聞を生成し、sampleData.ts に保存する
+ * - テキスト生成: Gemini 2.0 Flash
+ * - 画像生成: Imagen 3 (Gemini 3 Pro Image / Nano Banana Pro)
  *
  * 使い方:
  * 1. .env.local にAPIキーを設定
- * 2. npx ts-node scripts/generate-samples.ts
+ *    GOOGLE_AI_API_KEY=your_api_key
+ * 2. npm run generate-samples
  */
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
@@ -18,8 +20,6 @@ import * as dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 
 const GOOGLE_AI_API_KEY = process.env.GOOGLE_AI_API_KEY;
-const NANO_BANANA_API_KEY = process.env.NANO_BANANA_API_KEY;
-const NANO_BANANA_API_URL = process.env.NANO_BANANA_API_URL || 'https://api.nanobanana.pro/v1';
 
 // サンプル生成する日付とシーン
 const SAMPLE_CONFIGS = [
@@ -58,7 +58,7 @@ const SAMPLE_CONFIGS = [
   },
 ];
 
-// Gemini プロンプト
+// Gemini プロンプト（テキスト生成用）
 const NEWSPAPER_PROMPT = `
 あなたは昭和・平成時代の日本の新聞記者です。
 以下の特徴を持つ文体で記事を執筆してください：
@@ -88,6 +88,21 @@ const NEWSPAPER_PROMPT = `
 事実に基づかない創作は最小限に留め、実際の出来事をベースに記事を構成してください。
 `;
 
+// 画像生成用プロンプトテンプレート
+const IMAGE_PROMPT_TEMPLATE = `
+Create a vintage Japanese newspaper photograph from the specified era.
+Style requirements:
+- Photorealistic vintage newspaper print quality
+- Halftone dots texture (網点処理)
+- Ink bleed effect (インクの滲み)
+- Aged paper texture
+- Monochrome/sepia newsprint aesthetic
+- Japanese Showa/Heisei era photography style
+- Professional photojournalism composition
+
+Subject: {subject}
+`;
+
 async function generateNewspaperContent(config: typeof SAMPLE_CONFIGS[0]) {
   if (!GOOGLE_AI_API_KEY) {
     throw new Error('GOOGLE_AI_API_KEY is not set');
@@ -95,7 +110,7 @@ async function generateNewspaperContent(config: typeof SAMPLE_CONFIGS[0]) {
 
   const genAI = new GoogleGenerativeAI(GOOGLE_AI_API_KEY);
   const model = genAI.getGenerativeModel({
-    model: 'gemini-2.0-flash-exp', // 本番では gemini-3.0-pro
+    model: 'gemini-2.0-flash-exp',
     generationConfig: {
       temperature: 0.8,
       topP: 0.95,
@@ -216,61 +231,128 @@ ${NEWSPAPER_PROMPT}
   };
 }
 
-async function generateImage(prompt: string): Promise<string | null> {
-  if (!NANO_BANANA_API_KEY) {
-    console.log('NANO_BANANA_API_KEY not set, using placeholder');
+/**
+ * Gemini Imagen 3 (Nano Banana Pro / Gemini 3 Pro Image) で画像生成
+ */
+async function generateImageWithGemini(prompt: string): Promise<string | null> {
+  if (!GOOGLE_AI_API_KEY) {
+    console.log('GOOGLE_AI_API_KEY not set, skipping image generation');
     return null;
   }
 
-  const enhancedPrompt = `${prompt}, photorealistic vintage newspaper print, halftone dots texture, ink bleed effect, aged paper texture, monochrome newsprint, Japanese showa era style`;
+  const genAI = new GoogleGenerativeAI(GOOGLE_AI_API_KEY);
+
+  // Imagen 3 モデルを使用
+  const imageModel = genAI.getGenerativeModel({
+    model: 'imagen-3.0-generate-002',
+  });
+
+  const enhancedPrompt = IMAGE_PROMPT_TEMPLATE.replace('{subject}', prompt);
 
   try {
-    const response = await fetch(`${NANO_BANANA_API_URL}/generate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${NANO_BANANA_API_KEY}`,
-        'X-High-Fidelity': 'true',
+    console.log('Calling Imagen 3 API...');
+
+    // @ts-ignore - generateImages は新しいAPIのため型定義がない場合がある
+    const result = await imageModel.generateContent({
+      contents: [{ role: 'user', parts: [{ text: enhancedPrompt }] }],
+      generationConfig: {
+        // @ts-ignore
+        responseModalities: ['image', 'text'],
+        // @ts-ignore
+        imageSizes: ['512x384'],
       },
-      body: JSON.stringify({
-        prompt: enhancedPrompt,
-        negative_prompt: 'color, modern, digital, cartoon, anime, blur, low quality',
-        style_preset: 'J-Retro',
-        width: 512,
-        height: 384,
-        guidance_scale: 7.5,
-        num_inference_steps: 50,
-      }),
     });
 
-    if (!response.ok) {
-      console.error('Image generation failed:', response.status);
-      return null;
+    const response = result.response;
+
+    // 画像データを取得
+    for (const candidate of response.candidates || []) {
+      for (const part of candidate.content?.parts || []) {
+        // @ts-ignore
+        if (part.inlineData?.mimeType?.startsWith('image/')) {
+          // @ts-ignore
+          const base64Data = part.inlineData.data;
+          // @ts-ignore
+          const mimeType = part.inlineData.mimeType;
+          return `data:${mimeType};base64,${base64Data}`;
+        }
+      }
     }
 
-    const data = await response.json();
-    return data.image_url || (data.image_base64 ? `data:image/png;base64,${data.image_base64}` : null);
-  } catch (error) {
-    console.error('Image generation error:', error);
+    console.log('No image data in response');
+    return null;
+  } catch (error: any) {
+    // Imagen 3 が使えない場合はフォールバック
+    if (error.message?.includes('not found') || error.message?.includes('not supported')) {
+      console.log('Imagen 3 not available, trying alternative method...');
+      return await generateImageFallback(prompt);
+    }
+    console.error('Image generation error:', error.message || error);
+    return null;
+  }
+}
+
+/**
+ * フォールバック: Gemini 2.0 Flash の画像生成機能を試す
+ */
+async function generateImageFallback(prompt: string): Promise<string | null> {
+  if (!GOOGLE_AI_API_KEY) return null;
+
+  const genAI = new GoogleGenerativeAI(GOOGLE_AI_API_KEY);
+
+  try {
+    // Gemini 2.0 Flash Experimental で画像生成を試みる
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-2.0-flash-exp',
+    });
+
+    const enhancedPrompt = `Generate an image: ${IMAGE_PROMPT_TEMPLATE.replace('{subject}', prompt)}`;
+
+    const result = await model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: enhancedPrompt }] }],
+      generationConfig: {
+        // @ts-ignore
+        responseModalities: ['image', 'text'],
+      },
+    });
+
+    const response = result.response;
+
+    for (const candidate of response.candidates || []) {
+      for (const part of candidate.content?.parts || []) {
+        // @ts-ignore
+        if (part.inlineData?.data) {
+          // @ts-ignore
+          const base64Data = part.inlineData.data;
+          // @ts-ignore
+          const mimeType = part.inlineData.mimeType || 'image/png';
+          return `data:${mimeType};base64,${base64Data}`;
+        }
+      }
+    }
+
+    return null;
+  } catch (error: any) {
+    console.error('Fallback image generation failed:', error.message || error);
     return null;
   }
 }
 
 async function main() {
-  console.log('=== サンプル新聞生成スクリプト ===\n');
+  console.log('=== サンプル新聞生成スクリプト ===');
+  console.log('Gemini API (テキスト + 画像) で生成\n');
 
   if (!GOOGLE_AI_API_KEY) {
     console.error('Error: GOOGLE_AI_API_KEY is not set in .env.local');
     console.log('\n使い方:');
     console.log('1. .env.local にAPIキーを設定');
     console.log('   GOOGLE_AI_API_KEY=your_api_key');
-    console.log('   NANO_BANANA_API_KEY=your_api_key (optional)');
-    console.log('2. npx ts-node scripts/generate-samples.ts');
+    console.log('2. npm run generate-samples');
     process.exit(1);
   }
 
-  const samples = [];
-  const metas = [];
+  const samples: any[] = [];
+  const metas: any[] = [];
 
   for (const config of SAMPLE_CONFIGS) {
     try {
@@ -278,15 +360,17 @@ async function main() {
 
       // コンテンツ生成
       const content = await generateNewspaperContent(config);
-      console.log('Content generated successfully');
+      console.log('✓ Content generated');
 
-      // 画像生成（オプション）
-      let mainImage = null;
+      // 画像生成
+      let mainImage: string | null = null;
       if (content.mainArticle?.imagePrompt) {
-        console.log('Generating image...');
-        mainImage = await generateImage(content.mainArticle.imagePrompt);
+        console.log('Generating image with Gemini...');
+        mainImage = await generateImageWithGemini(content.mainArticle.imagePrompt);
         if (mainImage) {
-          console.log('Image generated successfully');
+          console.log('✓ Image generated');
+        } else {
+          console.log('✗ Image generation skipped (will use placeholder)');
         }
       }
 
@@ -303,14 +387,19 @@ async function main() {
         style: config.style,
       });
 
-      console.log('Done!');
+      console.log('✓ Done!');
 
       // API制限対策で少し待つ
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 3000));
 
-    } catch (error) {
-      console.error(`Error generating ${config.id}:`, error);
+    } catch (error: any) {
+      console.error(`✗ Error generating ${config.id}:`, error.message || error);
     }
+  }
+
+  if (samples.length === 0) {
+    console.error('\nNo samples generated. Please check your API key.');
+    process.exit(1);
   }
 
   // TypeScriptファイルとして出力
@@ -320,17 +409,17 @@ async function main() {
  * このファイルは scripts/generate-samples.ts によって自動生成されました
  * 生成日時: ${new Date().toISOString()}
  *
- * Gemini 3.0 + Nano Banana Pro で生成
+ * Gemini API で生成:
+ * - テキスト: Gemini 2.0 Flash
+ * - 画像: Imagen 3 (Gemini 3 Pro Image)
  */
 
 import type { NewspaperData } from '@/types';
 
 export const sampleNewspapers: NewspaperData[] = ${JSON.stringify(samples, (key, value) => {
-    // Date オブジェクトを文字列に変換
     if (key === 'date' && value) {
-      return `__DATE__${value}__DATE__`;
+      return \`__DATE__\${value}__DATE__\`;
     }
-    // 生成画像は除外（別ファイルで管理）
     if (key === '_generatedImage') {
       return undefined;
     }
@@ -339,12 +428,12 @@ export const sampleNewspapers: NewspaperData[] = ${JSON.stringify(samples, (key,
 
 export const sampleMeta = ${JSON.stringify(metas, null, 2)};
 
-// 生成された画像URL（Nano Banana Pro）
+// 生成された画像 (Base64 Data URL)
 export const sampleImages: Record<string, string | null> = ${JSON.stringify(
-    samples.reduce((acc, sample, i) => {
+    samples.reduce((acc: Record<string, string | null>, sample: any, i: number) => {
       acc[metas[i].id] = sample._generatedImage || null;
       return acc;
-    }, {} as Record<string, string | null>),
+    }, {}),
     null,
     2
   )};
@@ -353,9 +442,10 @@ export const sampleImages: Record<string, string | null> = ${JSON.stringify(
   const outputPath = path.join(__dirname, '../src/lib/sampleData.ts');
   fs.writeFileSync(outputPath, output, 'utf-8');
 
-  console.log(`\n=== 完了 ===`);
-  console.log(`${samples.length} 件のサンプルを生成しました`);
-  console.log(`出力先: ${outputPath}`);
+  console.log(\`\n=== 完了 ===\`);
+  console.log(\`\${samples.length} 件のサンプルを生成しました\`);
+  console.log(\`出力先: \${outputPath}\`);
+  console.log(\`\nGitにコミット & プッシュすればVercelに反映されます\`);
 }
 
 main().catch(console.error);
