@@ -7,8 +7,7 @@ import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
 import type { NewspaperArticle, NewspaperData, GeminiResponse } from '@/types';
 
 // Gemini Configuration
-// gemini-2.0-flash-exp は制限が厳しいため、安定版を使用
-const MODEL_NAME = 'gemini-1.5-flash';
+const MODEL_NAME = 'gemini-2.0-flash-exp';
 const GROUNDING_ENABLED = true;
 
 let genAI: GoogleGenerativeAI | null = null;
@@ -183,20 +182,10 @@ ${personalMessage ? `
     };
   } catch (error: unknown) {
     console.error('Gemini API Error:', error);
-    // より詳細なエラーメッセージを提供
-    if (error instanceof Error) {
-      if (error.message.includes('API_KEY')) {
-        throw new Error('APIキーが無効です。Vercelの環境変数を確認してください。');
-      }
-      if (error.message.includes('quota') || error.message.includes('rate')) {
-        throw new Error('API利用制限に達しました。しばらく待ってから再試行してください。');
-      }
-      if (error.message.includes('not found') || error.message.includes('model')) {
-        throw new Error('AIモデルが利用できません。');
-      }
-      throw new Error(`生成エラー: ${error.message}`);
-    }
-    throw new Error('新聞コンテンツの生成に失敗しました');
+    // 生のエラーメッセージを表示（デバッグ用）
+    const rawMessage = error instanceof Error ? error.message : String(error);
+    console.error('Raw error message:', rawMessage);
+    throw new Error(`Gemini APIエラー: ${rawMessage}`);
   }
 }
 
