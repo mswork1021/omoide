@@ -1,0 +1,178 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f5f0e6;
+  --foreground: #1a1a1a;
+  --paper: #faf8f3;
+  --accent: #8b4513;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+  --font-serif: "Hiragino Mincho ProN", "Yu Mincho", "MS Mincho", serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+}
+
+/* 新聞スタイル */
+.newspaper-container {
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", "MS Mincho", Georgia, serif;
+  padding: 1.5rem;
+  max-width: 800px;
+  margin: 0 auto;
+  background: var(--paper);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.1),
+    0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.newspaper-container h1,
+.newspaper-container h2,
+.newspaper-container h3,
+.newspaper-container h4 {
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", "MS Mincho", Georgia, serif;
+}
+
+.font-serif {
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", "MS Mincho", Georgia, serif;
+}
+
+/* ヴィンテージ紙のテクスチャ */
+.newspaper-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+}
+
+/* 網点オーバーレイ */
+.halftone-overlay {
+  background-image: radial-gradient(circle, #000 1px, transparent 1px);
+  background-size: 3px 3px;
+  opacity: 0.1;
+}
+
+/* 見出しスタイル */
+.newspaper-headline {
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+/* 本文スタイル */
+.newspaper-body-text {
+  font-size: 0.875rem;
+  line-height: 1.8;
+  text-align: justify;
+}
+
+/* 段組みレイアウト */
+.newspaper-columns {
+  column-count: 2;
+  column-gap: 1.5rem;
+  column-rule: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 640px) {
+  .newspaper-columns {
+    column-count: 1;
+  }
+}
+
+/* アニメーション */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* フォームスタイル */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--foreground);
+}
+
+/* ボタンホバー効果 */
+button {
+  transition: all 0.2s ease;
+}
+
+button:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+button:not(:disabled):active {
+  transform: translateY(0);
+}
+
+/* スクロールバースタイル */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* ローディングスピナー */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* 印刷スタイル */
+@media print {
+  .newspaper-container {
+    box-shadow: none;
+    max-width: 100%;
+  }
+
+  button,
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* line-clamp ユーティリティ */
+.line-clamp-4 {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
