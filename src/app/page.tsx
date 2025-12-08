@@ -8,10 +8,16 @@
  */
 
 import React from 'react';
-import { SampleCarousel, OrderForm } from '@/components';
-import { Newspaper, Clock, Sparkles, Gift, Printer, Shield, CheckCircle } from 'lucide-react';
+import { SampleCarousel, OrderForm, NewspaperPreview } from '@/components';
+import { Newspaper, Clock, Sparkles, Gift, Printer, Shield, CheckCircle, X, Download } from 'lucide-react';
+import { useAppStore } from '@/lib/store';
 
 export default function Home() {
+  const { newspaperData, generationStep, reset } = useAppStore();
+
+  // 生成完了後の結果表示
+  const showResult = newspaperData && generationStep === 'complete';
+
   return (
     <div className="min-h-screen bg-[#f5f0e6]">
       {/* ヘッダー */}
@@ -150,6 +156,54 @@ export default function Home() {
           </div>
         </section>
       </main>
+
+      {/* 生成結果モーダル */}
+      {showResult && newspaperData && (
+        <div className="fixed inset-0 bg-black/70 z-50 overflow-y-auto">
+          <div className="min-h-screen py-8 px-4">
+            <div className="max-w-4xl mx-auto">
+              {/* モーダルヘッダー */}
+              <div className="bg-[#faf8f3] rounded-t-lg p-4 flex items-center justify-between border-b-2 border-[#1a1a1a]">
+                <h2 className="text-xl font-bold flex items-center gap-2">
+                  <Sparkles className="text-[#8b4513]" />
+                  生成完了！
+                </h2>
+                <button
+                  onClick={() => reset()}
+                  className="p-2 hover:bg-[#1a1a1a]/10 rounded-full transition-colors"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              {/* 新聞プレビュー */}
+              <div className="bg-white p-6 shadow-2xl">
+                <NewspaperPreview data={newspaperData} isPreview={false} />
+              </div>
+
+              {/* アクションボタン */}
+              <div className="bg-[#faf8f3] rounded-b-lg p-4 flex flex-col sm:flex-row gap-3 justify-center border-t-2 border-[#1a1a1a]">
+                <button
+                  onClick={() => {
+                    // TODO: PDF生成実装
+                    alert('PDF生成機能は本番環境で利用可能です');
+                  }}
+                  className="flex items-center justify-center gap-2 px-6 py-3 bg-[#8b4513] text-white rounded-lg font-bold hover:bg-[#6b3410] transition-colors"
+                >
+                  <Download size={20} />
+                  PDFをダウンロード
+                </button>
+                <button
+                  onClick={() => reset()}
+                  className="flex items-center justify-center gap-2 px-6 py-3 border-2 border-[#1a1a1a] rounded-lg font-bold hover:bg-[#1a1a1a]/5 transition-colors"
+                >
+                  別の日付で作成
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* フッター */}
       <footer className="mt-16 border-t-2 border-[#1a1a1a]/20 bg-[#faf8f3]">

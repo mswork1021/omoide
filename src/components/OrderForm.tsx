@@ -7,8 +7,11 @@
 
 import React, { useState } from 'react';
 import { DatePicker } from './DatePicker';
-import { Calendar, Gift, CreditCard, Sparkles, User, ChevronDown, ChevronUp } from 'lucide-react';
-import { useAppStore } from '@/lib/store';
+import { Calendar, Gift, CreditCard, Sparkles, User, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import { useAppStore, useGenerationFlow } from '@/lib/store';
+
+// テストモード（Stripeスキップ）
+const TEST_MODE = true;
 
 export function OrderForm() {
   const {
@@ -31,6 +34,9 @@ export function OrderForm() {
   const [showPersonalMessage, setShowPersonalMessage] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const { isGenerating, generationStep, generationProgress, error } = useAppStore();
+  const { startPreviewGeneration } = useGenerationFlow();
+
   const styleOptions = [
     { value: 'showa', label: '昭和風', description: '重厚な活字文化' },
     { value: 'heisei', label: '平成風', description: 'バブル期の華やかさ' },
@@ -50,6 +56,12 @@ export function OrderForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!targetDate) return;
+
+    // テストモード: Stripeスキップして直接生成
+    if (TEST_MODE) {
+      await startPreviewGeneration();
+      return;
+    }
 
     setIsSubmitting(true);
 
@@ -263,19 +275,30 @@ export function OrderForm() {
       {/* 送信ボタン */}
       <button
         type="submit"
-        disabled={!targetDate || isSubmitting}
+        disabled={!targetDate || isSubmitting || isGenerating}
         className={`
           w-full py-4 text-lg font-bold rounded-lg transition-all
           flex items-center justify-center gap-2
           ${
-            !targetDate || isSubmitting
+            !targetDate || isSubmitting || isGenerating
               ? 'bg-[#1a1a1a]/20 text-[#1a1a1a]/40 cursor-not-allowed'
               : 'bg-[#8b4513] text-white hover:bg-[#6b3410] active:scale-[0.99]'
           }
         `}
       >
-        {isSubmitting ? (
-          <span className="animate-spin">⟳</span>
+        {isSubmitting || isGenerating ? (
+          <>
+            <Loader2 size={20} className="animate-spin" />
+            {generationStep === 'content' && '新聞を生成中...'}
+            {generationStep === 'images' && '画像を生成中...'}
+            {generationStep === 'pdf' && 'PDF作成中...'}
+            {generationStep === 'idle' && '処理中...'}
+          </>
+        ) : TEST_MODE ? (
+          <>
+            <Sparkles size={20} />
+            テスト生成する（無料）
+          </>
         ) : (
           <>
             <CreditCard size={20} />
@@ -284,9 +307,23 @@ export function OrderForm() {
         )}
       </button>
 
-      <p className="text-center text-xs text-[#1a1a1a]/50">
-        決済完了後、AIが新聞を生成しPDFをダウンロードできます
-      </p>
+      {/* エラー表示 */}
+      {error && (
+        <div className="p-3 bg-red-100 border border-red-300 rounded-lg text-red-700 text-sm">
+          エラー: {error}
+        </div>
+      )}
+
+      {/* テストモード表示 */}
+      {TEST_MODE ? (
+        <p className="text-center text-xs text-orange-600 bg-orange-50 p-2 rounded">
+          🧪 テストモード: Stripe決済をスキップしてAI生成をテストできます
+        </p>
+      ) : (
+        <p className="text-center text-xs text-[#1a1a1a]/50">
+          決済完了後、AIが新聞を生成しPDFをダウンロードできます
+        </p>
+      )}
     </form>
   );
 }
