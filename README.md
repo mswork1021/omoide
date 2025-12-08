@@ -77,17 +77,33 @@ src/
 
 ## UXフロー
 
-### Preview (無料)
-1. 日付選択
-2. スタイル選択 (昭和/平成/令和)
-3. 個人メッセージ入力（任意）
-4. プレビュー生成（DOMベース、画像はプレースホルダー）
+1. サンプル新聞を閲覧（静的表示）
+2. 日付選択 + スタイル選択
+3. Stripe 決済
+4. Gemini 3.0 + Nano Banana Pro で生成
+5. 高画質PDF ダウンロード
 
-### Production (有料)
-1. プラン選択 (Standard/Premium/Deluxe)
-2. Stripe 決済
-3. Gemini 3.0 + Nano Banana Pro 並列処理
-4. 高画質PDF ダウンロード
+※ API呼び出しは決済完了後のみ発生（コスト最適化）
+
+## サンプル生成
+
+サンプル新聞は本番と同じGemini 3.0 + Nano Banana Proで生成します。
+
+```bash
+# 1. APIキーを設定
+cp .env.example .env.local
+# .env.local を編集してAPIキーを設定
+
+# 2. サンプル生成実行
+npm run generate-samples
+```
+
+生成されるサンプル:
+- 1990/4/1 - 誕生日（平成2年の春）
+- 1985/6/15 - 結婚記念日（科学万博つくば）
+- 1964/10/10 - 還暦祝い（東京オリンピック開幕）
+
+結果は `src/lib/sampleData.ts` に保存されます。
 
 ## API エンドポイント
 
