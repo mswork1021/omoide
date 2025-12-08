@@ -1,39 +1,26 @@
 /**
  * Gemini 3.0 API Client
- * Google Grounding機能を活用した事実確認と記事生成
+ * 新SDK (@google/genai) を使用
  */
 
-import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
-import type { NewspaperArticle, NewspaperData, GeminiResponse } from '@/types';
+import { GoogleGenAI, ThinkingLevel } from '@google/genai';
+import type { NewspaperData, GeminiResponse } from '@/types';
 
 // Gemini Configuration
-// Gemini 3 Pro を使用
 const MODEL_NAME = 'gemini-3-pro-preview';
-const GROUNDING_ENABLED = true;
 
-let genAI: GoogleGenerativeAI | null = null;
-let model: GenerativeModel | null = null;
+let ai: GoogleGenAI | null = null;
 
-function getModel(): GenerativeModel {
-  if (!model) {
+function getAI(): GoogleGenAI {
+  if (!ai) {
     const apiKey = process.env.GOOGLE_AI_API_KEY;
     if (!apiKey) {
-      console.error('GOOGLE_AI_API_KEY is not set. Available env vars:', Object.keys(process.env).filter(k => k.includes('GOOGLE') || k.includes('API')));
-      throw new Error('GOOGLE_AI_API_KEY is not configured. Please set it in Vercel environment variables.');
+      throw new Error('GOOGLE_AI_API_KEY is not configured');
     }
     console.log('Initializing Gemini with API key:', apiKey.substring(0, 10) + '...');
-    genAI = new GoogleGenerativeAI(apiKey);
-    model = genAI.getGenerativeModel({
-      model: MODEL_NAME,
-      generationConfig: {
-        temperature: 0.8,
-        topP: 0.95,
-        topK: 40,
-        maxOutputTokens: 8192,
-      },
-    });
+    ai = new GoogleGenAI({ apiKey });
   }
-  return model;
+  return ai;
 }
 
 // 昭和/平成の新聞文体プロンプト
@@ -78,7 +65,7 @@ export async function generateNewspaperContent(
     occasion: string;
   }
 ): Promise<NewspaperData> {
-  const model = getModel();
+  const genAI = getAI();
 
   const dateStr = targetDate.toLocaleDateString('ja-JP', {
     year: 'numeric',
@@ -149,9 +136,20 @@ ${personalMessage ? `
 `;
 
   try {
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-    const text = response.text();
+    console.log('Calling Gemini API with model:', MODEL_NAME);
+
+    const response = await genAI.models.generateContent({
+      model: MODEL_NAME,
+      contents: prompt,
+      config: {
+        thinkingConfig: {
+          thinkingLevel: ThinkingLevel.LOW,
+        },
+      },
+    });
+
+    const text = response.text || '';
+    console.log('Response received, length:', text.length);
 
     // JSONを抽出（コードブロックがある場合も対応）
     let jsonStr = text;
@@ -183,7 +181,6 @@ ${personalMessage ? `
     };
   } catch (error: unknown) {
     console.error('Gemini API Error:', error);
-    // 生のエラーメッセージを表示（デバッグ用）
     const rawMessage = error instanceof Error ? error.message : String(error);
     console.error('Raw error message:', rawMessage);
     throw new Error(`Gemini APIエラー: ${rawMessage}`);
@@ -195,7 +192,7 @@ export async function verifyHistoricalFact(
   date: Date,
   claim: string
 ): Promise<GeminiResponse> {
-  const model = getModel();
+  const genAI = getAI();
 
   const prompt = `
 以下の日付と主張について、事実確認を行ってください：
@@ -217,8 +214,12 @@ export async function verifyHistoricalFact(
 }
 `;
 
-  const result = await model.generateContent(prompt);
-  const text = result.response.text();
+  const response = await genAI.models.generateContent({
+    model: MODEL_NAME,
+    contents: prompt,
+  });
+
+  const text = response.text || '';
 
   try {
     const jsonMatch = text.match(/\{[\s\S]*\}/);
