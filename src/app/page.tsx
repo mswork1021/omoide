@@ -13,7 +13,7 @@ import { Newspaper, Clock, Sparkles, Gift, Printer, Shield, CheckCircle, X, Down
 import { useAppStore } from '@/lib/store';
 
 export default function Home() {
-  const { newspaperData, generationStep, reset } = useAppStore();
+  const { newspaperData, generationStep, generatedImages, reset } = useAppStore();
 
   // 生成完了後の結果表示
   const showResult = newspaperData && generationStep === 'complete';
@@ -178,7 +178,11 @@ export default function Home() {
 
               {/* 新聞プレビュー */}
               <div className="bg-white p-6 shadow-2xl">
-                <NewspaperPreview data={newspaperData} isPreview={false} />
+                <NewspaperPreview
+                  data={newspaperData}
+                  isPreview={false}
+                  images={generatedImages || undefined}
+                />
               </div>
 
               {/* アクションボタン */}

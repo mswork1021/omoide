@@ -135,6 +135,39 @@ export const useGenerationFlow = () => {
       }
 
       store.setNewspaperData(data.newspaper);
+      store.setGenerationProgress(50);
+
+      // 画像生成
+      store.setGenerationStep('images');
+      const imagePrompts: string[] = [];
+      if (data.newspaper.mainArticle?.imagePrompt) {
+        imagePrompts.push(data.newspaper.mainArticle.imagePrompt);
+      }
+
+      if (imagePrompts.length > 0) {
+        try {
+          const imageResponse = await fetch('/api/image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              prompts: imagePrompts,
+              style: 'vintage-newspaper',
+            }),
+          });
+
+          const imageData = await imageResponse.json();
+          if (imageData.success && imageData.images?.[0]) {
+            store.setGeneratedImages({
+              mainImage: imageData.images[0],
+              subImages: imageData.images.slice(1) || [],
+            });
+          }
+        } catch (imageError) {
+          console.error('Image generation failed:', imageError);
+          // 画像生成失敗は致命的ではないので続行
+        }
+      }
+
       store.setGenerationProgress(100);
       store.setGenerationStep('complete');
     } catch (error) {
