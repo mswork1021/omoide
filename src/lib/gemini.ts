@@ -48,6 +48,13 @@ const GROUNDING_INSTRUCTIONS = `
 指定された日付に実際に起きた出来事を調べて、記事を作成してください。
 創作や架空の出来事は絶対に使用しないでください。
 
+【重要：年を間違えないこと】
+指定された「年」を必ず守ってください。例えば「2025年12月8日」なら2025年の出来事のみを使用してください。
+他の年の同日の出来事を使用しないでください。
+
+もし指定された日付がまだ来ていない未来の日付、または最近すぎて情報がない場合は、
+mainArticleのheadlineに「【お知らせ】この日付の情報はまだありません」と書いてください。
+
 以下のカテゴリから、実際にその日に起きた出来事を選んでください：
 - メイン記事: その日の最も重要なニュース、または面白い・珍しい出来事
 - 政治: 国会、選挙、外交などの実際のニュース
@@ -148,6 +155,12 @@ ${personalMessage ? `
     const response = await genAI.models.generateContent({
       model: MODEL_NAME,
       contents: prompt,
+      config: {
+        // Google検索を有効にして最新情報を取得
+        tools: [{
+          googleSearch: {},
+        }],
+      },
     });
 
     const text = response.text || '';
