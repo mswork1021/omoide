@@ -62,8 +62,15 @@ const GROUNDING_INSTRUCTIONS = `
 【重要：年を間違えないこと】
 指定された「年」を必ず守ってください。例えば「2025年12月8日」なら2025年の出来事のみを使用してください。
 
-もしGoogle検索しても指定された日付の情報が見つからない場合のみ、
-mainArticleのheadlineに「【お知らせ】この日付の情報はまだありません」と書いてください。
+【検索結果がない場合の対応】
+もしGoogle検索で指定された日付の情報が見つからない場合：
+1. まずその年の前後1週間程度の面白いニュースを検索
+2. それでもなければ、その年のその月の話題を検索
+3. それでもなければ、その年の代表的な面白いニュース・芸能・スポーツ話題を使用
+4. 未来の日付の場合は、直近の面白いニュースを代わりに使用
+
+「この日付の情報はまだありません」とは絶対に出力しないでください。
+必ず何かしらの面白いニュースで新聞を作成してください。
 
 【重要：全ての記事を同じ日付の面白い話題にすること】
 全ての記事はその日の出来事でなければなりません。
@@ -124,7 +131,8 @@ ${personalMessage ? `
 - メッセージ: ${personalMessage.message}
 ` : ''}
 
-以下のJSON形式で新聞コンテンツを生成してください：
+以下のJSON形式で新聞コンテンツを生成してください。
+【重要】subArticlesは必ず3つ生成すること。各記事には必ずimagePromptを含めること。
 
 {
   "masthead": "新聞名（創作可）",
@@ -135,14 +143,26 @@ ${personalMessage ? `
     "subheadline": "副見出し",
     "content": "本文（400-600文字）",
     "category": "main",
-    "imagePrompt": "この記事に合う画像の英語プロンプト"
+    "imagePrompt": "A photograph of [具体的な場面を英語で]"
   },
   "subArticles": [
     {
-      "headline": "見出し（面白いニュース）",
+      "headline": "芸能ニュース見出し",
       "content": "本文（200-300文字）",
-      "category": "entertainment|sports|culture|celebrity",
-      "imagePrompt": "この記事に合う画像の英語プロンプト"
+      "category": "celebrity",
+      "imagePrompt": "A photograph of [具体的な場面を英語で]"
+    },
+    {
+      "headline": "スポーツニュース見出し",
+      "content": "本文（200-300文字）",
+      "category": "sports",
+      "imagePrompt": "A photograph of [具体的な場面を英語で]"
+    },
+    {
+      "headline": "エンタメニュース見出し",
+      "content": "本文（200-300文字）",
+      "category": "entertainment",
+      "imagePrompt": "A photograph of [具体的な場面を英語で]"
     }
   ],
   "editorial": {
@@ -153,11 +173,9 @@ ${personalMessage ? `
   "columnTitle": "豆知識コーナー",
   "columnContent": "その日に関する面白い豆知識（200文字程度）",
   "advertisements": [
-    {
-      "title": "広告タイトル",
-      "content": "広告文（その時代らしい商品やサービス）",
-      "style": "vintage"
-    }
+    { "title": "広告1", "content": "その時代らしい広告文", "style": "vintage" },
+    { "title": "広告2", "content": "その時代らしい広告文", "style": "vintage" },
+    { "title": "広告3", "content": "その時代らしい広告文", "style": "vintage" }
   ]
 }
 
