@@ -154,19 +154,29 @@ OK: ${month}月${day}日に発生した出来事
   const nextDayNum = nextDay.getDate();
 
   // 検索を誘発するプロンプト構造
+  // ※「投稿日」ではなく「出来事の日付」として検索する
   const prompt = `${year}年${month}月${day}日に起きた出来事を検索して新聞を作成してください。
 
-【検索クエリ】
-- 「${nextYear}年${nextMonth}月${nextDayNum}日 ニュース」（翌日の記事に前日の出来事が載っている）
-- 「${year}年${month}月${day}日 出来事」
-- 「${month}月${day}日 何が起きた ${year}」
-- "${englishDate} events"
+【検索クエリ - 「${month}月${day}日」が出来事の日付として含まれる記事を探す】
+- 「${month}月${day}日に発売 ${year}」
+- 「${month}月${day}日に公開 ${year}」
+- 「${month}月${day}日に開催 ${year}」
+- 「${month}月${day}日 試合 ${year}」
+- 「${month}月${day}日 ライブ ${year}」
+- 「${month}月${day}日 イベント ${year}」
+- 「${year}年${month}月${day}日 誕生日 芸能人」
+- "${englishDate} release"
+- "${englishDate} event"
 
-【絶対条件】
-★ 出来事が起きた日 = ${year}年${month}月${day}日 のみ使用可 ★
+【重要】
+ニュースサイトの「投稿日」ではなく、記事の中に「${month}月${day}日に○○した」と書いてある出来事を探すこと。
 
-記事に「${month}月${day - 1}日」「${month - 1}月」の出来事が書いてあったら、それは使用禁止。
-必ず「${month}月${day}日」に起きた出来事だけを使うこと。
+例えば「${month}月${day}日に新曲を発売」「${month}月${day}日に試合が行われた」のように、
+${month}月${day}日が出来事の発生日として明記されているものを使うこと。
+
+【絶対禁止】
+- 「${month}月${day - 1}日に○○した」という出来事 → NG
+- 記事の投稿日が${month}月${day}日でも、内容が前日の出来事なら → NG
 
 ${ARTICLE_GUIDELINES}
 
