@@ -43,44 +43,14 @@ const NEWSPAPER_STYLE_PROMPT = `
 - 単調な羅列や箇条書き
 `;
 
-const GROUNDING_INSTRUCTIONS = `
-【最重要：必ずGoogle検索を使用すること】
-あなたにはGoogle検索ツールが与えられています。
-指定された日付の出来事を調べるために、必ずGoogle検索を実行してください。
-自分の知識だけで回答せず、必ず検索結果を使用してください。
-
-検索クエリ例：
-- 「2025年12月8日 ニュース」
-- 「2025年12月8日 芸能」
-- 「2025年12月8日 エンタメ」
-- 「December 8, 2025 news Japan entertainment」
-
-【重要：実際の歴史的事実を使用すること】
-検索結果から、指定された日付に実際に起きた出来事を選んでください。
-創作や架空の出来事は絶対に使用しないでください。
-
-【重要：年を間違えないこと】
-指定された「年」を必ず守ってください。例えば「2025年12月8日」なら2025年の出来事のみを使用してください。
-
-もしGoogle検索しても指定された日付の情報が見つからない場合のみ、
-mainArticleのheadlineに「【お知らせ】この日付の情報はまだありません」と書いてください。
-
-【重要：全ての記事を同じ日付の面白い話題にすること】
-全ての記事はその日の出来事でなければなりません。
-政治・経済・社会などの堅いニュースは不要です。
-
-記事カテゴリ（全て面白い内容のみ）：
-- メイン記事: その日の最も面白い・話題になった出来事
-- 芸能: 芸能人、アイドル、俳優のニュース
-- エンタメ: 映画、音楽、テレビ、ゲーム、アニメ
-- スポーツ: スポーツの面白いエピソード
-- 珍ニュース: 変わった出来事、ほっこりする話
-
-【ポイント - 面白さ最優先！】
+// 記事選択ガイドライン
+const ARTICLE_GUIDELINES = `
+【記事選択のポイント】
 - 「へぇ〜」「面白い！」「すごい！」と思えるニュースだけを選ぶ
 - 芸能・エンタメ・珍事件・ユニークな出来事を積極的に採用
 - 暗いニュース、事故、事件は避ける
 - 具体的な数字、人名を含める
+- 政治・経済・社会の堅いニュースは不要
 `;
 
 export async function generateNewspaperContent(
@@ -95,6 +65,10 @@ export async function generateNewspaperContent(
 ): Promise<NewspaperData> {
   const genAI = getAI();
 
+  const year = targetDate.getFullYear();
+  const month = targetDate.getMonth() + 1;
+  const day = targetDate.getDate();
+
   const dateStr = targetDate.toLocaleDateString('ja-JP', {
     year: 'numeric',
     month: 'long',
@@ -108,10 +82,27 @@ export async function generateNewspaperContent(
     reiwa: '令和のレトロ調新聞',
   }[style];
 
-  const prompt = `
-${NEWSPAPER_STYLE_PROMPT}
+  // 検索を確実に実行させるためのシステム指示
+  const systemInstruction = `あなたはGoogle検索を活用する新聞記者AIです。
+ユーザーから日付を指定されたら、必ずGoogle検索を実行してその日の実際のニュースを調べてください。
+検索せずに回答することは禁止されています。必ず検索結果に基づいて回答してください。`;
 
-${GROUNDING_INSTRUCTIONS}
+  // 検索を誘発するプロンプト構造
+  const prompt = `【検索リクエスト】
+${year}年${month}月${day}日（${dateStr}）の日本のニュースをGoogle検索で調べてください。
+
+検索すべき内容：
+1. 「${year}年${month}月${day}日 ニュース 話題」で検索
+2. 「${year}年${month}月${day}日 芸能」で検索
+3. 「${year}年${month}月${day}日 スポーツ」で検索
+4. 「${year}年${month}月 エンタメ」で検索
+
+検索結果から面白いニュース（芸能・スポーツ・エンタメ・珍ニュース）を選び、
+以下のJSON形式でレトロ新聞記事として出力してください。
+
+${ARTICLE_GUIDELINES}
+
+${NEWSPAPER_STYLE_PROMPT}
 
 【生成する新聞の設定】
 - 日付: ${dateStr}
@@ -124,54 +115,71 @@ ${personalMessage ? `
 - メッセージ: ${personalMessage.message}
 ` : ''}
 
-以下のJSON形式で新聞コンテンツを生成してください：
-
+【出力形式 - 必ずこのJSON形式で出力】
 {
   "masthead": "新聞名（創作可）",
   "edition": "第〇〇〇号 朝刊/夕刊",
   "weather": "天気予報（その日の推定天気）",
   "mainArticle": {
-    "headline": "一面トップ記事の見出し（面白いニュース）",
+    "headline": "検索で見つけた面白いニュースの見出し",
     "subheadline": "副見出し",
-    "content": "本文（400-600文字）",
+    "content": "本文（400-600文字）- 検索結果に基づく事実",
     "category": "main",
-    "imagePrompt": "この記事に合う画像の英語プロンプト"
+    "imagePrompt": "A photograph of [具体的な場面を英語で]"
   },
   "subArticles": [
     {
-      "headline": "見出し（面白いニュース）",
+      "headline": "芸能ニュース見出し（検索結果から）",
       "content": "本文（200-300文字）",
-      "category": "entertainment|sports|culture|celebrity",
-      "imagePrompt": "この記事に合う画像の英語プロンプト"
+      "category": "celebrity",
+      "imagePrompt": "A photograph of [具体的な場面を英語で]"
+    },
+    {
+      "headline": "スポーツニュース見出し（検索結果から）",
+      "content": "本文（200-300文字）",
+      "category": "sports",
+      "imagePrompt": "A photograph of [具体的な場面を英語で]"
+    },
+    {
+      "headline": "エンタメニュース見出し（検索結果から）",
+      "content": "本文（200-300文字）",
+      "category": "entertainment",
+      "imagePrompt": "A photograph of [具体的な場面を英語で]"
     }
   ],
   "editorial": {
     "headline": "その日の面白トピックについてのコラム見出し",
-    "content": "コラム本文（300-400文字）- 面白い視点で",
+    "content": "コラム本文（300-400文字）",
     "category": "column"
   },
   "columnTitle": "豆知識コーナー",
   "columnContent": "その日に関する面白い豆知識（200文字程度）",
   "advertisements": [
-    {
-      "title": "広告タイトル",
-      "content": "広告文（その時代らしい商品やサービス）",
-      "style": "vintage"
-    }
+    { "title": "広告1", "content": "その時代らしい広告文", "style": "vintage" },
+    { "title": "広告2", "content": "その時代らしい広告文", "style": "vintage" },
+    { "title": "広告3", "content": "その時代らしい広告文", "style": "vintage" }
   ]
 }
 
-重要：必ず有効なJSON形式で出力してください。説明文は不要です。
+【重要ルール】
+- 必ずGoogle検索を実行して実際のニュースを使用すること
+- 政治・経済・社会の堅いニュースは不要。面白いニュースのみ
+- subArticlesは必ず3つ生成すること
+- 各記事には必ずimagePromptを含めること
+- 有効なJSON形式のみ出力。説明文は不要
 `;
 
   try {
     console.log('Calling Gemini API with model:', MODEL_NAME);
+    console.log('Target date:', dateStr);
 
     const response = await genAI.models.generateContent({
       model: MODEL_NAME,
       contents: prompt,
       config: {
-        // Google検索を有効にして最新情報を取得
+        // システム指示で検索を強制
+        systemInstruction: systemInstruction,
+        // Google検索ツールを有効化
         tools: [{
           googleSearch: {},
         }],
