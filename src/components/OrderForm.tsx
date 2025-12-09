@@ -13,6 +13,9 @@ import { useAppStore, useGenerationFlow } from '@/lib/store';
 // テストモード（Stripeスキップ）
 const TEST_MODE = true;
 
+// テスト用パスワード（変更してください）
+const TEST_PASSWORD = 'omoide2025';
+
 export function OrderForm() {
   const {
     targetDate,
@@ -33,6 +36,10 @@ export function OrderForm() {
 
   const [showPersonalMessage, setShowPersonalMessage] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [testCode, setTestCode] = useState('');
+
+  // テストコードが正しいか
+  const isTestCodeValid = testCode === TEST_PASSWORD;
 
   const { isGenerating, generationStep, generationProgress, error } = useAppStore();
   const { startPreviewGeneration } = useGenerationFlow();
@@ -272,15 +279,37 @@ export function OrderForm() {
         </div>
       </div>
 
+      {/* テストコード入力（テストモード時のみ） */}
+      {TEST_MODE && (
+        <div className="form-section">
+          <label className="block text-sm font-medium mb-2">
+            🔐 テストコードを入力
+          </label>
+          <input
+            type="password"
+            value={testCode}
+            onChange={(e) => setTestCode(e.target.value)}
+            placeholder="テストコードを入力してください"
+            className="w-full px-3 py-2 text-sm border border-[#1a1a1a]/20 rounded bg-white"
+          />
+          {testCode && !isTestCodeValid && (
+            <p className="text-xs text-red-500 mt-1">コードが正しくありません</p>
+          )}
+          {isTestCodeValid && (
+            <p className="text-xs text-green-600 mt-1">✓ 認証OK</p>
+          )}
+        </div>
+      )}
+
       {/* 送信ボタン */}
       <button
         type="submit"
-        disabled={!targetDate || isSubmitting || isGenerating}
+        disabled={!targetDate || isSubmitting || isGenerating || (TEST_MODE && !isTestCodeValid)}
         className={`
           w-full py-4 text-lg font-bold rounded-lg transition-all
           flex items-center justify-center gap-2
           ${
-            !targetDate || isSubmitting || isGenerating
+            !targetDate || isSubmitting || isGenerating || (TEST_MODE && !isTestCodeValid)
               ? 'bg-[#1a1a1a]/20 text-[#1a1a1a]/40 cursor-not-allowed'
               : 'bg-[#8b4513] text-white hover:bg-[#6b3410] active:scale-[0.99]'
           }
