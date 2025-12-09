@@ -131,21 +131,16 @@ export async function generateNewspaperContent(
   }[style];
 
   // 検索を確実に実行させるためのシステム指示
-  const systemInstruction = `あなたはGoogle検索を活用する新聞記者AIです。
+  const systemInstruction = `あなたは新聞記者AIです。Google検索で情報を調べます。
 
-【最重要 - 投稿日と発生日の違いを理解すること】
-ニュース記事には「投稿日（記事が書かれた日）」と「発生日（出来事が起きた日）」があります。
-あなたが使うべきは「発生日が${year}年${month}月${day}日」の出来事です。
+【絶対ルール】
+出来事の発生日が「${year}年${month}月${day}日」のものだけを使うこと。
 
-例えば${month}月${day}日のニュース記事に「昨日○○が起きた」と書いてあれば、
-それは${month}月${day - 1}日の出来事なので使用禁止です。
+NG: ${month}月${day - 1}日に発生した出来事
+NG: ${month}月${day + 1}日に発生した出来事
+OK: ${month}月${day}日に発生した出来事
 
-【使用OK】${year}年${month}月${day}日に発生・開催・発売・公開された出来事
-【使用NG】${year}年${month}月${day}日に投稿されたが、前日以前の出来事を報じた記事
-
-【出力形式】
-- 出力はJSON形式のみ。説明文は一切禁止
-- 最初の文字は必ず { で始めること`;
+出力はJSON形式のみ。最初の文字は { で始めること。`;
 
   // 英語の日付フォーマット
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
@@ -157,36 +152,21 @@ export async function generateNewspaperContent(
   const nextYear = nextDay.getFullYear();
   const nextMonth = nextDay.getMonth() + 1;
   const nextDayNum = nextDay.getDate();
-  const nextEnglishDate = `${monthNames[nextMonth - 1]} ${nextDayNum}, ${nextYear}`;
 
   // 検索を誘発するプロンプト構造
-  const prompt = `【検索リクエスト - ${year}年${month}月${day}日に起きた出来事を検索】
+  const prompt = `${year}年${month}月${day}日に起きた出来事を検索して新聞を作成してください。
 
-【検索のコツ - 重要】
-ニュースは通常「翌日」に報道されます。
-つまり${month}月${day}日の出来事は、${nextMonth}月${nextDayNum}日の記事に載っています。
-
-以下の検索クエリを実行してください：
-
-【メイン検索 - 翌日の記事から前日の出来事を探す】
-- 「${nextYear}年${nextMonth}月${nextDayNum}日 ニュース」→ この記事内の「${month}月${day}日」の出来事を探す
-- 「${nextMonth}月${nextDayNum}日 スポーツ結果」→ ${month}月${day}日に行われた試合の結果
-
-【補助検索 - 直接その日を検索】
-- 「${year}年${month}月${day}日 何があった」
-- 「${month}月${day}日 出来事 ${year}」
-- 「${year}/${month}/${day} イベント」
-- "on ${englishDate}"
+【検索クエリ】
+- 「${nextYear}年${nextMonth}月${nextDayNum}日 ニュース」（翌日の記事に前日の出来事が載っている）
+- 「${year}年${month}月${day}日 出来事」
+- 「${month}月${day}日 何が起きた ${year}」
 - "${englishDate} events"
 
-【重要ルール】
-使用するのは「${year}年${month}月${day}日に発生した出来事」のみ。
+【絶対条件】
+★ 出来事が起きた日 = ${year}年${month}月${day}日 のみ使用可 ★
 
-検索結果の見方：
-- 「${nextMonth}月${nextDayNum}日付の記事」に「昨日○○が...」とあれば → ${month}月${day}日の出来事なのでOK
-- 「${month}月${day}日付の記事」に「昨日○○が...」とあれば → ${month}月${day - 1}日の出来事なのでNG
-
-検索結果から${year}年${month}月${day}日に発生した出来事のみを選び、レトロ新聞記事として出力してください。
+記事に「${month}月${day - 1}日」「${month - 1}月」の出来事が書いてあったら、それは使用禁止。
+必ず「${month}月${day}日」に起きた出来事だけを使うこと。
 
 ${ARTICLE_GUIDELINES}
 
