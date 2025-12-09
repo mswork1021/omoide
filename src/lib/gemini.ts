@@ -132,28 +132,43 @@ export async function generateNewspaperContent(
 
   // 検索を確実に実行させるためのシステム指示
   const systemInstruction = `あなたはGoogle検索を活用する新聞記者AIです。
-ユーザーから日付を指定されたら、必ずGoogle検索を実行してその日の実際のニュースを調べてください。
+ユーザーから日付を指定されたら、必ずGoogle検索を実行してその日に実際に起きた出来事を調べてください。
 
 【絶対厳守】
-- 出力はJSON形式のみ。説明文、前置き、コメントは一切禁止
-- 検索結果が見つからなくても、その年や月の話題を検索して必ずJSON形式で出力すること
-- 「〜できません」「〜ありません」などの説明は絶対に出力しないこと
+- 記事は必ずその日（${year}年${month}月${day}日）に起きた出来事のみを使用すること
+- 別の日の出来事を使ってはいけない
+- 出力はJSON形式のみ。説明文は一切禁止
 - 最初の文字は必ず { で始めること`;
 
+  // 英語の日付フォーマット
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                      'July', 'August', 'September', 'October', 'November', 'December'];
+  const englishDate = `${monthNames[month - 1]} ${day}, ${year}`;
+
   // 検索を誘発するプロンプト構造
-  const prompt = `【検索リクエスト】
-${year}年${month}月${day}日（${dateStr}）の日本のニュースをGoogle検索で調べてください。
+  const prompt = `【検索リクエスト - ${year}年${month}月${day}日の出来事を検索】
 
-【検索の優先順位】
-1. まず「${year}年${month}月${day}日 ニュース」「${year}年${month}月${day}日 芸能」で検索
-2. 結果が少なければ「${year}年${month}月 話題」「${year}年${month}月 芸能ニュース」で検索
-3. それでも少なければ「${year}年 ヒット曲」「${year}年 流行語」「${year}年 スポーツ」で検索
+以下の検索クエリをすべて実行して、${year}年${month}月${day}日に起きた出来事を調べてください：
 
-【重要】検索結果が見つからない場合でも、必ずその年の話題を使って新聞を生成すること。
-説明文は出力せず、必ずJSON形式で出力すること。
+【日本語検索】
+- 「${year}年${month}月${day}日 出来事」
+- 「${year}年${month}月${day}日 ニュース」
+- 「${year}年${month}月${day}日 芸能」
+- 「${year}年${month}月${day}日 スポーツ」
+- 「${year}/${month}/${day} 何があった」
 
-検索結果から面白いニュース（芸能・スポーツ・エンタメ・珍ニュース）を選び、
-以下のJSON形式でレトロ新聞記事として出力してください。
+【英語検索】
+- "what happened on ${englishDate}"
+- "${englishDate} Japan news"
+- "${englishDate} events"
+
+【重要ルール】
+- 必ず${year}年${month}月${day}日に起きた出来事のみを記事にすること
+- その日に発表されたニュース、その日の試合結果、その日の出来事だけを使う
+- 別の日の出来事は絶対に使わないこと
+- 小さなニュースでも構わないので、必ずその日の出来事を使うこと
+
+検索結果から${year}年${month}月${day}日の出来事を選び、レトロ新聞記事として出力してください。
 
 ${ARTICLE_GUIDELINES}
 
@@ -171,33 +186,35 @@ ${personalMessage ? `
 ` : ''}
 
 【出力形式 - 必ずこのJSON形式で出力】
+※全ての記事は${year}年${month}月${day}日に起きた出来事のみ
+
 {
   "masthead": "新聞名（創作可）",
   "edition": "第〇〇〇号 朝刊/夕刊",
   "weather": "天気予報（その日の推定天気）",
   "mainArticle": {
-    "headline": "検索で見つけた面白いニュースの見出し",
+    "headline": "${month}月${day}日に起きた出来事の見出し",
     "subheadline": "副見出し",
-    "content": "本文（400-600文字）- 検索結果に基づく事実",
+    "content": "本文（400-600文字）- ${month}月${day}日の検索結果に基づく事実のみ",
     "category": "main",
     "imagePrompt": "A photograph of [具体的な場面を英語で]"
   },
   "subArticles": [
     {
-      "headline": "芸能ニュース見出し（検索結果から）",
-      "content": "本文（200-300文字）",
+      "headline": "${month}月${day}日の芸能ニュース見出し",
+      "content": "本文（200-300文字）- その日の出来事のみ",
       "category": "celebrity",
       "imagePrompt": "A photograph of [具体的な場面を英語で]"
     },
     {
-      "headline": "スポーツニュース見出し（検索結果から）",
-      "content": "本文（200-300文字）",
+      "headline": "${month}月${day}日のスポーツニュース見出し",
+      "content": "本文（200-300文字）- その日の出来事のみ",
       "category": "sports",
       "imagePrompt": "A photograph of [具体的な場面を英語で]"
     },
     {
-      "headline": "エンタメニュース見出し（検索結果から）",
-      "content": "本文（200-300文字）",
+      "headline": "${month}月${day}日のエンタメニュース見出し",
+      "content": "本文（200-300文字）- その日の出来事のみ",
       "category": "entertainment",
       "imagePrompt": "A photograph of [具体的な場面を英語で]"
     }
