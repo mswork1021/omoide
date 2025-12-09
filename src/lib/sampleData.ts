@@ -1,12 +1,78 @@
 /**
  * サンプル新聞データ
- * 静的に表示するサンプル（API呼び出し不要）
+ * 令和 → 平成 → 昭和 の順番で表示
+ * 本番生成と完全に同じレイアウトで表示
  */
 
 import type { NewspaperData } from '@/types';
 
 export const sampleNewspapers: NewspaperData[] = [
-  // サンプル1: 誕生日 - 1990年4月1日（平成2年）
+  // サンプル1: 令和風 - 2020年7月24日（東京オリンピック予定日）
+  {
+    date: new Date('2020-07-24'),
+    masthead: '時空新報',
+    edition: '第45,678号 朝刊',
+    weather: '晴れ 最高気温32度',
+    mainArticle: {
+      headline: '東京五輪 異例の1年延期後も開催困難か',
+      subheadline: '新型コロナ感染拡大で世界的な懸念広がる',
+      content: '新型コロナウイルスの世界的な感染拡大を受け、2020年夏に予定されていた東京オリンピック・パラリンピックの開催が危ぶまれている。国際オリンピック委員会（IOC）と日本政府は、史上初となる1年の延期を決定したものの、収束の見通しが立たない中、開催可否をめぐる議論は続いている。選手たちは練習環境の制限に苦しみながらも、大会実現に向けて準備を続けている。世界中のアスリートが集う平和の祭典が、このパンデミックという未曽有の危機を乗り越えて開催されるか、世界が注目している。医療従事者への感謝と、一日も早い収束を願う声が日本中から上がっている。',
+      category: 'main',
+      imagePrompt: 'Tokyo 2020 Olympics empty stadium, modern sports facility, Japan, pandemic era, photojournalism style',
+    },
+    subArticles: [
+      {
+        headline: 'リモートワーク急速に普及',
+        content: '新型コロナウイルスの感染拡大に伴い、在宅勤務・リモートワークが急速に普及している。IT企業を中心に、オフィスに出社せずに働くスタイルが定着しつつある。Zoom、Teams等のビデオ会議ツールの利用者は前年比10倍以上に増加。「働き方改革」が一気に進んだ形となった。',
+        category: 'economy',
+        imagePrompt: 'Japanese person working from home, laptop, video conference, modern minimalist room, 2020s lifestyle photography',
+      },
+      {
+        headline: '「鬼滅の刃」興行収入が歴代記録更新',
+        content: '劇場版「鬼滅の刃 無限列車編」が公開から73日で興行収入324億円を突破し、「千と千尋の神隠し」の記録を19年ぶりに塗り替えた。コロナ禍での映画館営業制限にも関わらず、社会現象的なヒットとなった。',
+        category: 'entertainment',
+        imagePrompt: 'Japanese anime movie theater premiere, crowds with masks, movie poster, entertainment news photography style',
+      },
+      {
+        headline: '菅内閣発足 デジタル庁創設へ',
+        content: '安倍晋三首相の辞任を受け、菅義偉氏が第99代内閣総理大臣に就任した。新内閣は行政のデジタル化を最優先課題に掲げ、2021年のデジタル庁創設を目指す方針を表明。「縦割り打破」をスローガンに改革を進める。',
+        category: 'news',
+        imagePrompt: 'Japanese prime minister press conference, government building, official ceremony, news photography style',
+      },
+    ],
+    editorial: {
+      headline: 'コロナ後の社会を見据えて',
+      content: 'パンデミックは社会のあり方を根底から問い直す機会となった。リモートワークの普及は、都市一極集中の是正や地方創生の可能性を示している。また、医療・介護従事者の献身に改めて感謝するとともに、エッセンシャルワーカーの処遇改善が急務である。この危機を乗り越えた先に、より強靭で持続可能な社会を築くことが、私たちの責務である。困難な時こそ、人と人との繋がりの大切さを忘れずにいたい。',
+      category: 'editorial',
+    },
+    columnTitle: '天声人語',
+    columnContent: 'マスクが日常の一部となった。顔の半分を覆うその布越しに、私たちは言葉を交わし、目で微笑む。不自由さの中にも、人間の適応力と創意工夫を見る。この経験は、きっと未来への教訓となるだろう。',
+    advertisements: [
+      {
+        title: 'オンライン診療',
+        content: '自宅から医師に相談。初診からOK。専用アプリでかんたん予約。',
+        style: 'modern',
+      },
+      {
+        title: 'Uber Eats',
+        content: 'お家時間を美味しく。人気レストランの味をお届け。初回配送無料。',
+        style: 'modern',
+      },
+      {
+        title: 'Netflix',
+        content: 'おうち時間に映画三昧。初月無料キャンペーン実施中。',
+        style: 'modern',
+      },
+    ],
+    personalMessage: {
+      recipientName: '田中 美咲',
+      senderName: 'ご家族一同',
+      message: 'お誕生日おめでとうございます。困難な時代でしたが、あなたの笑顔がいつも家族の支えでした。',
+      occasion: '誕生日',
+    },
+  },
+
+  // サンプル2: 平成風 - 1990年4月1日（平成2年）
   {
     date: new Date('1990-04-01'),
     masthead: '時空新報',
@@ -24,16 +90,19 @@ export const sampleNewspapers: NewspaperData[] = [
         headline: '日経平均株価 三万円台を維持',
         content: '東京株式市場は堅調な動きを見せ、日経平均株価は三万円台を維持した。バブル景気の恩恵を受け、企業業績は好調を維持している。市場関係者は「当面は高値圏での推移が続く」との見方を示している。',
         category: 'economy',
+        imagePrompt: 'Tokyo stock exchange 1990, traders, electronic board showing numbers, vintage Japanese newspaper photo',
       },
       {
         headline: '春の選抜高校野球 熱戦続く',
         content: '第六十二回選抜高等学校野球大会は甲子園球場で熱戦が繰り広げられている。各地の代表校が白球を追い、球児たちの真剣な眼差しがスタンドの観客を魅了した。',
         category: 'sports',
+        imagePrompt: 'Koshien baseball stadium 1990, high school baseball players, cheering crowd, vintage sports photography',
       },
       {
         headline: '新元号「平成」二年目の春',
         content: '昭和から平成へと時代が移り、二度目の春を迎えた。国民生活にも新時代の空気が浸透し、若者文化を中心に新たな潮流が生まれつつある。',
         category: 'society',
+        imagePrompt: 'Japanese street scene 1990, fashion, young people, colorful clothes, vintage photography style',
       },
     ],
     editorial: {
@@ -68,69 +137,7 @@ export const sampleNewspapers: NewspaperData[] = [
     },
   },
 
-  // サンプル2: 結婚記念日 - 1985年6月15日（昭和60年）
-  {
-    date: new Date('1985-06-15'),
-    masthead: '時空新報',
-    edition: '第11,092号 夕刊',
-    weather: '曇り時々晴れ 最高気温26度',
-    mainArticle: {
-      headline: '科学万博つくば 入場者一千万人突破',
-      subheadline: '未来技術の祭典に全国から熱視線',
-      content: '茨城県つくば市で開催中の国際科学技術博覧会（科学万博つくば85）の入場者数が、開幕から約二ヶ月で一千万人を突破した。「人間・居住・環境と科学技術」をテーマに掲げた本博覧会には、四十八カ国が参加し、最先端の科学技術が一堂に会している。特に人気を集めているのは、各企業パビリオンの未来体験型アトラクション。巨大スクリーンに映し出される立体映像や、コンピューター制御のロボットに、来場者は目を輝かせている。主催者は「科学技術の素晴らしさを次世代に伝えたい」と語り、会期終了までにさらなる入場者増を見込んでいる。',
-      category: 'main',
-      imagePrompt: 'Tsukuba Expo 85 Japan, futuristic pavilion, crowds of visitors, 1980s vintage newspaper photo',
-    },
-    subArticles: [
-      {
-        headline: 'ファミコンブーム加速 品薄続く',
-        content: '任天堂のファミリーコンピュータが爆発的な人気を博している。「スーパーマリオブラザーズ」の発売を控え、全国の玩具店には入荷を待つ行列が。家庭用ゲーム機の新時代が到来した。',
-        category: 'culture',
-      },
-      {
-        headline: '阪神タイガース 首位快走',
-        content: 'プロ野球セ・リーグは阪神タイガースが首位を独走。バース、掛布、岡田のクリーンナップが猛威を振るい、「猛虎打線」の異名を取っている。',
-        category: 'sports',
-      },
-      {
-        headline: '円高進行 一ドル二百四十円台',
-        content: '外国為替市場で円高が進行し、一ドル二百四十円台を記録した。輸出企業への影響が懸念される一方、海外旅行には追い風となっている。',
-        category: 'economy',
-      },
-    ],
-    editorial: {
-      headline: '科学と人間の調和を求めて',
-      content: 'つくば万博が私たちに問いかけているものは何か。科学技術の目覚ましい発展は、確かに人類に恩恵をもたらした。しかし同時に、環境破壊や核の脅威といった負の側面も生み出している。大切なのは、科学技術を人間の幸福のために正しく活用する知恵である。便利さの追求だけでなく、自然との共生、人間性の尊重を忘れてはならない。万博会場で目を輝かせる子どもたちが、やがて科学技術と人間の調和を実現する担い手となることを願ってやまない。',
-      category: 'editorial',
-    },
-    columnTitle: '天声人語',
-    columnContent: '六月の空は変わりやすい。梅雨入りを前に、晴れ間と曇り空が交互に訪れる。人生もまた然り。晴れの日ばかりではないが、雨の日があるからこそ、陽光の有難さを知る。夫婦の歩みも同じではないだろうか。',
-    advertisements: [
-      {
-        title: 'ナショナル エアコン',
-        content: '暑い夏も快適に。省エネ設計で電気代もお得。今なら取付工事費無料。',
-        style: 'vintage',
-      },
-      {
-        title: 'サントリー オールド',
-        content: '大切な人と過ごす、かけがえのない時間に。',
-        style: 'vintage',
-      },
-      {
-        title: 'つくば万博 開催中',
-        content: '未来を見に行こう。入場券好評発売中。JR常磐線でアクセス便利。',
-        style: 'vintage',
-      },
-    ],
-    personalMessage: {
-      recipientName: '佐藤 幸子',
-      senderName: '夫 健一より',
-      message: '結婚記念日おめでとう。あの日から時は流れましたが、あなたへの想いは変わりません。これからもよろしく。',
-      occasion: '結婚記念日',
-    },
-  },
-
-  // サンプル3: 還暦祝い - 1964年10月10日（東京オリンピック開会式）
+  // サンプル3: 昭和風 - 1964年10月10日（東京オリンピック開会式）
   {
     date: new Date('1964-10-10'),
     masthead: '時空新報',
@@ -148,16 +155,19 @@ export const sampleNewspapers: NewspaperData[] = [
         headline: '新幹線「夢の超特急」好調',
         content: '十月一日に開業した東海道新幹線は連日満席の盛況。東京ー新大阪間を四時間で結ぶ「夢の超特急」に、利用客は「まるで飛行機のよう」と驚きの声を上げている。',
         category: 'society',
+        imagePrompt: '1964 Shinkansen bullet train, Tokyo station platform, passengers, vintage black and white Japanese newspaper photo',
       },
       {
         headline: '首都高速 五輪に間に合う',
         content: '東京オリンピックに合わせて建設が進められていた首都高速道路が完成。近代都市東京の新たな大動脈として、交通事情の改善が期待されている。',
         category: 'economy',
+        imagePrompt: '1964 Tokyo expressway construction completion, highway, cars, vintage monochrome newspaper photography',
       },
       {
         headline: '日本選手団 金メダル期待',
         content: '柔道、体操、レスリングなど、日本のお家芸での金メダル獲得が期待される。選手団主将の小野喬選手は「必ずや国民の期待に応えたい」と決意を語った。',
         category: 'sports',
+        imagePrompt: '1964 Tokyo Olympics Japanese athletes, judo or gymnastics, determined faces, vintage black and white sports photography',
       },
     ],
     editorial: {
@@ -193,25 +203,25 @@ export const sampleNewspapers: NewspaperData[] = [
   },
 ];
 
-// サンプル表示用のメタ情報
+// サンプル表示用のメタ情報（令和→平成→昭和の順）
 export const sampleMeta = [
   {
-    id: 'birthday-1990',
-    title: '誕生日の新聞',
+    id: 'reiwa-2020',
+    title: '令和風の新聞',
+    description: '2020年7月24日 - コロナ禍の東京',
+    occasion: '誕生日',
+    style: 'reiwa' as const,
+  },
+  {
+    id: 'heisei-1990',
+    title: '平成風の新聞',
     description: '1990年4月1日 - 平成二年の春',
     occasion: '誕生日',
     style: 'heisei' as const,
   },
   {
-    id: 'wedding-1985',
-    title: '結婚記念日の新聞',
-    description: '1985年6月15日 - 科学万博つくば',
-    occasion: '結婚記念日',
-    style: 'showa' as const,
-  },
-  {
-    id: 'kanreki-1964',
-    title: '還暦祝いの新聞',
+    id: 'showa-1964',
+    title: '昭和風の新聞',
     description: '1964年10月10日 - 東京オリンピック開幕',
     occasion: '還暦祝い',
     style: 'showa' as const,
