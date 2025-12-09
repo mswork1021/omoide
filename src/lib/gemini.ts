@@ -133,11 +133,15 @@ export async function generateNewspaperContent(
   // 検索を確実に実行させるためのシステム指示
   const systemInstruction = `あなたはGoogle検索を活用する新聞記者AIです。
 
-【絶対厳守 - 日付について】
-- 記事は必ず「${year}年${month}月${day}日」に起きた出来事のみを使用すること
-- ${month}月${day - 1}日や${month}月${day + 1}日の出来事は絶対に使用禁止
-- 前日・翌日・別の日の出来事を混ぜてはいけない
-- 検索結果の中から「${month}月${day}日」の出来事だけを厳選すること
+【最重要 - 投稿日と発生日の違いを理解すること】
+ニュース記事には「投稿日（記事が書かれた日）」と「発生日（出来事が起きた日）」があります。
+あなたが使うべきは「発生日が${year}年${month}月${day}日」の出来事です。
+
+例えば${month}月${day}日のニュース記事に「昨日○○が起きた」と書いてあれば、
+それは${month}月${day - 1}日の出来事なので使用禁止です。
+
+【使用OK】${year}年${month}月${day}日に発生・開催・発売・公開された出来事
+【使用NG】${year}年${month}月${day}日に投稿されたが、前日以前の出来事を報じた記事
 
 【出力形式】
 - 出力はJSON形式のみ。説明文は一切禁止
@@ -149,36 +153,46 @@ export async function generateNewspaperContent(
   const englishDate = `${monthNames[month - 1]} ${day}, ${year}`;
 
   // 検索を誘発するプロンプト構造
-  const prompt = `【検索リクエスト - ${year}年${month}月${day}日の出来事を検索】
+  const prompt = `【検索リクエスト - ${year}年${month}月${day}日に起きた出来事を検索】
 
-以下の検索クエリをすべて実行して、${year}年${month}月${day}日に起きた出来事を調べてください：
+以下の検索クエリを実行して、${year}年${month}月${day}日に「起きた」出来事を調べてください：
 
-【日本語検索】
-- 「${year}年${month}月${day}日 出来事」
-- 「${year}年${month}月${day}日 ニュース」
-- 「${year}年${month}月${day}日 芸能」
-- 「${year}年${month}月${day}日 スポーツ」
-- 「${year}/${month}/${day} 何があった」
+【重要な注意】
+ニュース記事の「投稿日」ではなく、出来事が「発生した日」を確認すること。
+例：12月2日に投稿された「12月1日の試合結果」は、12月1日の出来事として使用OK
+例：12月1日に投稿された「11月30日の事件」は、11月30日の出来事なので使用NG
+
+【日本語検索 - 出来事にフォーカス】
+- 「${year}年${month}月${day}日 何があった」
+- 「${month}月${day}日 出来事 ${year}年」
+- 「${year}年${month}月${day}日 試合結果」
+- 「${year}年${month}月${day}日 発売」
+- 「${year}年${month}月${day}日 公開」
+- 「${year}年${month}月${day}日 イベント」
 
 【英語検索】
-- "what happened on ${englishDate}"
-- "${englishDate} Japan news"
-- "${englishDate} events"
+- "on ${englishDate}" (その日に起きた)
+- "${englishDate} happened"
+- "events of ${englishDate}"
 
-【絶対厳守ルール - 日付チェック】
-★★★ ${year}年${month}月${day}日の出来事のみ使用可能 ★★★
+【絶対厳守ルール - 出来事の発生日チェック】
+★★★ ${year}年${month}月${day}日に「発生した」出来事のみ使用可能 ★★★
 
-禁止事項:
-- ${month}月${day - 1}日の出来事 → 使用禁止
-- ${month}月${day + 1}日の出来事 → 使用禁止
-- ${month - 1}月の出来事 → 使用禁止
-- その他の日付 → 使用禁止
+OK例:
+- ${month}月${day}日に行われた試合 → OK
+- ${month}月${day}日に発売された商品 → OK
+- ${month}月${day}日に公開された映画 → OK
+- ${month}月${day}日に開催されたイベント → OK
 
-検索結果から記事を選ぶ際は、必ず日付を確認すること。
-「${month}月${day}日」と明記されている出来事のみを使用すること。
-小さなニュースでも構わないので、必ず${month}月${day}日の出来事を使うこと。
+NG例:
+- ${month}月${day}日に投稿された「前日の出来事」の記事 → NG
+- ${month}月${day - 1}日に起きた出来事 → NG
+- ${month}月${day + 1}日に起きた出来事 → NG
 
-検索結果から${year}年${month}月${day}日の出来事を選び、レトロ新聞記事として出力してください。
+記事の投稿日ではなく、出来事の発生日を必ず確認すること。
+小さなニュースでも構わないので、必ず${month}月${day}日に発生した出来事を使うこと。
+
+検索結果から${year}年${month}月${day}日に発生した出来事を選び、レトロ新聞記事として出力してください。
 
 ${ARTICLE_GUIDELINES}
 
