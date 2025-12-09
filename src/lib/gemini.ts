@@ -152,47 +152,41 @@ export async function generateNewspaperContent(
                       'July', 'August', 'September', 'October', 'November', 'December'];
   const englishDate = `${monthNames[month - 1]} ${day}, ${year}`;
 
+  // 翌日の日付（翌日の記事にはその日の出来事が載っている）
+  const nextDay = new Date(year, month - 1, day + 1);
+  const nextYear = nextDay.getFullYear();
+  const nextMonth = nextDay.getMonth() + 1;
+  const nextDayNum = nextDay.getDate();
+  const nextEnglishDate = `${monthNames[nextMonth - 1]} ${nextDayNum}, ${nextYear}`;
+
   // 検索を誘発するプロンプト構造
   const prompt = `【検索リクエスト - ${year}年${month}月${day}日に起きた出来事を検索】
 
-以下の検索クエリを実行して、${year}年${month}月${day}日に「起きた」出来事を調べてください：
+【検索のコツ - 重要】
+ニュースは通常「翌日」に報道されます。
+つまり${month}月${day}日の出来事は、${nextMonth}月${nextDayNum}日の記事に載っています。
 
-【重要な注意】
-ニュース記事の「投稿日」ではなく、出来事が「発生した日」を確認すること。
-例：12月2日に投稿された「12月1日の試合結果」は、12月1日の出来事として使用OK
-例：12月1日に投稿された「11月30日の事件」は、11月30日の出来事なので使用NG
+以下の検索クエリを実行してください：
 
-【日本語検索 - 出来事にフォーカス】
+【メイン検索 - 翌日の記事から前日の出来事を探す】
+- 「${nextYear}年${nextMonth}月${nextDayNum}日 ニュース」→ この記事内の「${month}月${day}日」の出来事を探す
+- 「${nextMonth}月${nextDayNum}日 スポーツ結果」→ ${month}月${day}日に行われた試合の結果
+
+【補助検索 - 直接その日を検索】
 - 「${year}年${month}月${day}日 何があった」
-- 「${month}月${day}日 出来事 ${year}年」
-- 「${year}年${month}月${day}日 試合結果」
-- 「${year}年${month}月${day}日 発売」
-- 「${year}年${month}月${day}日 公開」
-- 「${year}年${month}月${day}日 イベント」
+- 「${month}月${day}日 出来事 ${year}」
+- 「${year}/${month}/${day} イベント」
+- "on ${englishDate}"
+- "${englishDate} events"
 
-【英語検索】
-- "on ${englishDate}" (その日に起きた)
-- "${englishDate} happened"
-- "events of ${englishDate}"
+【重要ルール】
+使用するのは「${year}年${month}月${day}日に発生した出来事」のみ。
 
-【絶対厳守ルール - 出来事の発生日チェック】
-★★★ ${year}年${month}月${day}日に「発生した」出来事のみ使用可能 ★★★
+検索結果の見方：
+- 「${nextMonth}月${nextDayNum}日付の記事」に「昨日○○が...」とあれば → ${month}月${day}日の出来事なのでOK
+- 「${month}月${day}日付の記事」に「昨日○○が...」とあれば → ${month}月${day - 1}日の出来事なのでNG
 
-OK例:
-- ${month}月${day}日に行われた試合 → OK
-- ${month}月${day}日に発売された商品 → OK
-- ${month}月${day}日に公開された映画 → OK
-- ${month}月${day}日に開催されたイベント → OK
-
-NG例:
-- ${month}月${day}日に投稿された「前日の出来事」の記事 → NG
-- ${month}月${day - 1}日に起きた出来事 → NG
-- ${month}月${day + 1}日に起きた出来事 → NG
-
-記事の投稿日ではなく、出来事の発生日を必ず確認すること。
-小さなニュースでも構わないので、必ず${month}月${day}日に発生した出来事を使うこと。
-
-検索結果から${year}年${month}月${day}日に発生した出来事を選び、レトロ新聞記事として出力してください。
+検索結果から${year}年${month}月${day}日に発生した出来事のみを選び、レトロ新聞記事として出力してください。
 
 ${ARTICLE_GUIDELINES}
 
