@@ -161,10 +161,15 @@ export const useGenerationFlow = () => {
               mainImage: imageData.images[0],
               subImages: imageData.images.slice(1) || [],
             });
+          } else if (imageData.error) {
+            // 画像生成エラーを表示（致命的ではないので続行）
+            console.error('Image generation error:', imageData.error);
+            store.setError(`画像生成エラー: ${imageData.error}`);
           }
         } catch (imageError) {
           console.error('Image generation failed:', imageError);
-          // 画像生成失敗は致命的ではないので続行
+          const errorMsg = imageError instanceof Error ? imageError.message : String(imageError);
+          store.setError(`画像生成失敗: ${errorMsg}`);
         }
       }
 
