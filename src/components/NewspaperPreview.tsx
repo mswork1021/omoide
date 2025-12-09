@@ -106,11 +106,12 @@ export function NewspaperPreview({
               className="border-b border-[#1a1a1a]/20 pb-3"
             >
               <span className="text-xs bg-[#1a1a1a] text-[#f5f0e6] px-2 py-0.5">
-                {article.category === 'politics' && '政治'}
-                {article.category === 'economy' && '経済'}
-                {article.category === 'society' && '社会'}
-                {article.category === 'culture' && '文化'}
+                {article.category === 'entertainment' && '芸能'}
+                {article.category === 'celebrity' && '芸能'}
                 {article.category === 'sports' && 'スポーツ'}
+                {article.category === 'culture' && 'エンタメ'}
+                {article.category === 'news' && '話題'}
+                {!['entertainment', 'celebrity', 'sports', 'culture', 'news'].includes(article.category) && '話題'}
               </span>
               <h4 className="text-lg font-bold mt-2 mb-1">{article.headline}</h4>
               <p className="text-xs leading-relaxed line-clamp-4">

@@ -4,7 +4,7 @@ export interface NewspaperArticle {
   headline: string;
   subheadline?: string;
   content: string;
-  category: 'main' | 'politics' | 'economy' | 'society' | 'culture' | 'sports' | 'editorial';
+  category: 'main' | 'entertainment' | 'celebrity' | 'culture' | 'sports' | 'column' | 'news' | 'politics' | 'economy' | 'society' | 'editorial';
   imagePrompt?: string;
 }
 

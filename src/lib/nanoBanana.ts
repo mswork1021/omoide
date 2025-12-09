@@ -2,7 +2,8 @@
  * Gemini 2.5 Flash Image (Nano Banana Pro) API Client
  * ヴィンテージ新聞画像生成
  *
- * 新SDK (@google/genai) + gemini-2.5-flash-image を使用
+ * 新SDK (@google/genai) + gemini-2.5-flash-preview-image を使用
+ * 注意: 無料枠では画像生成APIは利用不可（limit: 0）
  */
 
 import { GoogleGenAI } from '@google/genai';
@@ -10,8 +11,11 @@ import type { ImageGenerationRequest, ImageGenerationResponse } from '@/types';
 
 const GOOGLE_AI_API_KEY = process.env.GOOGLE_AI_API_KEY;
 
-// 画像生成モデル
-const IMAGE_MODEL = 'gemini-2.5-flash-image';
+// 画像生成モデル（無料枠では利用不可）
+const IMAGE_MODEL = 'gemini-2.5-flash-preview-image';
+
+// 画像生成APIを使用するか（無料枠では false にする）
+const USE_IMAGE_API = false;
 
 // 画像生成用プロンプトテンプレート
 const IMAGE_PROMPT_TEMPLATE = `
@@ -66,16 +70,17 @@ function getAI(): GoogleGenAI {
 
 /**
  * Gemini 2.5 Flash Image を使用して画像を生成
+ * 無料枠では画像APIが使えないため、プレースホルダーを使用
  */
 export async function generateNewspaperImage(
   request: ImageGenerationRequest
 ): Promise<ImageGenerationResponse> {
-  // APIキーが未設定の場合はプレースホルダーを返す
-  if (!GOOGLE_AI_API_KEY) {
-    console.warn('GOOGLE_AI_API_KEY not configured. Using placeholder.');
+  // 画像APIを使用しない場合、またはAPIキーが未設定の場合はプレースホルダーを返す
+  if (!USE_IMAGE_API || !GOOGLE_AI_API_KEY) {
+    console.log('Using placeholder image (image API disabled or no API key)');
     return {
       success: true,
-      imageUrl: generatePlaceholderUrl(request.prompt, request.width || 512, request.height || 384),
+      imageUrl: generateVintagePlaceholder(request.prompt, request.width || 512, request.height || 384),
     };
   }
 
@@ -167,6 +172,16 @@ function buildEnhancedPrompt(basePrompt: string, modifiers: string[]): string {
 function generatePlaceholderUrl(prompt: string, width: number, height: number): string {
   const encodedPrompt = encodeURIComponent(prompt.slice(0, 30));
   return `https://placehold.co/${width}x${height}/1a1a1a/ffffff/png?text=${encodedPrompt}`;
+}
+
+/**
+ * ヴィンテージ風プレースホルダー画像を生成
+ * セピア調の新聞風画像
+ */
+function generateVintagePlaceholder(prompt: string, width: number, height: number): string {
+  // セピア調の色で新聞風のプレースホルダー
+  const text = encodeURIComponent('📰 新聞画像');
+  return `https://placehold.co/${width}x${height}/d4c4a8/3d3d3d/png?text=${text}&font=serif`;
 }
 
 /**
