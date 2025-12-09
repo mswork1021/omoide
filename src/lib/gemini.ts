@@ -201,30 +201,30 @@ ${personalMessage ? `
   "edition": "第〇〇〇号 朝刊/夕刊",
   "weather": "天気予報（その日の推定天気）",
   "mainArticle": {
-    "headline": "${month}月${day}日に起きた出来事の見出し",
+    "headline": "その日一番面白い出来事の見出し",
     "subheadline": "副見出し",
     "content": "本文（400-600文字）- ${month}月${day}日の検索結果に基づく事実のみ",
-    "category": "main",
-    "imagePrompt": "A photograph of [具体的な場面を英語で]"
+    "category": "ジャンル名（自由：芸能、音楽、映画、アニメ、ゲーム、スポーツ、グルメ、ファッション、科学、珍事件、話題など何でもOK）",
+    "imagePrompt": "A photograph of [具体的な場面を英語で詳しく]"
   },
   "subArticles": [
     {
-      "headline": "${month}月${day}日の芸能ニュース見出し",
+      "headline": "2番目に面白い出来事の見出し",
       "content": "本文（200-300文字）- その日の出来事のみ",
-      "category": "celebrity",
-      "imagePrompt": "A photograph of [具体的な場面を英語で]"
+      "category": "ジャンル名（自由）",
+      "imagePrompt": "A photograph of [具体的な場面を英語で詳しく]"
     },
     {
-      "headline": "${month}月${day}日のスポーツニュース見出し",
+      "headline": "3番目に面白い出来事の見出し",
       "content": "本文（200-300文字）- その日の出来事のみ",
-      "category": "sports",
-      "imagePrompt": "A photograph of [具体的な場面を英語で]"
+      "category": "ジャンル名（自由）",
+      "imagePrompt": "A photograph of [具体的な場面を英語で詳しく]"
     },
     {
-      "headline": "${month}月${day}日のエンタメニュース見出し",
+      "headline": "4番目に面白い出来事の見出し",
       "content": "本文（200-300文字）- その日の出来事のみ",
-      "category": "entertainment",
-      "imagePrompt": "A photograph of [具体的な場面を英語で]"
+      "category": "ジャンル名（自由）",
+      "imagePrompt": "A photograph of [具体的な場面を英語で詳しく]"
     }
   ],
   "editorial": {
@@ -243,9 +243,11 @@ ${personalMessage ? `
 
 【重要ルール】
 - 必ずGoogle検索を実行して実際のニュースを使用すること
-- 政治・経済・社会の堅いニュースは不要。面白いニュースのみ
+- 政治・経済の堅いニュースは避ける。面白い・ユニークなニュースを優先
+- ジャンルは自由！同じジャンルが複数あってもOK（例：音楽ニュースが3つでも可）
+- その日に実際にあった面白いことを探して載せる
 - subArticlesは必ず3つ生成すること
-- 各記事には必ずimagePromptを含めること
+- 各記事には必ずimagePromptを含めること（具体的な場面を詳しく英語で）
 - 有効なJSON形式のみ出力。説明文は不要
 `;
 

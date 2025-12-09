@@ -399,105 +399,127 @@ export function NewspaperPreview({
     );
   }
 
-  // 平成スタイル（スポーツ新聞/タブロイド風）
+  // 平成スタイル（90年代スポーツ新聞風）
   if (style === 'heisei') {
+    // カテゴリに応じた色を取得
+    const getCategoryColor = (category: string) => {
+      const colors: { [key: string]: string } = {
+        sports: '#ff6b00',
+        entertainment: '#e91e63',
+        celebrity: '#e91e63',
+        culture: '#9c27b0',
+        economy: '#2196f3',
+        society: '#4caf50',
+        news: '#ff9800',
+      };
+      return colors[category] || '#e63946';
+    };
+
     return (
       <div
         id="newspaper-preview"
         className="font-sans"
         style={{
-          background: config.paper,
-          color: config.text,
+          background: '#fff8dc',  // クリーム色の紙
+          color: '#1a1a1a',
           minHeight: '900px',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
           overflow: 'hidden',
         }}
       >
-        {/* ヘッダー - グラデーション */}
+        {/* ヘッダー - スポーツ新聞風 */}
         <header
           style={{
-            background: config.headerBg,
-            color: config.headerText,
-            padding: '12px 20px',
+            background: 'linear-gradient(180deg, #ff1744 0%, #d50000 100%)',
+            color: 'white',
+            padding: '8px 16px',
+            borderBottom: '4px solid #ffeb3b',
           }}
         >
-          <div className="flex justify-between items-center text-xs opacity-90 mb-1">
-            <span className="font-bold">{data.edition}</span>
-            <span>{dateStr}</span>
+          <div className="flex justify-between items-center text-xs mb-1">
+            <span style={{ background: '#ffeb3b', color: '#000', padding: '2px 8px', fontWeight: 'bold' }}>
+              {data.edition}
+            </span>
+            <span style={{ fontWeight: 'bold' }}>{dateStr}</span>
             <span>{data.weather}</span>
           </div>
           <h1
             className="text-center font-black"
             style={{
-              fontSize: 'clamp(32px, 6vw, 56px)',
-              textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
-              letterSpacing: '0.1em',
+              fontSize: 'clamp(36px, 7vw, 64px)',
+              textShadow: '3px 3px 0 #000, -1px -1px 0 #000',
+              letterSpacing: '0.05em',
+              WebkitTextStroke: '1px #000',
             }}
           >
             {data.masthead}
           </h1>
-          <p className="text-center text-sm opacity-80">〜 あの日の思い出をお届け 〜</p>
         </header>
 
-        {/* 個人メッセージ - ポップなスタイル */}
+        {/* 個人メッセージ - 派手なバナー */}
         {data.personalMessage && (
           <div
             style={{
-              margin: '16px',
-              padding: '20px',
-              background: 'linear-gradient(135deg, #fff0f3 0%, #fff5e6 100%)',
-              borderRadius: '16px',
-              border: `3px solid ${config.accent}`,
+              margin: '8px',
+              padding: '16px',
+              background: 'linear-gradient(135deg, #ff6b9d 0%, #ffa726 100%)',
+              border: '4px solid #1a1a1a',
+              position: 'relative',
             }}
           >
-            <div className="text-center">
-              <span
-                style={{
-                  display: 'inline-block',
-                  background: config.accent,
-                  color: 'white',
-                  padding: '6px 20px',
-                  borderRadius: '20px',
-                  fontSize: '12px',
-                  fontWeight: 'bold',
-                  marginBottom: '12px',
-                }}
-              >
-                🎉 {data.personalMessage.occasion}
-              </span>
+            <div
+              style={{
+                position: 'absolute',
+                top: '-12px',
+                left: '16px',
+                background: '#ffeb3b',
+                color: '#1a1a1a',
+                padding: '4px 16px',
+                fontWeight: '900',
+                fontSize: '14px',
+                border: '2px solid #1a1a1a',
+              }}
+            >
+              ★ {data.personalMessage.occasion} ★
+            </div>
+            <div className="text-center" style={{ color: 'white', paddingTop: '8px' }}>
               <h2
                 style={{
-                  fontSize: 'clamp(24px, 5vw, 40px)',
-                  color: config.accent,
+                  fontSize: 'clamp(28px, 6vw, 48px)',
                   fontWeight: '900',
-                  marginBottom: '12px',
+                  textShadow: '2px 2px 0 #000',
+                  marginBottom: '8px',
                 }}
               >
-                {data.personalMessage.recipientName} 様へ
+                {data.personalMessage.recipientName} 様
               </h2>
-              <p style={{ fontSize: '15px', lineHeight: '1.8', maxWidth: '500px', margin: '0 auto 12px' }}>
+              <p style={{ fontSize: '16px', textShadow: '1px 1px 0 #000' }}>
                 {data.personalMessage.message}
               </p>
-              <p style={{ fontSize: '13px', color: config.accent, fontWeight: 'bold' }}>
-                💝 {data.personalMessage.senderName} より
+              <p style={{ fontSize: '14px', marginTop: '8px', fontWeight: 'bold' }}>
+                ― {data.personalMessage.senderName} より ―
               </p>
             </div>
           </div>
         )}
 
-        {/* メインコンテンツ */}
-        <div style={{ padding: '0 16px 16px' }}>
-          {/* トップ記事 - 大きく派手に */}
-          <div style={{ marginBottom: '16px' }}>
+        {/* メイン見出し - ドカン！と大きく */}
+        <div style={{ padding: '8px 12px 0' }}>
+          <div
+            style={{
+              background: '#ffeb3b',
+              border: '4px solid #1a1a1a',
+              padding: '8px 16px',
+              marginBottom: '8px',
+            }}
+          >
             <h2
               style={{
-                fontSize: 'clamp(28px, 5vw, 44px)',
+                fontSize: 'clamp(32px, 6vw, 52px)',
                 fontWeight: '900',
-                color: config.accent,
-                lineHeight: '1.15',
-                marginBottom: '8px',
-                textShadow: '1px 1px 0 #000',
-                WebkitTextStroke: '0.5px #000',
+                lineHeight: '1.1',
+                color: '#d50000',
+                textShadow: '2px 2px 0 #fff',
               }}
             >
               {data.mainArticle.headline}
@@ -505,26 +527,34 @@ export function NewspaperPreview({
             {data.mainArticle.subheadline && (
               <p
                 style={{
-                  fontSize: '16px',
+                  fontSize: '18px',
                   fontWeight: 'bold',
-                  background: '#ffeb3b',
-                  display: 'inline-block',
-                  padding: '4px 12px',
-                  marginBottom: '12px',
+                  color: '#1a1a1a',
+                  marginTop: '4px',
                 }}
               >
-                {data.mainArticle.subheadline}
+                ▶ {data.mainArticle.subheadline}
               </p>
             )}
+          </div>
+        </div>
 
-            {/* メイン画像 - フル幅 */}
+        {/* メインコンテンツ - 2カラム */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '2fr 1fr',
+            gap: '8px',
+            padding: '0 12px',
+          }}
+        >
+          {/* 左カラム - メイン画像と本文 */}
+          <div>
             <div
               style={{
+                border: '3px solid #1a1a1a',
+                marginBottom: '8px',
                 position: 'relative',
-                marginBottom: '12px',
-                borderRadius: '12px',
-                overflow: 'hidden',
-                boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
               }}
             >
               <ImagePlaceholder
@@ -533,169 +563,192 @@ export function NewspaperPreview({
                 filter={config.filter}
                 style={{
                   width: '100%',
-                  aspectRatio: '16/9',
+                  aspectRatio: '4/3',
                   objectFit: 'cover',
                 }}
               />
-              {images?.mainImage && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    bottom: '0',
-                    left: '0',
-                    right: '0',
-                    background: 'linear-gradient(transparent, rgba(0,0,0,0.8))',
-                    color: 'white',
-                    padding: '20px 16px 12px',
-                    fontSize: '12px',
-                  }}
-                >
-                  📸 {data.mainArticle.headline}
-                </div>
-              )}
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: '0',
+                  left: '0',
+                  right: '0',
+                  background: 'rgba(0,0,0,0.85)',
+                  color: '#ffeb3b',
+                  padding: '8px',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                }}
+              >
+                ▲ {data.mainArticle.headline}
+              </div>
             </div>
-
-            <p style={{ fontSize: '14px', lineHeight: '1.9', textIndent: '1em' }}>
+            <p
+              style={{
+                fontSize: '13px',
+                lineHeight: '1.8',
+                textAlign: 'justify',
+                background: 'white',
+                padding: '12px',
+                border: '1px solid #ddd',
+              }}
+            >
               {data.mainArticle.content}
             </p>
           </div>
 
-          {/* サブ記事 - カード形式 */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: '12px',
-              marginBottom: '16px',
-            }}
-          >
+          {/* 右カラム - サブ記事縦並び */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {data.subArticles.slice(0, 3).map((article, index) => (
               <div
                 key={index}
                 style={{
                   background: 'white',
-                  borderRadius: '12px',
+                  border: `3px solid ${getCategoryColor(article.category)}`,
                   overflow: 'hidden',
-                  boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
                 }}
               >
+                <div
+                  style={{
+                    background: getCategoryColor(article.category),
+                    color: 'white',
+                    padding: '4px 8px',
+                    fontSize: '11px',
+                    fontWeight: 'bold',
+                  }}
+                >
+                  ★ {article.category.toUpperCase()}
+                </div>
                 <ImagePlaceholder
                   src={images?.subImages?.[index]}
                   alt={`サブ記事${index + 1}`}
                   filter={config.filter}
                   style={{
                     width: '100%',
-                    aspectRatio: '4/3',
+                    aspectRatio: '16/9',
                     objectFit: 'cover',
                   }}
                 />
-                <div style={{ padding: '12px' }}>
-                  <span
+                <div style={{ padding: '8px' }}>
+                  <h4
                     style={{
-                      display: 'inline-block',
-                      background: config.accent,
-                      color: 'white',
-                      padding: '2px 8px',
-                      borderRadius: '4px',
-                      fontSize: '10px',
-                      fontWeight: 'bold',
-                      marginBottom: '6px',
+                      fontSize: '14px',
+                      fontWeight: '900',
+                      lineHeight: '1.2',
+                      marginBottom: '4px',
+                      color: getCategoryColor(article.category),
                     }}
                   >
-                    {article.category === 'entertainment' && '🎬 芸能'}
-                    {article.category === 'celebrity' && '⭐ 芸能'}
-                    {article.category === 'sports' && '⚽ スポーツ'}
-                    {article.category === 'culture' && '🎭 エンタメ'}
-                    {article.category === 'economy' && '💰 経済'}
-                    {article.category === 'society' && '📰 社会'}
-                    {article.category === 'news' && '📰 話題'}
-                    {!['entertainment', 'celebrity', 'sports', 'culture', 'economy', 'society', 'news'].includes(article.category) && '📰 話題'}
-                  </span>
-                  <h4 style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: '4px', lineHeight: '1.3' }}>
                     {article.headline}
                   </h4>
-                  <p style={{ fontSize: '11px', opacity: 0.7, lineHeight: '1.6' }}>
-                    {article.content}
+                  <p style={{ fontSize: '10px', lineHeight: '1.5', opacity: 0.8 }}>
+                    {article.content.slice(0, 80)}...
                   </p>
                 </div>
               </div>
             ))}
           </div>
+        </div>
 
-          {/* 下段 - コラム + 広告 */}
+        {/* 下段 - コラムと広告 */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '8px',
+            padding: '8px 12px',
+            marginTop: '8px',
+          }}
+        >
+          {/* コラム */}
           <div
             style={{
-              display: 'grid',
-              gridTemplateColumns: '2fr 1fr',
-              gap: '12px',
-              marginTop: '16px',
+              background: '#fff8e1',
+              border: '2px solid #ff9800',
+              padding: '12px',
             }}
           >
-            {/* 社説/コラム */}
-            <div
+            <h3
               style={{
-                background: 'linear-gradient(135deg, #fff5e6 0%, #fff0f3 100%)',
-                borderRadius: '12px',
-                padding: '16px',
+                fontSize: '14px',
+                fontWeight: '900',
+                color: '#ff6f00',
+                marginBottom: '6px',
+                borderBottom: '2px solid #ff9800',
+                paddingBottom: '4px',
               }}
             >
-              <h3
-                style={{
-                  fontSize: '16px',
-                  fontWeight: 'bold',
-                  color: config.accent,
-                  marginBottom: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                }}
-              >
-                🗞️ {data.editorial.headline}
-              </h3>
-              <p style={{ fontSize: '12px', lineHeight: '1.9' }}>{data.editorial.content}</p>
-
-              <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px dashed #ddd' }}>
-                <h4 style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: '6px' }}>
-                  💡 {data.columnTitle}
-                </h4>
-                <p style={{ fontSize: '11px', lineHeight: '1.7', opacity: 0.8 }}>
-                  {data.columnContent}
-                </p>
-              </div>
-            </div>
-
-            {/* 広告 */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {data.advertisements.slice(0, 3).map((ad, i) => (
-                <div
-                  key={i}
-                  style={{
-                    background: 'linear-gradient(135deg, #f0f0f0 0%, #e8e8e8 100%)',
-                    borderRadius: '8px',
-                    padding: '12px',
-                    textAlign: 'center',
-                  }}
-                >
-                  <div style={{ fontWeight: 'bold', fontSize: '12px', marginBottom: '2px' }}>{ad.title}</div>
-                  <div style={{ fontSize: '10px', opacity: 0.7 }}>{ad.content}</div>
-                </div>
-              ))}
-            </div>
+              📰 {data.editorial.headline}
+            </h3>
+            <p style={{ fontSize: '11px', lineHeight: '1.7' }}>
+              {data.editorial.content.slice(0, 200)}...
+            </p>
           </div>
+
+          {/* 豆知識 */}
+          <div
+            style={{
+              background: '#e3f2fd',
+              border: '2px solid #2196f3',
+              padding: '12px',
+            }}
+          >
+            <h3
+              style={{
+                fontSize: '14px',
+                fontWeight: '900',
+                color: '#1565c0',
+                marginBottom: '6px',
+                borderBottom: '2px solid #2196f3',
+                paddingBottom: '4px',
+              }}
+            >
+              💡 {data.columnTitle}
+            </h3>
+            <p style={{ fontSize: '11px', lineHeight: '1.7' }}>{data.columnContent}</p>
+          </div>
+        </div>
+
+        {/* 広告欄 */}
+        <div
+          style={{
+            display: 'flex',
+            gap: '8px',
+            padding: '8px 12px',
+            background: '#f5f5f5',
+            borderTop: '2px solid #1a1a1a',
+          }}
+        >
+          {data.advertisements.slice(0, 3).map((ad, i) => (
+            <div
+              key={i}
+              style={{
+                flex: 1,
+                background: 'white',
+                border: '1px dashed #999',
+                padding: '8px',
+                textAlign: 'center',
+              }}
+            >
+              <div style={{ fontWeight: '900', fontSize: '12px', color: '#d50000' }}>{ad.title}</div>
+              <div style={{ fontSize: '9px', marginTop: '2px' }}>{ad.content}</div>
+            </div>
+          ))}
         </div>
 
         {/* フッター */}
         <footer
           style={{
-            background: config.secondaryBg,
-            padding: '12px 16px',
+            background: '#1a1a1a',
+            color: '#ffeb3b',
+            padding: '8px 16px',
             textAlign: 'center',
-            fontSize: '11px',
-            opacity: 0.6,
+            fontSize: '10px',
+            fontWeight: 'bold',
           }}
         >
-          Generated by TimeTravel Press ✨
-          {isPreview && <span style={{ color: '#f97316', marginLeft: '8px' }}>※ プレビュー</span>}
+          ★ TimeTravel Press - あの日の思い出をお届け ★
+          {isPreview && <span style={{ color: '#ff9800', marginLeft: '8px' }}>※ プレビュー</span>}
         </footer>
       </div>
     );

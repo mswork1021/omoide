@@ -149,16 +149,23 @@ export const useGenerationFlow = () => {
       store.setGenerationStep('images');
       const imagePrompts: string[] = [];
 
-      // メイン記事の画像プロンプト
-      if (data.newspaper.mainArticle?.imagePrompt) {
-        imagePrompts.push(data.newspaper.mainArticle.imagePrompt);
-      }
+      // メイン記事の画像プロンプト（なければデフォルト生成）
+      const mainPrompt = data.newspaper.mainArticle?.imagePrompt
+        || `A photograph for newspaper article about: ${data.newspaper.mainArticle?.headline || 'news event'}`;
+      imagePrompts.push(mainPrompt);
 
-      // サブ記事の画像プロンプト（最大3枚）
+      // サブ記事の画像プロンプト（必ず3枚生成、なければデフォルト）
       if (data.newspaper.subArticles) {
-        for (const article of data.newspaper.subArticles.slice(0, 3)) {
-          if (article.imagePrompt) {
+        for (let i = 0; i < 3; i++) {
+          const article = data.newspaper.subArticles[i];
+          if (article?.imagePrompt) {
             imagePrompts.push(article.imagePrompt);
+          } else if (article) {
+            // imagePromptがない場合、headlineからデフォルト生成
+            imagePrompts.push(`A photograph for newspaper article about: ${article.headline || 'news'}`);
+          } else {
+            // 記事自体がない場合のフォールバック
+            imagePrompts.push('A vintage Japanese newspaper photograph of daily life');
           }
         }
       }
