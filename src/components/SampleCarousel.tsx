@@ -3,6 +3,7 @@
 /**
  * SampleCarousel Component
  * サンプル新聞をカルーセル表示
+ * 本番と完全に同じレイアウトで表示（スタイル適用）
  */
 
 import React, { useState } from 'react';
@@ -28,11 +29,20 @@ export function SampleCarousel() {
   const currentSample = sampleNewspapers[currentIndex];
   const currentMeta = sampleMeta[currentIndex];
 
+  // スタイルに応じた色
+  const styleColors = {
+    reiwa: { bg: 'bg-[#3b82f6]', text: 'text-white' },
+    heisei: { bg: 'bg-[#e63946]', text: 'text-white' },
+    showa: { bg: 'bg-[#8b4513]', text: 'text-white' },
+  };
+
+  const colors = styleColors[currentMeta.style];
+
   return (
     <div className="sample-carousel">
       {/* サンプル情報ヘッダー */}
       <div className="text-center mb-4">
-        <span className="inline-block bg-[#8b4513] text-white text-xs px-3 py-1 rounded-full mb-2">
+        <span className={`inline-block ${colors.bg} ${colors.text} text-xs px-3 py-1 rounded-full mb-2`}>
           サンプル {currentIndex + 1} / {sampleNewspapers.length}
         </span>
         <h3 className="text-xl font-bold">{currentMeta.title}</h3>
@@ -52,10 +62,14 @@ export function SampleCarousel() {
           <ChevronLeft size={24} />
         </button>
 
-        {/* 新聞プレビュー */}
+        {/* 新聞プレビュー - スタイルを渡す */}
         <div className="overflow-hidden rounded-lg border-2 border-[#1a1a1a] shadow-xl">
           <div className="max-h-[600px] overflow-y-auto">
-            <NewspaperPreview data={currentSample} isPreview={true} />
+            <NewspaperPreview
+              data={currentSample}
+              style={currentMeta.style}
+              isPreview={true}
+            />
           </div>
         </div>
 
@@ -71,7 +85,7 @@ export function SampleCarousel() {
         </button>
       </div>
 
-      {/* ドットインジケーター */}
+      {/* ドットインジケーター（スタイル別色分け） */}
       <div className="flex justify-center gap-2 mt-4">
         {sampleMeta.map((meta, index) => (
           <button
@@ -79,10 +93,10 @@ export function SampleCarousel() {
             onClick={() => setCurrentIndex(index)}
             className={`w-3 h-3 rounded-full transition-colors ${
               index === currentIndex
-                ? 'bg-[#8b4513]'
+                ? styleColors[meta.style].bg
                 : 'bg-[#1a1a1a]/20 hover:bg-[#1a1a1a]/40'
             }`}
-            aria-label={`サンプル ${index + 1} を表示`}
+            aria-label={`${meta.title}を表示`}
           />
         ))}
       </div>
@@ -90,7 +104,12 @@ export function SampleCarousel() {
       {/* サンプル説明 */}
       <div className="mt-4 text-center">
         <p className="text-sm text-[#1a1a1a]/60">
-          {currentMeta.occasion}のサンプルです。実際のご注文では、ご指定の日付で生成されます。
+          これは{currentMeta.title}のサンプルです。
+          <br />
+          実際のご注文では、ご指定の日付・スタイルで生成されます。
+        </p>
+        <p className="text-xs text-[#1a1a1a]/40 mt-2">
+          ※ 画像部分は本番では AI が生成します
         </p>
       </div>
     </div>

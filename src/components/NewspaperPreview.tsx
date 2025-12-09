@@ -2,7 +2,7 @@
 
 /**
  * NewspaperPreview Component - Premium Edition
- * 本格的な新聞レイアウト
+ * 本格的な新聞レイアウト（全文表示対応）
  * - 昭和風: 伝統的な新聞、複数段組み、重厚
  * - 平成風: スポーツ新聞風、華やか、ダイナミック
  * - 令和風: モダン新聞、洗練されたミニマルデザイン
@@ -60,6 +60,52 @@ const styleConfig = {
     filter: 'none',
   },
 };
+
+// 画像プレースホルダーコンポーネント
+function ImagePlaceholder({
+  src,
+  alt,
+  style: imgStyle,
+  placeholderText = '画像はここに入ります',
+  filter,
+}: {
+  src?: string;
+  alt: string;
+  style?: React.CSSProperties;
+  placeholderText?: string;
+  filter?: string;
+}) {
+  if (src) {
+    return (
+      <img
+        src={src}
+        alt={alt}
+        style={{
+          ...imgStyle,
+          filter: filter || 'none',
+        }}
+      />
+    );
+  }
+
+  return (
+    <div
+      style={{
+        ...imgStyle,
+        background: 'linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: '#6b7280',
+        fontSize: '14px',
+        fontWeight: '500',
+        border: '2px dashed #9ca3af',
+      }}
+    >
+      📷 {placeholderText}
+    </div>
+  );
+}
 
 export function NewspaperPreview({
   data,
@@ -185,148 +231,88 @@ export function NewspaperPreview({
             )}
           </div>
 
-          {/* 3段組みレイアウト */}
+          {/* メイン画像（横幅いっぱい） */}
+          <div
+            style={{
+              marginBottom: '16px',
+              border: `1px solid ${config.borderColor}`,
+              padding: '4px',
+            }}
+          >
+            <ImagePlaceholder
+              src={images?.mainImage}
+              alt="メイン記事"
+              filter={config.filter}
+              style={{
+                width: '100%',
+                aspectRatio: '16/9',
+                objectFit: 'cover',
+              }}
+            />
+            <p style={{ fontSize: '10px', textAlign: 'center', marginTop: '4px', opacity: 0.7 }}>
+              ▲ {data.mainArticle.headline}
+            </p>
+          </div>
+
+          {/* メイン記事本文（3段組み） */}
+          <div
+            style={{
+              columnCount: 3,
+              columnGap: '16px',
+              columnRule: `1px solid ${config.borderColor}`,
+              marginBottom: '24px',
+            }}
+          >
+            <p
+              style={{
+                fontSize: '13px',
+                lineHeight: '2',
+                textAlign: 'justify',
+                textIndent: '1em',
+              }}
+            >
+              {data.mainArticle.content}
+            </p>
+          </div>
+
+          {/* サブ記事グリッド（3段） */}
           <div
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(3, 1fr)',
               gap: '12px',
+              borderTop: `2px solid ${config.borderColor}`,
+              paddingTop: '16px',
+              marginBottom: '16px',
             }}
           >
-            {/* 左列 - メイン画像 + テキスト */}
-            <div>
-              {images?.mainImage && (
-                <div
+            {data.subArticles.slice(0, 3).map((article, index) => (
+              <div
+                key={index}
+                style={{
+                  borderLeft: index > 0 ? `1px solid ${config.borderColor}` : 'none',
+                  paddingLeft: index > 0 ? '12px' : '0',
+                }}
+              >
+                <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '8px' }}>
+                  {index === 0 ? '■' : index === 1 ? '◆' : '●'} {article.headline}
+                </h3>
+                <ImagePlaceholder
+                  src={images?.subImages?.[index]}
+                  alt={`サブ記事${index + 1}`}
+                  filter={config.filter}
                   style={{
+                    width: '100%',
+                    aspectRatio: '4/3',
+                    objectFit: 'cover',
                     marginBottom: '8px',
-                    border: `1px solid ${config.borderColor}`,
-                    padding: '4px',
                   }}
-                >
-                  <img
-                    src={images.mainImage}
-                    alt="メイン記事"
-                    style={{
-                      width: '100%',
-                      aspectRatio: '4/3',
-                      objectFit: 'cover',
-                      filter: config.filter,
-                    }}
-                  />
-                  <p style={{ fontSize: '10px', textAlign: 'center', marginTop: '4px', opacity: 0.7 }}>
-                    ▲ {data.mainArticle.headline.slice(0, 20)}...
-                  </p>
-                </div>
-              )}
-              <p
-                style={{
-                  fontSize: '12px',
-                  lineHeight: '1.9',
-                  textAlign: 'justify',
-                }}
-              >
-                {data.mainArticle.content.slice(0, 300)}...
-              </p>
-            </div>
-
-            {/* 中央列 - 続き + サブ記事1 */}
-            <div style={{ borderLeft: `1px solid ${config.borderColor}`, paddingLeft: '12px' }}>
-              <p
-                style={{
-                  fontSize: '12px',
-                  lineHeight: '1.9',
-                  textAlign: 'justify',
-                  marginBottom: '16px',
-                }}
-              >
-                {data.mainArticle.content.slice(300, 600)}
-              </p>
-
-              {data.subArticles[0] && (
-                <div
-                  style={{
-                    borderTop: `2px solid ${config.borderColor}`,
-                    paddingTop: '8px',
-                  }}
-                >
-                  <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '6px' }}>
-                    ■ {data.subArticles[0].headline}
-                  </h3>
-                  {images?.subImages?.[0] && (
-                    <img
-                      src={images.subImages[0]}
-                      alt="サブ記事1"
-                      style={{
-                        width: '100%',
-                        aspectRatio: '16/9',
-                        objectFit: 'cover',
-                        marginBottom: '6px',
-                        filter: config.filter,
-                      }}
-                    />
-                  )}
-                  <p style={{ fontSize: '11px', lineHeight: '1.8' }}>
-                    {data.subArticles[0].content.slice(0, 150)}...
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* 右列 - サブ記事2, 3 */}
-            <div style={{ borderLeft: `1px solid ${config.borderColor}`, paddingLeft: '12px' }}>
-              {data.subArticles[1] && (
-                <div style={{ marginBottom: '12px' }}>
-                  <h3 style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: '4px' }}>
-                    ◆ {data.subArticles[1].headline}
-                  </h3>
-                  {images?.subImages?.[1] && (
-                    <img
-                      src={images.subImages[1]}
-                      alt="サブ記事2"
-                      style={{
-                        width: '100%',
-                        aspectRatio: '16/9',
-                        objectFit: 'cover',
-                        marginBottom: '4px',
-                        filter: config.filter,
-                      }}
-                    />
-                  )}
-                  <p style={{ fontSize: '11px', lineHeight: '1.7' }}>
-                    {data.subArticles[1].content.slice(0, 100)}...
-                  </p>
-                </div>
-              )}
-
-              {data.subArticles[2] && (
-                <div
-                  style={{
-                    borderTop: `1px solid ${config.borderColor}`,
-                    paddingTop: '8px',
-                  }}
-                >
-                  <h3 style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: '4px' }}>
-                    ● {data.subArticles[2].headline}
-                  </h3>
-                  {images?.subImages?.[2] && (
-                    <img
-                      src={images.subImages[2]}
-                      alt="サブ記事3"
-                      style={{
-                        width: '100%',
-                        aspectRatio: '16/9',
-                        objectFit: 'cover',
-                        marginBottom: '4px',
-                        filter: config.filter,
-                      }}
-                    />
-                  )}
-                  <p style={{ fontSize: '11px', lineHeight: '1.7' }}>
-                    {data.subArticles[2].content.slice(0, 100)}...
-                  </p>
-                </div>
-              )}
-            </div>
+                />
+                <p style={{ fontSize: '11px', lineHeight: '1.9', textAlign: 'justify' }}>
+                  {article.content}
+                </p>
+              </div>
+            ))}
           </div>
 
           {/* 下段 - 社説 + コラム + 広告 */}
@@ -532,26 +518,26 @@ export function NewspaperPreview({
             )}
 
             {/* メイン画像 - フル幅 */}
-            {images?.mainImage && (
-              <div
+            <div
+              style={{
+                position: 'relative',
+                marginBottom: '12px',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+              }}
+            >
+              <ImagePlaceholder
+                src={images?.mainImage}
+                alt="メイン記事"
+                filter={config.filter}
                 style={{
-                  position: 'relative',
-                  marginBottom: '12px',
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+                  width: '100%',
+                  aspectRatio: '16/9',
+                  objectFit: 'cover',
                 }}
-              >
-                <img
-                  src={images.mainImage}
-                  alt="メイン記事"
-                  style={{
-                    width: '100%',
-                    aspectRatio: '16/9',
-                    objectFit: 'cover',
-                    filter: config.filter,
-                  }}
-                />
+              />
+              {images?.mainImage && (
                 <div
                   style={{
                     position: 'absolute',
@@ -564,10 +550,10 @@ export function NewspaperPreview({
                     fontSize: '12px',
                   }}
                 >
-                  📸 {data.mainArticle.headline.slice(0, 30)}...
+                  📸 {data.mainArticle.headline}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             <p style={{ fontSize: '14px', lineHeight: '1.9', textIndent: '1em' }}>
               {data.mainArticle.content}
@@ -591,21 +577,18 @@ export function NewspaperPreview({
                   borderRadius: '12px',
                   overflow: 'hidden',
                   boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
-                  transition: 'transform 0.2s',
                 }}
               >
-                {images?.subImages?.[index] && (
-                  <img
-                    src={images.subImages[index]}
-                    alt={`サブ記事${index + 1}`}
-                    style={{
-                      width: '100%',
-                      aspectRatio: '4/3',
-                      objectFit: 'cover',
-                      filter: config.filter,
-                    }}
-                  />
-                )}
+                <ImagePlaceholder
+                  src={images?.subImages?.[index]}
+                  alt={`サブ記事${index + 1}`}
+                  filter={config.filter}
+                  style={{
+                    width: '100%',
+                    aspectRatio: '4/3',
+                    objectFit: 'cover',
+                  }}
+                />
                 <div style={{ padding: '12px' }}>
                   <span
                     style={{
@@ -623,14 +606,16 @@ export function NewspaperPreview({
                     {article.category === 'celebrity' && '⭐ 芸能'}
                     {article.category === 'sports' && '⚽ スポーツ'}
                     {article.category === 'culture' && '🎭 エンタメ'}
+                    {article.category === 'economy' && '💰 経済'}
+                    {article.category === 'society' && '📰 社会'}
                     {article.category === 'news' && '📰 話題'}
-                    {!['entertainment', 'celebrity', 'sports', 'culture', 'news'].includes(article.category) && '📰 話題'}
+                    {!['entertainment', 'celebrity', 'sports', 'culture', 'economy', 'society', 'news'].includes(article.category) && '📰 話題'}
                   </span>
                   <h4 style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: '4px', lineHeight: '1.3' }}>
                     {article.headline}
                   </h4>
                   <p style={{ fontSize: '11px', opacity: 0.7, lineHeight: '1.6' }}>
-                    {article.content.slice(0, 80)}...
+                    {article.content}
                   </p>
                 </div>
               </div>
@@ -830,34 +815,29 @@ export function NewspaperPreview({
           </div>
 
           {/* メイン画像 */}
-          {images?.mainImage && (
-            <div style={{ marginBottom: '20px' }}>
-              <img
-                src={images.mainImage}
-                alt="メイン記事"
-                style={{
-                  width: '100%',
-                  aspectRatio: '21/9',
-                  objectFit: 'cover',
-                  borderRadius: '8px',
-                }}
-              />
-            </div>
-          )}
+          <div style={{ marginBottom: '20px' }}>
+            <ImagePlaceholder
+              src={images?.mainImage}
+              alt="メイン記事"
+              style={{
+                width: '100%',
+                aspectRatio: '21/9',
+                objectFit: 'cover',
+                borderRadius: '8px',
+              }}
+            />
+          </div>
 
           {/* 2段組み本文 */}
           <div
             style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: '24px',
+              columnCount: 2,
+              columnGap: '32px',
+              columnRule: `1px solid ${config.borderColor}`,
             }}
           >
-            <p style={{ fontSize: '14px', lineHeight: '2', opacity: 0.85 }}>
-              {data.mainArticle.content.slice(0, Math.floor(data.mainArticle.content.length / 2))}
-            </p>
-            <p style={{ fontSize: '14px', lineHeight: '2', opacity: 0.85 }}>
-              {data.mainArticle.content.slice(Math.floor(data.mainArticle.content.length / 2))}
+            <p style={{ fontSize: '14px', lineHeight: '2', opacity: 0.85, textIndent: '1em' }}>
+              {data.mainArticle.content}
             </p>
           </div>
         </article>
@@ -880,17 +860,15 @@ export function NewspaperPreview({
                 overflow: 'hidden',
               }}
             >
-              {images?.subImages?.[index] && (
-                <img
-                  src={images.subImages[index]}
-                  alt={`サブ記事${index + 1}`}
-                  style={{
-                    width: '100%',
-                    aspectRatio: '16/9',
-                    objectFit: 'cover',
-                  }}
-                />
-              )}
+              <ImagePlaceholder
+                src={images?.subImages?.[index]}
+                alt={`サブ記事${index + 1}`}
+                style={{
+                  width: '100%',
+                  aspectRatio: '16/9',
+                  objectFit: 'cover',
+                }}
+              />
               <div style={{ padding: '16px' }}>
                 <span
                   style={{
@@ -906,8 +884,10 @@ export function NewspaperPreview({
                   {article.category === 'celebrity' && 'CELEBRITY'}
                   {article.category === 'sports' && 'SPORTS'}
                   {article.category === 'culture' && 'CULTURE'}
+                  {article.category === 'economy' && 'ECONOMY'}
+                  {article.category === 'society' && 'SOCIETY'}
                   {article.category === 'news' && 'NEWS'}
-                  {!['entertainment', 'celebrity', 'sports', 'culture', 'news'].includes(article.category) && 'NEWS'}
+                  {!['entertainment', 'celebrity', 'sports', 'culture', 'economy', 'society', 'news'].includes(article.category) && 'NEWS'}
                 </span>
                 <h4
                   style={{
@@ -920,7 +900,7 @@ export function NewspaperPreview({
                   {article.headline}
                 </h4>
                 <p style={{ fontSize: '12px', opacity: 0.7, lineHeight: '1.7' }}>
-                  {article.content.slice(0, 100)}...
+                  {article.content}
                 </p>
               </div>
             </article>
