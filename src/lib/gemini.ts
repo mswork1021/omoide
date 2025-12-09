@@ -234,9 +234,8 @@ ${personalMessage ? `
       config: {
         // システム指示で検索を強制
         systemInstruction: systemInstruction,
-        // JSON出力を強制
-        responseMimeType: 'application/json',
         // Google検索ツールを有効化
+        // 注意: responseMimeType と tools は同時に使えない
         tools: [{
           googleSearch: {},
         }],
