@@ -51,17 +51,17 @@ export const sampleNewspapers: NewspaperData[] = [
       {
         title: 'オンライン診療',
         content: '自宅から医師に相談。初診からOK。専用アプリでかんたん予約。',
-        style: 'modern',
+        style: 'modern-retro',
       },
       {
         title: 'Uber Eats',
         content: 'お家時間を美味しく。人気レストランの味をお届け。初回配送無料。',
-        style: 'modern',
+        style: 'modern-retro',
       },
       {
         title: 'Netflix',
         content: 'おうち時間に映画三昧。初月無料キャンペーン実施中。',
-        style: 'modern',
+        style: 'modern-retro',
       },
     ],
     personalMessage: {
