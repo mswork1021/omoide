@@ -95,8 +95,16 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   getGenerationRequest: () => {
     const state = get();
+    // タイムゾーンの問題を避けるため、ローカル日付を文字列として送信
+    let dateStr = '';
+    if (state.targetDate) {
+      const year = state.targetDate.getFullYear();
+      const month = String(state.targetDate.getMonth() + 1).padStart(2, '0');
+      const day = String(state.targetDate.getDate()).padStart(2, '0');
+      dateStr = `${year}-${month}-${day}T12:00:00`;  // 正午に設定してタイムゾーンずれを防ぐ
+    }
     return {
-      targetDate: state.targetDate?.toISOString() || '',
+      targetDate: dateStr,
       recipientName: state.recipientName || undefined,
       senderName: state.senderName || undefined,
       personalMessage: state.personalMessage || undefined,
