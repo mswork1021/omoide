@@ -1,6 +1,6 @@
 /**
  * Imagen 4.0 Ultra API Client
- * ヴィンテージ新聞画像生成
+ * 時代別画像生成（昭和=モノクロ、平成=カラー、令和=高解像度カラー）
  *
  * 新SDK (@google/genai) + imagen-4.0-ultra-generate-001 を使用
  */
@@ -16,43 +16,72 @@ const IMAGE_MODEL = 'imagen-4.0-ultra-generate-001';
 // 画像生成APIを使用するか
 const USE_IMAGE_API = true;
 
-// 画像生成用プロンプトテンプレート
-const IMAGE_PROMPT_TEMPLATE = `
-Create a vintage Japanese newspaper photograph from the specified era.
+// 時代別プロンプトテンプレート
+const ERA_TEMPLATES = {
+  showa: `Create a vintage Japanese newspaper photograph from the 1960s-1980s Showa era.
 Style requirements:
-- Photorealistic vintage newspaper print quality
+- Black and white or sepia toned photograph
 - Halftone dots texture (網点処理)
-- Ink bleed effect (インクの滲み)
+- Slight ink bleed effect
 - Aged paper texture
-- Monochrome/sepia newsprint aesthetic
-- Japanese Showa/Heisei era photography style
-- Professional photojournalism composition
+- Classic photojournalism composition
+- Nostalgic, historical atmosphere
 
-Subject: {subject}
-`;
+Subject: {subject}`,
 
-// スタイルプリセット定義（プロンプト修飾子として使用）
-const STYLE_MODIFIERS = {
-  'vintage-newspaper': [
-    'photorealistic vintage newspaper print',
-    'halftone dots texture',
-    'ink bleed effect',
-    'aged paper texture',
-    'monochrome newsprint',
-    'Japanese showa era style',
+  heisei: `Create a vibrant Japanese newspaper photograph from the 1990s-2000s Heisei era.
+Style requirements:
+- Full color photograph
+- Vivid, saturated colors
+- Glossy magazine quality
+- Dynamic composition
+- Pop culture aesthetic
+- Energetic, optimistic atmosphere
+
+Subject: {subject}`,
+
+  reiwa: `Create a modern high-quality Japanese photograph for the 2020s Reiwa era.
+Style requirements:
+- Ultra high definition 4K quality
+- Crisp, clean colors
+- Modern minimalist aesthetic
+- Professional photography lighting
+- Contemporary Japanese style
+- Sleek, sophisticated atmosphere
+
+Subject: {subject}`,
+};
+
+// 時代別スタイル修飾子
+const ERA_STYLE_MODIFIERS = {
+  showa: [
+    'black and white photograph',
+    'vintage 1970s Japanese',
+    'halftone newspaper print',
+    'nostalgic atmosphere',
+    'classic composition',
   ],
-  'halftone': [
-    'classic halftone pattern',
-    'newspaper dot matrix',
-    'vintage print quality',
-    'grayscale tones',
+  heisei: [
+    'colorful photograph',
+    '1990s Japanese pop culture',
+    'vibrant saturated colors',
+    'glossy magazine quality',
+    'dynamic energetic style',
   ],
-  'ink-bleed': [
-    'ink bleeding on paper',
-    'organic ink spread',
-    'vintage letterpress effect',
-    'paper fiber absorption',
+  reiwa: [
+    'ultra HD 4K photograph',
+    'modern Japanese aesthetic',
+    'crisp clean colors',
+    'professional lighting',
+    'minimalist sophisticated style',
   ],
+};
+
+// 時代別解像度設定
+const ERA_RESOLUTIONS = {
+  showa: { width: 512, height: 384 },
+  heisei: { width: 768, height: 576 },
+  reiwa: { width: 1024, height: 768 },  // 4K相当の高解像度
 };
 
 let ai: GoogleGenAI | null = null;
@@ -69,25 +98,33 @@ function getAI(): GoogleGenAI {
 
 /**
  * Imagen 4.0 Ultra を使用して画像を生成
+ * @param request - 画像生成リクエスト
+ * @param era - 時代スタイル（showa/heisei/reiwa）
  */
 export async function generateNewspaperImage(
-  request: ImageGenerationRequest
+  request: ImageGenerationRequest,
+  era: 'showa' | 'heisei' | 'reiwa' = 'showa'
 ): Promise<ImageGenerationResponse> {
   // 画像APIを使用しない場合、またはAPIキーが未設定の場合はプレースホルダーを返す
   if (!USE_IMAGE_API || !GOOGLE_AI_API_KEY) {
     console.log('Using placeholder image (image API disabled or no API key)');
+    const resolution = ERA_RESOLUTIONS[era];
     return {
       success: true,
-      imageUrl: generateVintagePlaceholder(request.prompt, request.width || 512, request.height || 384),
+      imageUrl: generateVintagePlaceholder(request.prompt, resolution.width, resolution.height, era),
     };
   }
 
-  const styleModifiers = STYLE_MODIFIERS[request.style] || STYLE_MODIFIERS['vintage-newspaper'];
+  // 時代別のスタイル設定を取得
+  const styleModifiers = ERA_STYLE_MODIFIERS[era];
+  const template = ERA_TEMPLATES[era];
+  const resolution = ERA_RESOLUTIONS[era];
+
   const enhancedPrompt = buildEnhancedPrompt(request.prompt, styleModifiers);
-  const fullPrompt = IMAGE_PROMPT_TEMPLATE.replace('{subject}', enhancedPrompt);
+  const fullPrompt = template.replace('{subject}', enhancedPrompt);
 
   try {
-    console.log('Calling Imagen API with model:', IMAGE_MODEL);
+    console.log(`Calling Imagen API with model: ${IMAGE_MODEL}, era: ${era}, resolution: ${resolution.width}x${resolution.height}`);
 
     const genAI = getAI();
 
@@ -107,7 +144,7 @@ export async function generateNewspaperImage(
       // @ts-ignore
       const imageBytes = response.generatedImages[0].image?.imageBytes;
       if (imageBytes) {
-        console.log('Image generated successfully with Imagen 4.0 Ultra');
+        console.log(`Image generated successfully with Imagen 4.0 Ultra (${era} style)`);
         return {
           success: true,
           imageUrl: `data:image/png;base64,${imageBytes}`,
@@ -132,22 +169,25 @@ export async function generateNewspaperImage(
 
 /**
  * 複数の画像を並列生成（Production用）
+ * @param prompts - 画像プロンプトの配列
+ * @param era - 時代スタイル（showa/heisei/reiwa）
  */
 export async function generateMultipleImages(
   prompts: string[],
-  style: ImageGenerationRequest['style'] = 'vintage-newspaper'
+  era: 'showa' | 'heisei' | 'reiwa' = 'showa'
 ): Promise<ImageGenerationResponse[]> {
+  const resolution = ERA_RESOLUTIONS[era];
   const requests = prompts.map((prompt) => ({
     prompt,
-    style,
+    style: 'vintage-newspaper' as const,
     highFidelity: true,
-    width: 512,
-    height: 384,
+    width: resolution.width,
+    height: resolution.height,
   }));
 
   // 並列実行で高速化
   const results = await Promise.all(
-    requests.map((req) => generateNewspaperImage(req))
+    requests.map((req) => generateNewspaperImage(req, era))
   );
 
   return results;
@@ -171,12 +211,24 @@ function generatePlaceholderUrl(prompt: string, width: number, height: number): 
 
 /**
  * ヴィンテージ風プレースホルダー画像を生成
- * セピア調の新聞風画像
+ * 時代別のスタイルに対応
  */
-function generateVintagePlaceholder(prompt: string, width: number, height: number): string {
-  // セピア調の色で新聞風のプレースホルダー
-  const text = encodeURIComponent('📰 新聞画像');
-  return `https://placehold.co/${width}x${height}/d4c4a8/3d3d3d/png?text=${text}&font=serif`;
+function generateVintagePlaceholder(
+  prompt: string,
+  width: number,
+  height: number,
+  era: 'showa' | 'heisei' | 'reiwa' = 'showa'
+): string {
+  // 時代別の色設定
+  const eraColors = {
+    showa: { bg: 'd4c4a8', text: '3d3d3d', label: '📰 昭和風' },
+    heisei: { bg: 'ff6b9d', text: 'ffffff', label: '📰 平成風' },
+    reiwa: { bg: '2d3748', text: 'e2e8f0', label: '📰 令和風' },
+  };
+
+  const colors = eraColors[era];
+  const encodedLabel = encodeURIComponent(colors.label);
+  return `https://placehold.co/${width}x${height}/${colors.bg}/${colors.text}/png?text=${encodedLabel}&font=serif`;
 }
 
 /**

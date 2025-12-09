@@ -17,9 +17,11 @@ export async function POST(request: NextRequest) {
 
     // 複数画像生成リクエストの場合
     if (body.prompts && Array.isArray(body.prompts)) {
+      // era パラメータを使用（showa/heisei/reiwa）
+      const era = body.era || 'showa';
       const results = await generateMultipleImages(
         body.prompts,
-        body.style || 'vintage-newspaper'
+        era
       );
 
       const successfulImages = results

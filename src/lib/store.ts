@@ -165,12 +165,13 @@ export const useGenerationFlow = () => {
 
       if (imagePrompts.length > 0) {
         try {
+          // スタイルをeraとして渡す（showa/heisei/reiwa）
           const imageResponse = await fetch('/api/image', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               prompts: imagePrompts,
-              style: 'vintage-newspaper',
+              era: store.style,  // showa/heisei/reiwa
             }),
           });
 
@@ -222,13 +223,13 @@ export const useGenerationFlow = () => {
         imagePrompts.push(store.newspaperData.mainArticle.imagePrompt);
       }
 
-      // 画像生成
+      // 画像生成（eraに応じたスタイルで生成）
       const imageResponse = await fetch('/api/image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompts: imagePrompts.length > 0 ? imagePrompts : ['vintage newspaper header image'],
-          style: 'vintage-newspaper',
+          era: store.style,  // showa/heisei/reiwa
         }),
       });
 
