@@ -1,9 +1,8 @@
 /**
- * Gemini 2.5 Flash Image (Nano Banana Pro) API Client
+ * Imagen 4.0 Ultra API Client
  * ヴィンテージ新聞画像生成
  *
- * 新SDK (@google/genai) + gemini-2.5-flash-preview-image を使用
- * 注意: 無料枠では画像生成APIは利用不可（limit: 0）
+ * 新SDK (@google/genai) + imagen-4.0-ultra-generate-001 を使用
  */
 
 import { GoogleGenAI } from '@google/genai';
@@ -11,11 +10,11 @@ import type { ImageGenerationRequest, ImageGenerationResponse } from '@/types';
 
 const GOOGLE_AI_API_KEY = process.env.GOOGLE_AI_API_KEY;
 
-// 画像生成モデル（無料枠では利用不可）
-const IMAGE_MODEL = 'gemini-2.5-flash-preview-image';
+// 画像生成モデル（Imagen 4.0 Ultra）
+const IMAGE_MODEL = 'imagen-4.0-ultra-generate-001';
 
-// 画像生成APIを使用するか（無料枠では false にする）
-const USE_IMAGE_API = false;
+// 画像生成APIを使用するか
+const USE_IMAGE_API = true;
 
 // 画像生成用プロンプトテンプレート
 const IMAGE_PROMPT_TEMPLATE = `
@@ -69,8 +68,7 @@ function getAI(): GoogleGenAI {
 }
 
 /**
- * Gemini 2.5 Flash Image を使用して画像を生成
- * 無料枠では画像APIが使えないため、プレースホルダーを使用
+ * Imagen 4.0 Ultra を使用して画像を生成
  */
 export async function generateNewspaperImage(
   request: ImageGenerationRequest
@@ -89,38 +87,35 @@ export async function generateNewspaperImage(
   const fullPrompt = IMAGE_PROMPT_TEMPLATE.replace('{subject}', enhancedPrompt);
 
   try {
-    console.log('Calling Gemini Image API with model:', IMAGE_MODEL);
+    console.log('Calling Imagen API with model:', IMAGE_MODEL);
 
     const genAI = getAI();
-    const response = await genAI.models.generateContent({
+
+    // Imagen 4.0 は generateImages メソッドを使用
+    // @ts-ignore - generateImages の型定義
+    const response = await genAI.models.generateImages({
       model: IMAGE_MODEL,
-      contents: fullPrompt,
+      prompt: fullPrompt,
+      config: {
+        numberOfImages: 1,
+      },
     });
 
     // レスポンスから画像データを抽出
-    const candidates = response.candidates;
-    if (candidates && candidates.length > 0) {
-      const parts = candidates[0].content?.parts;
-      if (parts) {
-        for (const part of parts) {
-          // @ts-ignore - inlineData の型定義
-          if (part.inlineData) {
-            // @ts-ignore
-            const imageData = part.inlineData.data;
-            // @ts-ignore
-            const mimeType = part.inlineData.mimeType || 'image/png';
-            console.log('Image generated successfully');
-            return {
-              success: true,
-              imageUrl: `data:${mimeType};base64,${imageData}`,
-            };
-          }
-        }
+    // @ts-ignore - generatedImages の型定義
+    if (response.generatedImages && response.generatedImages.length > 0) {
+      // @ts-ignore
+      const imageBytes = response.generatedImages[0].image?.imageBytes;
+      if (imageBytes) {
+        console.log('Image generated successfully with Imagen 4.0 Ultra');
+        return {
+          success: true,
+          imageUrl: `data:image/png;base64,${imageBytes}`,
+        };
       }
     }
 
-    // テキストのみの応答の場合
-    console.log('No image in response, text:', response.text);
+    console.log('No image in response');
     return {
       success: false,
       error: 'No image generated in response',
@@ -200,12 +195,11 @@ export function buildArticleImagePrompt(
 
   const categorySubjects = {
     main: 'important news scene, crowd of people, significant event',
-    politics: 'government building, political figure silhouette, official ceremony',
-    economy: 'stock market board, business district, factory',
-    society: 'daily life scene, community gathering, urban landscape',
+    entertainment: 'celebrity event, red carpet, entertainment scene',
+    celebrity: 'famous person, interview setting, glamorous scene',
     culture: 'traditional arts, performance, cultural event',
     sports: 'athletic competition, sports venue, victory moment',
-    editorial: 'thoughtful composition, symbolic imagery, contemplative scene',
+    news: 'newsworthy event, public gathering, significant moment',
   };
 
   const subject = categorySubjects[category as keyof typeof categorySubjects] || categorySubjects.main;
@@ -224,7 +218,7 @@ export async function checkApiHealth(): Promise<boolean> {
   try {
     const genAI = getAI();
     const result = await genAI.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-2.5-pro',
       contents: 'Say OK',
     });
     return !!result.text;

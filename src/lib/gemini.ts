@@ -7,7 +7,7 @@ import { GoogleGenAI } from '@google/genai';
 import type { NewspaperData, GeminiResponse } from '@/types';
 
 // Gemini Configuration
-const MODEL_NAME = 'gemini-2.5-flash';
+const MODEL_NAME = 'gemini-2.5-pro';
 
 let ai: GoogleGenAI | null = null;
 
