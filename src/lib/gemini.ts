@@ -141,7 +141,8 @@ ${personalMessage ? `
     {
       "headline": "見出し（面白いニュース）",
       "content": "本文（200-300文字）",
-      "category": "entertainment|sports|culture|celebrity"
+      "category": "entertainment|sports|culture|celebrity",
+      "imagePrompt": "この記事に合う画像の英語プロンプト"
     }
   ],
   "editorial": {

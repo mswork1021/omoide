@@ -2,7 +2,10 @@
 
 /**
  * NewspaperPreview Component
- * ヴィンテージ新聞レイアウトのプレビュー表示
+ * 3スタイル対応の新聞プレビュー
+ * - 昭和風: セピア調、重厚、縦書き風
+ * - 平成風: カラフル、ポップ、活気
+ * - 令和風: ミニマル、モダン、洗練
  */
 
 import React from 'react';
@@ -10,6 +13,7 @@ import type { NewspaperData } from '@/types';
 
 interface NewspaperPreviewProps {
   data: NewspaperData;
+  style?: 'showa' | 'heisei' | 'reiwa';
   isPreview?: boolean;
   images?: {
     mainImage?: string;
@@ -17,11 +21,57 @@ interface NewspaperPreviewProps {
   };
 }
 
+// スタイル定義
+const styleConfig = {
+  showa: {
+    name: '昭和',
+    bg: 'bg-[#f4e8d3]',
+    paper: 'bg-[#faf5eb]',
+    text: 'text-[#2c1810]',
+    accent: 'bg-[#8b4513]',
+    accentText: 'text-[#8b4513]',
+    border: 'border-[#2c1810]',
+    headerBg: 'bg-[#2c1810]',
+    headerText: 'text-[#f4e8d3]',
+    fontFamily: 'font-serif',
+    filter: 'sepia(20%)',
+  },
+  heisei: {
+    name: '平成',
+    bg: 'bg-gradient-to-br from-[#fff5f5] to-[#f0f8ff]',
+    paper: 'bg-white',
+    text: 'text-[#1a1a2e]',
+    accent: 'bg-[#e63946]',
+    accentText: 'text-[#e63946]',
+    border: 'border-[#1a1a2e]',
+    headerBg: 'bg-gradient-to-r from-[#e63946] to-[#f77f00]',
+    headerText: 'text-white',
+    fontFamily: 'font-sans',
+    filter: 'none',
+  },
+  reiwa: {
+    name: '令和',
+    bg: 'bg-[#fafafa]',
+    paper: 'bg-white',
+    text: 'text-[#1a1a1a]',
+    accent: 'bg-[#0066cc]',
+    accentText: 'text-[#0066cc]',
+    border: 'border-[#e0e0e0]',
+    headerBg: 'bg-[#1a1a1a]',
+    headerText: 'text-white',
+    fontFamily: 'font-sans',
+    filter: 'none',
+  },
+};
+
 export function NewspaperPreview({
   data,
+  style = 'showa',
   isPreview = true,
   images,
 }: NewspaperPreviewProps) {
+  const config = styleConfig[style];
+
   const dateStr = new Date(data.date).toLocaleDateString('ja-JP', {
     year: 'numeric',
     month: 'long',
@@ -29,156 +79,184 @@ export function NewspaperPreview({
     weekday: 'long',
   });
 
+  // 画像表示コンポーネント
+  const ImageBox = ({ src, alt, className = '' }: { src?: string; alt: string; className?: string }) => (
+    <div className={`relative overflow-hidden ${className}`}>
+      {src ? (
+        <img
+          src={src}
+          alt={alt}
+          className="w-full h-full object-cover"
+          style={{ filter: config.filter }}
+        />
+      ) : (
+        <div className={`w-full h-full flex items-center justify-center ${config.bg}`}>
+          <span className="text-4xl opacity-30">📷</span>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div
       id="newspaper-preview"
-      className="newspaper-container bg-[#f5f0e6] text-[#1a1a1a] font-serif"
+      className={`newspaper-container ${config.paper} ${config.text} ${config.fontFamily} p-6 md:p-8 shadow-2xl`}
+      style={{ minHeight: '800px' }}
     >
-      {/* ヘッダー（題字） */}
-      <header className="newspaper-header border-b-4 border-double border-[#1a1a1a] pb-3 mb-4">
-        <div className="flex justify-between items-end text-xs mb-2">
+      {/* ========== ヘッダー（題字） ========== */}
+      <header className={`newspaper-header ${config.headerBg} ${config.headerText} -mx-6 -mt-6 md:-mx-8 md:-mt-8 px-6 py-4 md:px-8 md:py-6 mb-6`}>
+        <div className="flex justify-between items-center text-xs md:text-sm opacity-80 mb-2">
           <span>{data.edition}</span>
+          <span>{dateStr}</span>
           <span>天気: {data.weather}</span>
         </div>
-        <h1 className="text-4xl md:text-5xl font-black text-center tracking-widest">
+        <h1 className={`text-3xl md:text-5xl font-black text-center tracking-[0.2em] ${style === 'showa' ? 'font-serif' : ''}`}>
           {data.masthead}
         </h1>
-        <div className="text-center text-sm mt-2 tracking-wide">{dateStr}</div>
+        {style === 'heisei' && (
+          <div className="text-center text-sm mt-2 opacity-80">〜 あの日の思い出をお届けします 〜</div>
+        )}
       </header>
 
-      {/* メインコンテンツ */}
-      <div className="newspaper-body grid grid-cols-1 md:grid-cols-12 gap-4">
-        {/* メイン記事 */}
-        <article className="main-article md:col-span-8 border-r border-[#1a1a1a]/20 pr-4">
-          <h2 className="text-2xl md:text-3xl font-bold leading-tight mb-2">
-            {data.mainArticle.headline}
-          </h2>
-          {data.mainArticle.subheadline && (
-            <h3 className="text-lg text-[#1a1a1a]/80 mb-3">
-              {data.mainArticle.subheadline}
-            </h3>
-          )}
-
-          <div className="flex gap-4 mb-4">
-            {/* 画像プレースホルダー or 実画像 */}
-            <div className="w-2/3 aspect-[4/3] bg-[#e5e0d6] flex items-center justify-center relative overflow-hidden">
-              {images?.mainImage ? (
-                <img
-                  src={images.mainImage}
-                  alt="記事画像"
-                  className="w-full h-full object-cover grayscale contrast-125"
-                />
-              ) : (
-                <div className="text-center text-[#1a1a1a]/40 p-4">
-                  <div className="text-4xl mb-2">📰</div>
-                  <div className="text-xs">
-                    {isPreview ? 'プレビュー表示' : '画像なし'}
-                  </div>
-                </div>
-              )}
-              {/* 網点オーバーレイ */}
-              <div
-                className="absolute inset-0 opacity-30 pointer-events-none"
-                style={{
-                  backgroundImage: `radial-gradient(circle, #000 1px, transparent 1px)`,
-                  backgroundSize: '3px 3px',
-                }}
-              />
-            </div>
-
-            {/* 本文（縦書き風） */}
-            <div className="w-1/3 text-sm leading-relaxed">
-              {data.mainArticle.content.slice(0, 200)}...
-            </div>
-          </div>
-
-          {/* 本文続き */}
-          <p className="text-sm leading-relaxed columns-2 gap-4">
-            {data.mainArticle.content}
-          </p>
-        </article>
-
-        {/* サイドバー（サブ記事） */}
-        <aside className="sub-articles md:col-span-4 space-y-4">
-          {data.subArticles.slice(0, 3).map((article, index) => (
-            <article
-              key={index}
-              className="border-b border-[#1a1a1a]/20 pb-3"
-            >
-              <span className="text-xs bg-[#1a1a1a] text-[#f5f0e6] px-2 py-0.5">
-                {article.category === 'entertainment' && '芸能'}
-                {article.category === 'celebrity' && '芸能'}
-                {article.category === 'sports' && 'スポーツ'}
-                {article.category === 'culture' && 'エンタメ'}
-                {article.category === 'news' && '話題'}
-                {!['entertainment', 'celebrity', 'sports', 'culture', 'news'].includes(article.category) && '話題'}
-              </span>
-              <h4 className="text-lg font-bold mt-2 mb-1">{article.headline}</h4>
-              <p className="text-xs leading-relaxed line-clamp-4">
-                {article.content}
-              </p>
-            </article>
-          ))}
-        </aside>
-      </div>
-
-      {/* 中段（社説・コラム） */}
-      <div className="newspaper-middle grid grid-cols-1 md:grid-cols-12 gap-4 mt-6 pt-4 border-t-2 border-[#1a1a1a]">
-        {/* 社説 */}
-        <article className="editorial md:col-span-8 border-r border-[#1a1a1a]/20 pr-4">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-lg font-bold">【社説】</span>
-            <h3 className="text-xl font-bold">{data.editorial.headline}</h3>
-          </div>
-          <p className="text-sm leading-relaxed columns-2 gap-4">
-            {data.editorial.content}
-          </p>
-        </article>
-
-        {/* コラム */}
-        <aside className="column md:col-span-4 bg-[#e5e0d6] p-3">
-          <h4 className="text-lg font-bold mb-2 border-b border-[#1a1a1a] pb-1">
-            {data.columnTitle}
-          </h4>
-          <p className="text-xs leading-relaxed">{data.columnContent}</p>
-        </aside>
-      </div>
-
-      {/* 個人メッセージ（存在する場合） */}
+      {/* ========== 個人メッセージ（あれば一番目立つ位置に） ========== */}
       {data.personalMessage && (
-        <div className="personal-message mt-6 p-4 border-4 border-double border-[#1a1a1a] bg-[#faf8f3] text-center">
-          <div className="text-sm mb-2">{data.personalMessage.occasion} 記念</div>
-          <div className="text-2xl font-bold mb-3">
-            {data.personalMessage.recipientName} 様へ
-          </div>
-          <p className="text-sm leading-relaxed max-w-md mx-auto">
-            {data.personalMessage.message}
-          </p>
-          <div className="text-right text-sm mt-3">
-            {data.personalMessage.senderName} より
+        <div className={`personal-message mb-8 p-6 md:p-8 rounded-lg ${
+          style === 'showa' ? 'bg-[#fff9f0] border-4 border-double border-[#8b4513]' :
+          style === 'heisei' ? 'bg-gradient-to-r from-pink-50 to-orange-50 border-2 border-[#e63946] rounded-2xl' :
+          'bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0066cc]/30 rounded-xl'
+        }`}>
+          <div className="text-center">
+            <div className={`inline-block px-4 py-1 rounded-full text-sm mb-4 ${config.accent} ${config.headerText}`}>
+              {data.personalMessage.occasion}
+            </div>
+            <h2 className={`text-2xl md:text-4xl font-bold mb-4 ${config.accentText}`}>
+              {data.personalMessage.recipientName} 様へ
+            </h2>
+            <p className="text-base md:text-lg leading-relaxed max-w-lg mx-auto mb-4">
+              {data.personalMessage.message}
+            </p>
+            <p className="text-right text-sm opacity-70">
+              {data.personalMessage.senderName} より
+            </p>
           </div>
         </div>
       )}
 
-      {/* 広告欄 */}
-      <div className="advertisements mt-6 pt-4 border-t border-[#1a1a1a] grid grid-cols-3 gap-2">
-        {data.advertisements.slice(0, 3).map((ad, index) => (
-          <div
-            key={index}
-            className="ad-box border border-[#1a1a1a]/40 p-2 text-center text-xs"
-          >
-            <div className="font-bold mb-1">{ad.title}</div>
-            <div className="text-[10px] leading-tight">{ad.content}</div>
+      {/* ========== メインコンテンツ ========== */}
+      <div className="newspaper-body">
+        {/* トップ記事 */}
+        <article className="main-article mb-8">
+          <h2 className={`text-xl md:text-3xl font-black leading-tight mb-2 ${
+            style === 'heisei' ? 'text-[#e63946]' : ''
+          }`}>
+            {data.mainArticle.headline}
+          </h2>
+          {data.mainArticle.subheadline && (
+            <h3 className="text-base md:text-lg opacity-70 mb-4">
+              {data.mainArticle.subheadline}
+            </h3>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            {/* メイン画像 */}
+            <div className="md:col-span-2">
+              <ImageBox
+                src={images?.mainImage}
+                alt="メイン記事画像"
+                className={`aspect-[16/9] rounded-lg ${config.border} border`}
+              />
+            </div>
+            {/* 記事本文プレビュー */}
+            <div className={`p-4 rounded-lg ${style === 'showa' ? 'bg-[#f9f5ef]' : 'bg-gray-50'}`}>
+              <p className="text-sm leading-relaxed line-clamp-[12]">
+                {data.mainArticle.content}
+              </p>
+            </div>
           </div>
-        ))}
+        </article>
+
+        {/* サブ記事グリッド */}
+        <div className="sub-articles grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          {data.subArticles.slice(0, 3).map((article, index) => (
+            <article
+              key={index}
+              className={`rounded-lg overflow-hidden ${config.border} border ${
+                style === 'heisei' ? 'hover:shadow-lg transition-shadow' : ''
+              }`}
+            >
+              {/* サブ画像 */}
+              <ImageBox
+                src={images?.subImages?.[index]}
+                alt={`記事${index + 1}画像`}
+                className="aspect-[4/3]"
+              />
+              <div className="p-3">
+                <span className={`inline-block text-xs px-2 py-0.5 rounded mb-2 ${config.accent} ${config.headerText}`}>
+                  {article.category === 'entertainment' && '芸能'}
+                  {article.category === 'celebrity' && '芸能'}
+                  {article.category === 'sports' && 'スポーツ'}
+                  {article.category === 'culture' && 'エンタメ'}
+                  {article.category === 'news' && '話題'}
+                  {!['entertainment', 'celebrity', 'sports', 'culture', 'news'].includes(article.category) && '話題'}
+                </span>
+                <h4 className="font-bold text-sm mb-1 line-clamp-2">{article.headline}</h4>
+                <p className="text-xs opacity-70 line-clamp-3">{article.content}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        {/* コラム・豆知識セクション */}
+        <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 p-4 rounded-lg ${
+          style === 'showa' ? 'bg-[#f9f5ef]' :
+          style === 'heisei' ? 'bg-gradient-to-r from-yellow-50 to-orange-50' :
+          'bg-gray-50'
+        }`}>
+          {/* 社説/コラム */}
+          <div>
+            <h3 className={`font-bold mb-2 pb-1 border-b-2 ${config.border} ${config.accentText}`}>
+              {style === 'showa' ? '【社説】' : style === 'heisei' ? '🗞️ コラム' : 'Column'}
+              {data.editorial.headline}
+            </h3>
+            <p className="text-sm leading-relaxed line-clamp-6">{data.editorial.content}</p>
+          </div>
+
+          {/* 豆知識 */}
+          <div>
+            <h3 className={`font-bold mb-2 pb-1 border-b-2 ${config.border} ${config.accentText}`}>
+              {style === 'showa' ? '■' : style === 'heisei' ? '💡' : '▸'} {data.columnTitle}
+            </h3>
+            <p className="text-sm leading-relaxed">{data.columnContent}</p>
+          </div>
+        </div>
+
+        {/* 広告欄 */}
+        <div className={`advertisements grid grid-cols-3 gap-3 pt-4 border-t-2 ${config.border}`}>
+          {(data.advertisements.length >= 3 ? data.advertisements.slice(0, 3) : [
+            ...data.advertisements,
+            ...Array(3 - data.advertisements.length).fill({ title: '広告募集中', content: 'お問い合わせはこちら', style: 'vintage' })
+          ]).map((ad, index) => (
+            <div
+              key={index}
+              className={`ad-box p-3 text-center rounded ${
+                style === 'showa' ? 'border border-dashed border-[#8b4513]/50 bg-[#fff9f0]' :
+                style === 'heisei' ? 'bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg' :
+                'border border-gray-200 bg-gray-50 rounded-md'
+              }`}
+            >
+              <div className="font-bold text-sm mb-1">{ad.title}</div>
+              <div className="text-xs opacity-70">{ad.content}</div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* フッター */}
-      <footer className="newspaper-footer mt-4 pt-2 border-t border-[#1a1a1a]/40 text-center text-[10px] text-[#1a1a1a]/60">
-        Generated by TimeTravel Press (Gemini 3.0 Edition)
-        {isPreview && (
-          <span className="ml-2 text-red-600">※ プレビュー表示</span>
-        )}
+      {/* ========== フッター ========== */}
+      <footer className={`newspaper-footer mt-6 pt-4 border-t ${config.border} text-center`}>
+        <p className="text-xs opacity-50">
+          Generated by TimeTravel Press
+          {isPreview && <span className="ml-2 text-orange-500">※ プレビュー</span>}
+        </p>
       </footer>
     </div>
   );
