@@ -26,6 +26,20 @@ export async function POST(request: NextRequest) {
         .filter((r) => r.success && r.imageUrl)
         .map((r) => r.imageUrl);
 
+      // 画像が1枚も生成できなかった場合はエラーを返す
+      if (successfulImages.length === 0) {
+        const firstError = results.find((r) => r.error)?.error || 'Unknown image generation error';
+        return NextResponse.json(
+          {
+            success: false,
+            error: firstError,
+            totalRequested: body.prompts.length,
+            totalGenerated: 0,
+          },
+          { status: 500 }
+        );
+      }
+
       return NextResponse.json({
         success: true,
         images: successfulImages,
