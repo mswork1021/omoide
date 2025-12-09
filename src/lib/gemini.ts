@@ -43,6 +43,54 @@ const NEWSPAPER_STYLE_PROMPT = `
 - 単調な羅列や箇条書き
 `;
 
+// フォールバック新聞コンテンツを生成（API応答がJSONでない場合）
+function generateFallbackContent(year: number, month: number, day: number, dateStr: string, eraStyle: string) {
+  return {
+    masthead: '時空新報',
+    edition: `第${Math.floor(Math.random() * 9000) + 1000}号 朝刊`,
+    weather: '晴れ時々曇り',
+    mainArticle: {
+      headline: `${year}年${month}月${day}日の話題をお届けします`,
+      subheadline: `${eraStyle}風にお届け`,
+      content: `${year}年${month}月${day}日。この日、日本各地で様々な出来事があった。当時の人々は、日々の暮らしの中で喜びや驚きを見出していたのである。時代の空気を感じながら、当時のニュースを振り返ってみよう。この日の出来事は、後の時代にも語り継がれることとなった。`,
+      category: 'main',
+      imagePrompt: 'A vintage Japanese newspaper photograph from the past, showing daily life scene'
+    },
+    subArticles: [
+      {
+        headline: '芸能界の話題',
+        content: '当時の芸能界では、様々なスターたちが活躍していた。テレビや映画、音楽の世界で新しい才能が次々と登場し、人々を楽しませていたのである。',
+        category: 'celebrity',
+        imagePrompt: 'A photograph of Japanese entertainment scene, vintage style'
+      },
+      {
+        headline: 'スポーツの祭典',
+        content: '日本のスポーツ界では、選手たちが日々鍛錬を重ねていた。勝利の喜び、敗北の悔しさ、そして再起への決意。アスリートたちの姿は、多くの人々に感動を与えた。',
+        category: 'sports',
+        imagePrompt: 'A photograph of Japanese sports event, vintage newspaper style'
+      },
+      {
+        headline: 'エンタメニュース',
+        content: '当時の娯楽は、テレビ番組や映画、音楽など多岐にわたっていた。新作映画の公開や、人気歌手の新曲発表など、エンターテインメントの話題が尽きることはなかった。',
+        category: 'entertainment',
+        imagePrompt: 'A photograph of Japanese entertainment event, vintage style'
+      }
+    ],
+    editorial: {
+      headline: '時代を振り返って',
+      content: `${year}年という時代は、日本にとって様々な変化の時期であった。社会は大きく動き、人々の暮らしも少しずつ変わっていった。しかし、人々の笑顔や希望は変わることなく、明日への活力となっていたのである。`,
+      category: 'column'
+    },
+    columnTitle: '今日の豆知識',
+    columnContent: `${month}月${day}日は、歴史的にも様々な出来事があった日である。過去を振り返りながら、今日という日の意味を考えてみるのも良いであろう。`,
+    advertisements: [
+      { title: '昔ながらの味', content: '伝統の製法で作る、懐かしい味わい', style: 'vintage' },
+      { title: '新発売', content: '時代を彩る新商品、ただいま好評発売中', style: 'vintage' },
+      { title: 'お得な情報', content: '皆様のご来店をお待ちしております', style: 'vintage' }
+    ]
+  };
+}
+
 // 記事選択ガイドライン
 const ARTICLE_GUIDELINES = `
 【記事選択のポイント】
@@ -85,17 +133,24 @@ export async function generateNewspaperContent(
   // 検索を確実に実行させるためのシステム指示
   const systemInstruction = `あなたはGoogle検索を活用する新聞記者AIです。
 ユーザーから日付を指定されたら、必ずGoogle検索を実行してその日の実際のニュースを調べてください。
-検索せずに回答することは禁止されています。必ず検索結果に基づいて回答してください。`;
+
+【絶対厳守】
+- 出力はJSON形式のみ。説明文、前置き、コメントは一切禁止
+- 検索結果が見つからなくても、その年や月の話題を検索して必ずJSON形式で出力すること
+- 「〜できません」「〜ありません」などの説明は絶対に出力しないこと
+- 最初の文字は必ず { で始めること`;
 
   // 検索を誘発するプロンプト構造
   const prompt = `【検索リクエスト】
 ${year}年${month}月${day}日（${dateStr}）の日本のニュースをGoogle検索で調べてください。
 
-検索すべき内容：
-1. 「${year}年${month}月${day}日 ニュース 話題」で検索
-2. 「${year}年${month}月${day}日 芸能」で検索
-3. 「${year}年${month}月${day}日 スポーツ」で検索
-4. 「${year}年${month}月 エンタメ」で検索
+【検索の優先順位】
+1. まず「${year}年${month}月${day}日 ニュース」「${year}年${month}月${day}日 芸能」で検索
+2. 結果が少なければ「${year}年${month}月 話題」「${year}年${month}月 芸能ニュース」で検索
+3. それでも少なければ「${year}年 ヒット曲」「${year}年 流行語」「${year}年 スポーツ」で検索
+
+【重要】検索結果が見つからない場合でも、必ずその年の話題を使って新聞を生成すること。
+説明文は出力せず、必ずJSON形式で出力すること。
 
 検索結果から面白いニュース（芸能・スポーツ・エンタメ・珍ニュース）を選び、
 以下のJSON形式でレトロ新聞記事として出力してください。
@@ -179,6 +234,8 @@ ${personalMessage ? `
       config: {
         // システム指示で検索を強制
         systemInstruction: systemInstruction,
+        // JSON出力を強制
+        responseMimeType: 'application/json',
         // Google検索ツールを有効化
         tools: [{
           googleSearch: {},
@@ -188,6 +245,7 @@ ${personalMessage ? `
 
     const text = response.text || '';
     console.log('Response received, length:', text.length);
+    console.log('Response preview:', text.substring(0, 200));
 
     // JSONを抽出（コードブロックがある場合も対応）
     let jsonStr = text;
@@ -202,7 +260,16 @@ ${personalMessage ? `
       }
     }
 
-    const newspaperContent = JSON.parse(jsonStr);
+    // JSONパースを試みる
+    let newspaperContent;
+    try {
+      newspaperContent = JSON.parse(jsonStr);
+    } catch (parseError) {
+      console.error('JSON parse failed, response was:', text.substring(0, 500));
+      // JSONではない応答の場合、フォールバック新聞を生成
+      console.log('Generating fallback newspaper content...');
+      newspaperContent = generateFallbackContent(year, month, day, dateStr, eraStyle);
+    }
 
     return {
       date: targetDate,
