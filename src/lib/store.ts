@@ -140,8 +140,19 @@ export const useGenerationFlow = () => {
       // 画像生成
       store.setGenerationStep('images');
       const imagePrompts: string[] = [];
+
+      // メイン記事の画像プロンプト
       if (data.newspaper.mainArticle?.imagePrompt) {
         imagePrompts.push(data.newspaper.mainArticle.imagePrompt);
+      }
+
+      // サブ記事の画像プロンプト（最大3枚）
+      if (data.newspaper.subArticles) {
+        for (const article of data.newspaper.subArticles.slice(0, 3)) {
+          if (article.imagePrompt) {
+            imagePrompts.push(article.imagePrompt);
+          }
+        }
       }
 
       if (imagePrompts.length > 0) {
@@ -156,7 +167,7 @@ export const useGenerationFlow = () => {
           });
 
           const imageData = await imageResponse.json();
-          if (imageData.success && imageData.images?.[0]) {
+          if (imageData.success && imageData.images?.length > 0) {
             store.setGeneratedImages({
               mainImage: imageData.images[0],
               subImages: imageData.images.slice(1) || [],
