@@ -62,7 +62,7 @@ export function NewspaperPreview({
           <div className="flex gap-4 mb-4">
             {/* 画像プレースホルダー or 実画像 */}
             <div className="w-2/3 aspect-[4/3] bg-[#e5e0d6] flex items-center justify-center relative overflow-hidden">
-              {images?.mainImage && !isPreview ? (
+              {images?.mainImage ? (
                 <img
                   src={images.mainImage}
                   alt="記事画像"
@@ -72,7 +72,7 @@ export function NewspaperPreview({
                 <div className="text-center text-[#1a1a1a]/40 p-4">
                   <div className="text-4xl mb-2">📰</div>
                   <div className="text-xs">
-                    {isPreview ? 'プレビュー表示' : '画像読み込み中...'}
+                    {isPreview ? 'プレビュー表示' : '画像なし'}
                   </div>
                 </div>
               )}
