@@ -7,7 +7,7 @@ import { GoogleGenAI } from '@google/genai';
 import type { NewspaperData, GeminiResponse } from '@/types';
 
 // Gemini Configuration
-const MODEL_NAME = 'gemini-2.5-flash';
+const MODEL_NAME = 'gemini-2.5-pro';
 
 let ai: GoogleGenAI | null = null;
 
@@ -51,8 +51,9 @@ const GROUNDING_INSTRUCTIONS = `
 
 検索クエリ例：
 - 「2025年12月8日 ニュース」
-- 「2025年12月8日 何があった」
-- 「December 8, 2025 news Japan」
+- 「2025年12月8日 芸能」
+- 「2025年12月8日 エンタメ」
+- 「December 8, 2025 news Japan entertainment」
 
 【重要：実際の歴史的事実を使用すること】
 検索結果から、指定された日付に実際に起きた出来事を選んでください。
@@ -60,30 +61,26 @@ const GROUNDING_INSTRUCTIONS = `
 
 【重要：年を間違えないこと】
 指定された「年」を必ず守ってください。例えば「2025年12月8日」なら2025年の出来事のみを使用してください。
-他の年の同日の出来事を使用しないでください。
 
 もしGoogle検索しても指定された日付の情報が見つからない場合のみ、
 mainArticleのheadlineに「【お知らせ】この日付の情報はまだありません」と書いてください。
 
-【重要：全ての記事を同じ日付にすること】
-メイン記事だけでなく、サブ記事（政治・経済・社会・文化・スポーツ）、社説、コラム、
-全ての内容が指定された日付の出来事でなければなりません。
-関係ない日付や一般的な内容は使わないでください。
+【重要：全ての記事を同じ日付の面白い話題にすること】
+全ての記事はその日の出来事でなければなりません。
+政治・経済・社会などの堅いニュースは不要です。
 
-以下のカテゴリから、その日に実際に起きた出来事を選んでください：
-- メイン記事: その日の面白い・珍しい・ほっこりする出来事を優先
-- 政治: その日の政治ニュース（なければ省略可）
-- 経済: その日の経済ニュース（なければ省略可）
-- 社会: その日の社会ニュース（なければ省略可）
-- 文化: その日の文化ニュース（なければ省略可）
-- スポーツ: その日のスポーツニュース（なければ省略可）
+記事カテゴリ（全て面白い内容のみ）：
+- メイン記事: その日の最も面白い・話題になった出来事
+- 芸能: 芸能人、アイドル、俳優のニュース
+- エンタメ: 映画、音楽、テレビ、ゲーム、アニメ
+- スポーツ: スポーツの面白いエピソード
+- 珍ニュース: 変わった出来事、ほっこりする話
 
-【ポイント - 面白いニュースを優先！】
-- 硬いニュースより、「へぇ〜」「面白い！」と思えるニュースを優先
+【ポイント - 面白さ最優先！】
+- 「へぇ〜」「面白い！」「すごい！」と思えるニュースだけを選ぶ
 - 芸能・エンタメ・珍事件・ユニークな出来事を積極的に採用
-- 暗いニュースより明るいニュースを選ぶ
-- 具体的な数字、人名、地名を含める
-- 当時の時代の空気が感じられる記事にする
+- 暗いニュース、事故、事件は避ける
+- 具体的な数字、人名を含める
 `;
 
 export async function generateNewspaperContent(
@@ -134,7 +131,7 @@ ${personalMessage ? `
   "edition": "第〇〇〇号 朝刊/夕刊",
   "weather": "天気予報（その日の推定天気）",
   "mainArticle": {
-    "headline": "一面トップ記事の見出し",
+    "headline": "一面トップ記事の見出し（面白いニュース）",
     "subheadline": "副見出し",
     "content": "本文（400-600文字）",
     "category": "main",
@@ -142,18 +139,18 @@ ${personalMessage ? `
   },
   "subArticles": [
     {
-      "headline": "見出し",
+      "headline": "見出し（面白いニュース）",
       "content": "本文（200-300文字）",
-      "category": "politics|economy|society|culture|sports"
+      "category": "entertainment|sports|culture|celebrity"
     }
   ],
   "editorial": {
-    "headline": "社説の見出し",
-    "content": "社説本文（300-400文字）",
-    "category": "editorial"
+    "headline": "その日の面白トピックについてのコラム見出し",
+    "content": "コラム本文（300-400文字）- 面白い視点で",
+    "category": "column"
   },
-  "columnTitle": "コラム欄のタイトル",
-  "columnContent": "コラム本文（200文字程度、その日にちなんだ季節感のある文章）",
+  "columnTitle": "豆知識コーナー",
+  "columnContent": "その日に関する面白い豆知識（200文字程度）",
   "advertisements": [
     {
       "title": "広告タイトル",
