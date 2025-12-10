@@ -160,6 +160,9 @@ export async function generateNewspaperImage(
         },
       });
 
+      // レスポンスの内容をログ出力
+      console.log(`[Attempt ${attempt}] Response received:`, JSON.stringify(response, null, 2).slice(0, 500));
+
       // レスポンスから画像データを抽出
       // @ts-ignore - generatedImages の型定義
       if (response.generatedImages && response.generatedImages.length > 0) {
@@ -171,16 +174,36 @@ export async function generateNewspaperImage(
             success: true,
             imageUrl: `data:image/png;base64,${imageBytes}`,
           };
+        } else {
+          // @ts-ignore
+          console.log(`[Attempt ${attempt}] No imageBytes in response:`, response.generatedImages[0]);
         }
       }
 
       // 画像が生成されなかった場合
       lastError = 'No image generated in response';
-      console.log(`[Attempt ${attempt}] No image in response, will retry...`);
+      console.log(`[Attempt ${attempt}] No image in response, will retry. Response keys:`, Object.keys(response || {}));
 
-    } catch (error) {
-      lastError = error instanceof Error ? error.message : String(error);
-      console.error(`[Attempt ${attempt}] Image generation error:`, lastError);
+    } catch (error: unknown) {
+      // 詳細なエラー情報を取得
+      if (error instanceof Error) {
+        lastError = error.message;
+        console.error(`[Attempt ${attempt}] Image generation error:`, {
+          message: error.message,
+          name: error.name,
+          stack: error.stack?.split('\n').slice(0, 3).join('\n'),
+        });
+      } else {
+        lastError = String(error);
+        console.error(`[Attempt ${attempt}] Image generation error (raw):`, error);
+      }
+
+      // APIエラーの場合、詳細を出力
+      const apiError = error as { status?: number; statusText?: string; response?: unknown };
+      if (apiError.status) {
+        console.error(`[Attempt ${attempt}] API Status:`, apiError.status, apiError.statusText);
+        lastError = `API Error ${apiError.status}: ${apiError.statusText || lastError}`;
+      }
     }
 
     // 最後の試行でなければ待機してリトライ
