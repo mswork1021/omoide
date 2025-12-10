@@ -11,7 +11,7 @@ import type { ImageGenerationRequest, ImageGenerationResponse } from '@/types';
 const GOOGLE_AI_API_KEY = process.env.GOOGLE_AI_API_KEY;
 
 // 画像生成モデル（Imagen 3.0）
-const IMAGE_MODEL = 'imagen-3.0-generate-001';
+const IMAGE_MODEL = 'imagen-3.0-generate-002';
 
 // 画像生成APIを使用するか
 const USE_IMAGE_API = true;
