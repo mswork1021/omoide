@@ -283,6 +283,17 @@ ${personalMessage ? `
     console.log('Response received, length:', text.length);
     console.log('Response preview:', text.substring(0, 200));
 
+    // Google Search が実行されたか確認
+    // @ts-ignore - groundingMetadata の型定義
+    const groundingMetadata = response.candidates?.[0]?.groundingMetadata;
+    if (groundingMetadata) {
+      console.log('[GROUNDING] Search was executed');
+      console.log('[GROUNDING] Search queries:', groundingMetadata.webSearchQueries);
+      console.log('[GROUNDING] Sources count:', groundingMetadata.groundingChunks?.length || 0);
+    } else {
+      console.log('[GROUNDING] WARNING: No grounding metadata - search may not have been executed');
+    }
+
     // JSONを抽出（コードブロックがある場合も対応）
     let jsonStr = text;
     const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
