@@ -262,17 +262,11 @@ ${personalMessage ? `
 `;
 
   try {
-    console.log('Calling Gemini API with model:', MODEL_NAME);
-    console.log('Target date:', dateStr);
-
     const response = await genAI.models.generateContent({
       model: MODEL_NAME,
       contents: prompt,
       config: {
-        // システム指示で検索を強制
         systemInstruction: systemInstruction,
-        // Google検索ツールを有効化
-        // 注意: responseMimeType と tools は同時に使えない
         tools: [{
           googleSearch: {},
         }],
@@ -280,19 +274,13 @@ ${personalMessage ? `
     });
 
     const text = response.text || '';
-    console.log('Response received, length:', text.length);
-    console.log('Response preview:', text.substring(0, 200));
 
-    // Google Search が実行されたか確認
+    // Google Search が実行されたか確認（1行で）
     // @ts-ignore - groundingMetadata の型定義
     const groundingMetadata = response.candidates?.[0]?.groundingMetadata;
-    if (groundingMetadata) {
-      console.log('[GROUNDING] Search was executed');
-      console.log('[GROUNDING] Search queries:', groundingMetadata.webSearchQueries);
-      console.log('[GROUNDING] Sources count:', groundingMetadata.groundingChunks?.length || 0);
-    } else {
-      console.log('[GROUNDING] WARNING: No grounding metadata - search may not have been executed');
-    }
+    const searchExecuted = !!groundingMetadata;
+    const sourcesCount = groundingMetadata?.groundingChunks?.length || 0;
+    console.log(`[GEMINI] ${dateStr} | Search: ${searchExecuted ? 'YES' : 'NO'} | Sources: ${sourcesCount}`);
 
     // JSONを抽出（コードブロックがある場合も対応）
     let jsonStr = text;
