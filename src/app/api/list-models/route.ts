@@ -19,9 +19,11 @@ export async function GET() {
 
     for await (const model of models) {
       if (model.name && model.name.includes('imagen')) {
+        // @ts-ignore - supportedGenerationMethods の型定義がない
+        const methods = model.supportedGenerationMethods as string[] | undefined;
         imagenModels.push({
           name: model.name,
-          methods: model.supportedGenerationMethods,
+          methods: methods,
         });
       }
     }
