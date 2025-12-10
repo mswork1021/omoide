@@ -1,8 +1,8 @@
 /**
- * Imagen 4.0 Ultra API Client
+ * Imagen 3.0 API Client
  * 時代別画像生成（昭和=モノクロ、平成=カラー、令和=高解像度カラー）
  *
- * 新SDK (@google/genai) + imagen-4.0-ultra-generate-001 を使用
+ * 新SDK (@google/genai) + imagen-3.0-generate-001 を使用
  */
 
 import { GoogleGenAI } from '@google/genai';
@@ -10,8 +10,8 @@ import type { ImageGenerationRequest, ImageGenerationResponse } from '@/types';
 
 const GOOGLE_AI_API_KEY = process.env.GOOGLE_AI_API_KEY;
 
-// 画像生成モデル（Imagen 4.0 Ultra）
-const IMAGE_MODEL = 'imagen-4.0-ultra-generate-001';
+// 画像生成モデル（Imagen 3.0）
+const IMAGE_MODEL = 'imagen-3.0-generate-001';
 
 // 画像生成APIを使用するか
 const USE_IMAGE_API = true;
@@ -169,7 +169,7 @@ export async function generateNewspaperImage(
         // @ts-ignore
         const imageBytes = response.generatedImages[0].image?.imageBytes;
         if (imageBytes) {
-          console.log(`[Attempt ${attempt}] Image generated successfully with Imagen 4.0 Ultra (${era} style)`);
+          console.log(`[Attempt ${attempt}] Image generated successfully with Imagen 3.0 (${era} style)`);
           return {
             success: true,
             imageUrl: `data:image/png;base64,${imageBytes}`,
