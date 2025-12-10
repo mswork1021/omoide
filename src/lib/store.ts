@@ -184,9 +184,10 @@ export const useGenerationFlow = () => {
 
           const imageData = await imageResponse.json();
           if (imageData.success && imageData.images?.length > 0) {
+            // nullをundefinedに変換（順序を保持するため）
             store.setGeneratedImages({
-              mainImage: imageData.images[0],
-              subImages: imageData.images.slice(1) || [],
+              mainImage: imageData.images[0] ?? undefined,
+              subImages: (imageData.images.slice(1) || []).map((img: string | null) => img ?? undefined),
             });
           } else if (imageData.error) {
             // 画像生成エラーを表示（致命的ではないので続行）
@@ -243,10 +244,11 @@ export const useGenerationFlow = () => {
       store.setGenerationProgress(60);
 
       const imageData = await imageResponse.json();
-      if (imageData.success) {
+      if (imageData.success && imageData.images?.length > 0) {
+        // nullをundefinedに変換（順序を保持するため）
         store.setGeneratedImages({
-          mainImage: imageData.images?.[0],
-          subImages: imageData.images?.slice(1) || [],
+          mainImage: imageData.images[0] ?? undefined,
+          subImages: (imageData.images.slice(1) || []).map((img: string | null) => img ?? undefined),
         });
       }
 

@@ -86,7 +86,7 @@ export interface ProductionState {
 
 export interface GeneratedImages {
   mainImage?: string;
-  subImages: string[];
+  subImages: (string | undefined)[];
 }
 
 // Gemini 3.0 Grounding Response Types
