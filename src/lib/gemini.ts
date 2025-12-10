@@ -275,12 +275,20 @@ ${personalMessage ? `
 
     const text = response.text || '';
 
-    // Google Search が実行されたか確認（1行で）
-    // @ts-ignore - groundingMetadata の型定義
-    const groundingMetadata = response.candidates?.[0]?.groundingMetadata;
+    // Google Search が実行されたか確認
+    // @ts-ignore - 型定義
+    const candidates = response.candidates;
+    // @ts-ignore
+    const groundingMetadata = candidates?.[0]?.groundingMetadata || response.groundingMetadata;
     const searchExecuted = !!groundingMetadata;
-    const sourcesCount = groundingMetadata?.groundingChunks?.length || 0;
+    const sourcesCount = groundingMetadata?.groundingChunks?.length || groundingMetadata?.searchEntryPoint ? 1 : 0;
     console.log(`[GEMINI] ${dateStr} | Search: ${searchExecuted ? 'YES' : 'NO'} | Sources: ${sourcesCount}`);
+
+    // デバッグ: レスポンスのキーを確認
+    if (!searchExecuted) {
+      // @ts-ignore
+      console.log(`[GEMINI] Response keys:`, Object.keys(response || {}));
+    }
 
     // JSONを抽出（コードブロックがある場合も対応）
     let jsonStr = text;
