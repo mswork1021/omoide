@@ -17,7 +17,7 @@ interface NewspaperPreviewProps {
   isPreview?: boolean;
   images?: {
     mainImage?: string;
-    subImages?: string[];
+    subImages?: (string | undefined)[];
   };
 }
 
