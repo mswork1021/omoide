@@ -118,6 +118,7 @@ export async function generateNewspaperImage(
 ): Promise<ImageGenerationResponse> {
   // APIキーが未設定の場合はエラーを返す
   if (!GOOGLE_AI_API_KEY) {
+    console.error('[IMAGE] GOOGLE_AI_API_KEY is not configured');
     return {
       success: false,
       error: 'GOOGLE_AI_API_KEY is not configured',

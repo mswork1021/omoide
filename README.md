@@ -1,21 +1,21 @@
-# TimeTravel Press (Gemini 3.0 Edition)
+# TimeTravel Press
 
 あの日の新聞をAIで再現する、記念日新聞生成サービス。
 
 ## 特徴
 
-- **Gemini 3.0** - Google Grounding機能を活用した事実確認と、昭和/平成の重厚な文体での記事生成
-- **Nano Banana Pro** - ヴィンテージ新聞の質感を再現する最高品質の画像生成
-- **Next.js 15 + React 19** - Server Components完全準拠の最新フロントエンド
+- **Gemini 2.5 Pro** - Google Grounding機能を活用した事実確認と、昭和/平成/令和の重厚な文体での記事生成
+- **Imagen 4.0 Ultra** - 時代別（昭和=モノクロ、平成=カラー、令和=高解像度）の新聞画像生成
+- **Next.js 16 + React 19** - Server Components完全準拠の最新フロントエンド
 - **Stripe決済** - 安全なオンライン決済
 
 ## 技術スタック
 
 | カテゴリ | 技術 |
 |---------|------|
-| Core LLM | Gemini 3.0 (Google Grounding) |
-| 画像生成 | Nano Banana Pro (J-Retro Style) |
-| Frontend | Next.js 15, React 19, Tailwind CSS |
+| Core LLM | Gemini 2.5 Pro (Google Grounding) |
+| 画像生成 | Imagen 4.0 Ultra (Google AI) |
+| Frontend | Next.js 16, React 19, Tailwind CSS |
 | 状態管理 | Zustand |
 | PDF生成 | jsPDF, html2canvas |
 | 決済 | Stripe |
@@ -36,8 +36,7 @@ cp .env.example .env.local
 
 `.env.local` を編集して、以下のAPIキーを設定:
 
-- `GOOGLE_AI_API_KEY` - Google AI Studio から取得
-- `NANO_BANANA_API_KEY` - Nano Banana Pro から取得
+- `GOOGLE_AI_API_KEY` - Google AI Studio から取得（Gemini + Imagen 両方で使用）
 - `STRIPE_SECRET_KEY` / `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` - Stripe Dashboard から取得
 
 ### 3. 開発サーバーの起動
@@ -54,8 +53,8 @@ http://localhost:3000 でアクセス可能。
 src/
 ├── app/                    # Next.js App Router
 │   ├── api/               # API Routes
-│   │   ├── gemini/        # Gemini 3.0 コンテンツ生成
-│   │   ├── image/         # Nano Banana Pro 画像生成
+│   │   ├── gemini/        # Gemini 2.5 Pro コンテンツ生成
+│   │   ├── image/         # Imagen 4.0 Ultra 画像生成
 │   │   ├── checkout/      # Stripe 決済
 │   │   └── generate-pdf/  # PDF生成
 │   ├── page.tsx           # ホームページ
@@ -66,8 +65,8 @@ src/
 │   ├── DatePicker.tsx         # 日付選択
 │   └── PaymentSection.tsx     # 決済セクション
 ├── lib/                   # ユーティリティ
-│   ├── gemini.ts          # Gemini API クライアント
-│   ├── nanoBanana.ts      # Nano Banana API クライアント
+│   ├── gemini.ts          # Gemini 2.5 Pro クライアント
+│   ├── nanoBanana.ts      # Imagen 4.0 Ultra クライアント
 │   ├── stripe.ts          # Stripe 設定
 │   ├── pdf.ts             # PDF生成
 │   └── store.ts           # Zustand ストア
@@ -78,16 +77,16 @@ src/
 ## UXフロー
 
 1. サンプル新聞を閲覧（静的表示）
-2. 日付選択 + スタイル選択
+2. 日付選択 + スタイル選択（昭和/平成/令和）
 3. Stripe 決済
-4. Gemini 3.0 + Nano Banana Pro で生成
+4. Gemini 2.5 Pro + Imagen 4.0 Ultra で生成
 5. 高画質PDF ダウンロード
 
 ※ API呼び出しは決済完了後のみ発生（コスト最適化）
 
 ## サンプル生成
 
-サンプル新聞は本番と同じGemini 3.0 + Nano Banana Proで生成します。
+サンプル新聞は本番と同じGemini 2.5 Pro + Imagen 4.0 Ultraで生成します。
 
 ```bash
 # 1. APIキーを設定
@@ -167,4 +166,4 @@ MIT License
 
 ---
 
-**TimeTravel Press** - Powered by Gemini 3.0 & Nano Banana Pro
+**TimeTravel Press** - Powered by Gemini 2.5 Pro & Imagen 4.0 Ultra
