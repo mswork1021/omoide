@@ -19,26 +19,63 @@ export async function POST(request: NextRequest) {
     if (body.prompts && Array.isArray(body.prompts)) {
       // era パラメータを使用（showa/heisei/reiwa）
       const era = body.era || 'showa';
-      const results = await generateMultipleImages(
-        body.prompts,
-        era
-      );
+      const prompts: string[] = body.prompts;
+      const MAX_API_RETRIES = 2; // API側での追加リトライ回数
 
-      // 順序を保持するため、成功した画像はそのまま、失敗した場合はnullを返す
-      const orderedImages = results.map((r) => (r.success && r.imageUrl) ? r.imageUrl : null);
+      // 結果を保持する配列（インデックスを保持）
+      const finalImages: (string | null)[] = new Array(prompts.length).fill(null);
 
-      // 成功した画像の数をカウント
-      const successCount = orderedImages.filter((img) => img !== null).length;
+      // 最初の試行
+      console.log(`[Initial] Generating ${prompts.length} images...`);
+      let results = await generateMultipleImages(prompts, era);
 
-      // 画像が1枚も生成できなかった場合はエラーを返す
-      if (successCount === 0) {
-        const firstError = results.find((r) => r.error)?.error || 'Unknown image generation error';
+      // 結果を反映
+      results.forEach((result, index) => {
+        if (result.success && result.imageUrl) {
+          finalImages[index] = result.imageUrl;
+        }
+      });
+
+      // 失敗した画像があれば追加リトライ
+      for (let retry = 1; retry <= MAX_API_RETRIES; retry++) {
+        // 失敗したインデックスを特定
+        const failedIndices = finalImages
+          .map((img, idx) => img === null ? idx : -1)
+          .filter(idx => idx !== -1);
+
+        if (failedIndices.length === 0) {
+          console.log(`All ${prompts.length} images generated successfully`);
+          break;
+        }
+
+        console.log(`[Retry ${retry}/${MAX_API_RETRIES}] Retrying ${failedIndices.length} failed images...`);
+
+        // 失敗した画像だけ再生成
+        const failedPrompts = failedIndices.map(idx => prompts[idx]);
+        const retryResults = await generateMultipleImages(failedPrompts, era);
+
+        // 結果を元のインデックスに反映
+        retryResults.forEach((result, i) => {
+          const originalIndex = failedIndices[i];
+          if (result.success && result.imageUrl) {
+            finalImages[originalIndex] = result.imageUrl;
+          }
+        });
+      }
+
+      // 最終結果を確認
+      const successCount = finalImages.filter((img) => img !== null).length;
+      const failedCount = finalImages.filter((img) => img === null).length;
+
+      // 1枚でも失敗していたらエラー（お客様はお金を払っている）
+      if (failedCount > 0) {
+        console.error(`${failedCount} images failed after all retries`);
         return NextResponse.json(
           {
             success: false,
-            error: firstError,
-            totalRequested: body.prompts.length,
-            totalGenerated: 0,
+            error: `${failedCount}枚の画像生成に失敗しました。再度お試しください。`,
+            totalRequested: prompts.length,
+            totalGenerated: successCount,
           },
           { status: 500 }
         );
@@ -46,8 +83,8 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        images: orderedImages,
-        totalRequested: body.prompts.length,
+        images: finalImages,
+        totalRequested: prompts.length,
         totalGenerated: successCount,
       });
     }
