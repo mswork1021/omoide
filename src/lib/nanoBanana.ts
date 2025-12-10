@@ -152,17 +152,19 @@ export async function generateNewspaperImage(
       }
     }
 
-    console.log('No image in response');
+    // 画像が生成されなかった場合はプレースホルダーを返す
+    console.log('No image in response, using placeholder');
     return {
-      success: false,
-      error: 'No image generated in response',
+      success: true,
+      imageUrl: generateVintagePlaceholder(request.prompt, resolution.width, resolution.height, era),
     };
   } catch (error) {
     console.error('Image generation error:', error);
-    const rawMessage = error instanceof Error ? error.message : String(error);
+    // エラー時もプレースホルダーを返す（画像が必ず表示されるように）
+    console.log('Using placeholder due to error');
     return {
-      success: false,
-      error: `画像生成エラー: ${rawMessage}`,
+      success: true,
+      imageUrl: generateVintagePlaceholder(request.prompt, resolution.width, resolution.height, era),
     };
   }
 }

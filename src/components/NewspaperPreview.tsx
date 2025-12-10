@@ -363,6 +363,18 @@ export function NewspaperPreview({
 
             {/* 広告 */}
             <div>
+              <h3
+                style={{
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  marginBottom: '6px',
+                  color: config.accent,
+                  borderBottom: `1px solid ${config.borderColor}`,
+                  paddingBottom: '2px',
+                }}
+              >
+                ◆ 当時流行していたもの
+              </h3>
               {data.advertisements.slice(0, 2).map((ad, i) => (
                 <div
                   key={i}
@@ -712,28 +724,39 @@ export function NewspaperPreview({
         {/* 広告欄 */}
         <div
           style={{
-            display: 'flex',
-            gap: '8px',
             padding: '8px 12px',
             background: '#f5f5f5',
             borderTop: '2px solid #1a1a1a',
           }}
         >
-          {data.advertisements.slice(0, 3).map((ad, i) => (
-            <div
-              key={i}
-              style={{
-                flex: 1,
-                background: 'white',
-                border: '1px dashed #999',
-                padding: '8px',
-                textAlign: 'center',
-              }}
-            >
-              <div style={{ fontWeight: '900', fontSize: '12px', color: '#d50000' }}>{ad.title}</div>
-              <div style={{ fontSize: '9px', marginTop: '2px' }}>{ad.content}</div>
-            </div>
-          ))}
+          <h3
+            style={{
+              fontSize: '12px',
+              fontWeight: '900',
+              marginBottom: '8px',
+              color: '#d50000',
+              textAlign: 'center',
+            }}
+          >
+            ★ 当時流行していたもの ★
+          </h3>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {data.advertisements.slice(0, 3).map((ad, i) => (
+              <div
+                key={i}
+                style={{
+                  flex: 1,
+                  background: 'white',
+                  border: '1px dashed #999',
+                  padding: '8px',
+                  textAlign: 'center',
+                }}
+              >
+                <div style={{ fontWeight: '900', fontSize: '12px', color: '#d50000' }}>{ad.title}</div>
+                <div style={{ fontSize: '9px', marginTop: '2px' }}>{ad.content}</div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* フッター */}
@@ -1014,27 +1037,41 @@ export function NewspaperPreview({
             </div>
 
             {/* 広告 */}
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '8px',
-              }}
-            >
-              {data.advertisements.slice(0, 2).map((ad, i) => (
-                <div
-                  key={i}
-                  style={{
-                    background: config.secondaryBg,
-                    borderRadius: '8px',
-                    padding: '12px',
-                    textAlign: 'center',
-                  }}
-                >
-                  <div style={{ fontWeight: '600', fontSize: '11px', marginBottom: '2px' }}>{ad.title}</div>
-                  <div style={{ fontSize: '9px', opacity: 0.6 }}>{ad.content}</div>
-                </div>
-              ))}
+            <div>
+              <h3
+                style={{
+                  fontSize: '10px',
+                  fontWeight: '600',
+                  color: config.accent,
+                  letterSpacing: '0.1em',
+                  marginBottom: '8px',
+                }}
+              >
+                TRENDING ITEMS
+              </h3>
+              <p style={{ fontSize: '9px', opacity: 0.5, marginBottom: '8px' }}>当時流行していたもの</p>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '8px',
+                }}
+              >
+                {data.advertisements.slice(0, 2).map((ad, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      background: config.secondaryBg,
+                      borderRadius: '8px',
+                      padding: '12px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <div style={{ fontWeight: '600', fontSize: '11px', marginBottom: '2px' }}>{ad.title}</div>
+                    <div style={{ fontSize: '9px', opacity: 0.6 }}>{ad.content}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
