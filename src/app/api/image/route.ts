@@ -24,12 +24,14 @@ export async function POST(request: NextRequest) {
         era
       );
 
-      const successfulImages = results
-        .filter((r) => r.success && r.imageUrl)
-        .map((r) => r.imageUrl);
+      // 順序を保持するため、成功した画像はそのまま、失敗した場合はnullを返す
+      const orderedImages = results.map((r) => (r.success && r.imageUrl) ? r.imageUrl : null);
+
+      // 成功した画像の数をカウント
+      const successCount = orderedImages.filter((img) => img !== null).length;
 
       // 画像が1枚も生成できなかった場合はエラーを返す
-      if (successfulImages.length === 0) {
+      if (successCount === 0) {
         const firstError = results.find((r) => r.error)?.error || 'Unknown image generation error';
         return NextResponse.json(
           {
@@ -44,9 +46,9 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        images: successfulImages,
+        images: orderedImages,
         totalRequested: body.prompts.length,
-        totalGenerated: successfulImages.length,
+        totalGenerated: successCount,
       });
     }
 
