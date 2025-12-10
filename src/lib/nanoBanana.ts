@@ -16,6 +16,17 @@ const IMAGE_MODEL = 'imagen-4.0-ultra-generate-001';
 // 画像生成APIを使用するか
 const USE_IMAGE_API = true;
 
+// リトライ設定
+const MAX_RETRIES = 3;
+const RETRY_DELAY_MS = 1000; // 1秒から開始、exponential backoff
+
+/**
+ * 指定ミリ秒待機する
+ */
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 // 時代別プロンプトテンプレート
 const ERA_TEMPLATES = {
   showa: `Create a vintage Japanese newspaper photograph from the 1960s-1980s Showa era.
@@ -97,7 +108,7 @@ function getAI(): GoogleGenAI {
 }
 
 /**
- * Imagen 4.0 Ultra を使用して画像を生成
+ * Imagen 4.0 Ultra を使用して画像を生成（リトライ付き）
  * @param request - 画像生成リクエスト
  * @param era - 時代スタイル（showa/heisei/reiwa）
  */
@@ -105,13 +116,19 @@ export async function generateNewspaperImage(
   request: ImageGenerationRequest,
   era: 'showa' | 'heisei' | 'reiwa' = 'showa'
 ): Promise<ImageGenerationResponse> {
-  // 画像APIを使用しない場合、またはAPIキーが未設定の場合はプレースホルダーを返す
-  if (!USE_IMAGE_API || !GOOGLE_AI_API_KEY) {
-    console.log('Using placeholder image (image API disabled or no API key)');
-    const resolution = ERA_RESOLUTIONS[era];
+  // APIキーが未設定の場合はエラーを返す
+  if (!GOOGLE_AI_API_KEY) {
     return {
-      success: true,
-      imageUrl: generateVintagePlaceholder(request.prompt, resolution.width, resolution.height, era),
+      success: false,
+      error: 'GOOGLE_AI_API_KEY is not configured',
+    };
+  }
+
+  // 画像APIを使用しない設定の場合はエラーを返す
+  if (!USE_IMAGE_API) {
+    return {
+      success: false,
+      error: 'Image API is disabled',
     };
   }
 
@@ -123,50 +140,62 @@ export async function generateNewspaperImage(
   const enhancedPrompt = buildEnhancedPrompt(request.prompt, styleModifiers);
   const fullPrompt = template.replace('{subject}', enhancedPrompt);
 
-  try {
-    console.log(`Calling Imagen API with model: ${IMAGE_MODEL}, era: ${era}, resolution: ${resolution.width}x${resolution.height}`);
+  let lastError: string = '';
 
-    const genAI = getAI();
+  // リトライループ
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      console.log(`[Attempt ${attempt}/${MAX_RETRIES}] Calling Imagen API with model: ${IMAGE_MODEL}, era: ${era}`);
 
-    // Imagen 4.0 は generateImages メソッドを使用
-    // @ts-ignore - generateImages の型定義
-    const response = await genAI.models.generateImages({
-      model: IMAGE_MODEL,
-      prompt: fullPrompt,
-      config: {
-        numberOfImages: 1,
-      },
-    });
+      const genAI = getAI();
 
-    // レスポンスから画像データを抽出
-    // @ts-ignore - generatedImages の型定義
-    if (response.generatedImages && response.generatedImages.length > 0) {
-      // @ts-ignore
-      const imageBytes = response.generatedImages[0].image?.imageBytes;
-      if (imageBytes) {
-        console.log(`Image generated successfully with Imagen 4.0 Ultra (${era} style)`);
-        return {
-          success: true,
-          imageUrl: `data:image/png;base64,${imageBytes}`,
-        };
+      // Imagen 4.0 は generateImages メソッドを使用
+      // @ts-ignore - generateImages の型定義
+      const response = await genAI.models.generateImages({
+        model: IMAGE_MODEL,
+        prompt: fullPrompt,
+        config: {
+          numberOfImages: 1,
+        },
+      });
+
+      // レスポンスから画像データを抽出
+      // @ts-ignore - generatedImages の型定義
+      if (response.generatedImages && response.generatedImages.length > 0) {
+        // @ts-ignore
+        const imageBytes = response.generatedImages[0].image?.imageBytes;
+        if (imageBytes) {
+          console.log(`[Attempt ${attempt}] Image generated successfully with Imagen 4.0 Ultra (${era} style)`);
+          return {
+            success: true,
+            imageUrl: `data:image/png;base64,${imageBytes}`,
+          };
+        }
       }
+
+      // 画像が生成されなかった場合
+      lastError = 'No image generated in response';
+      console.log(`[Attempt ${attempt}] No image in response, will retry...`);
+
+    } catch (error) {
+      lastError = error instanceof Error ? error.message : String(error);
+      console.error(`[Attempt ${attempt}] Image generation error:`, lastError);
     }
 
-    // 画像が生成されなかった場合はプレースホルダーを返す
-    console.log('No image in response, using placeholder');
-    return {
-      success: true,
-      imageUrl: generateVintagePlaceholder(request.prompt, resolution.width, resolution.height, era),
-    };
-  } catch (error) {
-    console.error('Image generation error:', error);
-    // エラー時もプレースホルダーを返す（画像が必ず表示されるように）
-    console.log('Using placeholder due to error');
-    return {
-      success: true,
-      imageUrl: generateVintagePlaceholder(request.prompt, resolution.width, resolution.height, era),
-    };
+    // 最後の試行でなければ待機してリトライ
+    if (attempt < MAX_RETRIES) {
+      const delay = RETRY_DELAY_MS * Math.pow(2, attempt - 1); // exponential backoff
+      console.log(`Waiting ${delay}ms before retry...`);
+      await sleep(delay);
+    }
   }
+
+  // すべてのリトライが失敗
+  console.error(`All ${MAX_RETRIES} attempts failed for image generation`);
+  return {
+    success: false,
+    error: `画像生成に${MAX_RETRIES}回失敗しました: ${lastError}`,
+  };
 }
 
 /**
