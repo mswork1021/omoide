@@ -11,7 +11,7 @@ import type { ImageGenerationRequest, ImageGenerationResponse } from '@/types';
 const GOOGLE_AI_API_KEY = process.env.GOOGLE_AI_API_KEY;
 
 // 画像生成モデル（Gemini 2.5 Flash Image Generation）
-const IMAGE_MODEL = 'gemini-2.5-flash-preview-image-generation';
+const IMAGE_MODEL = 'gemini-2.5-flash-preview-image';
 
 // 画像生成APIを使用するか
 const USE_IMAGE_API = true;
