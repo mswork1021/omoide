@@ -9,11 +9,14 @@
 
 import React from 'react';
 import { SampleCarousel, OrderForm, NewspaperPreview, PaymentSection } from '@/components';
-import { Newspaper, Clock, Sparkles, Gift, Printer, Shield, CheckCircle } from 'lucide-react';
+import { Newspaper, Clock, Sparkles, Gift, Printer, Shield, CheckCircle, X } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 
 export default function Home() {
   const { newspaperData, generatedImages, isImagesPaid, reset, style } = useAppStore();
+
+  // モーダル表示条件: 新聞データが生成されたら表示
+  const showModal = !!newspaperData;
 
   return (
     <div className="min-h-screen bg-[#f5f0e6]">
@@ -86,9 +89,8 @@ export default function Home() {
             <SampleCarousel />
           </div>
 
-          {/* 右側: 注文フォーム & 決済セクション */}
-          <div className="space-y-6">
-            {/* 注文フォーム */}
+          {/* 右側: 注文フォーム */}
+          <div>
             <div className="bg-[#faf8f3] rounded-lg shadow-lg border-2 border-[#1a1a1a] p-6">
               <h3 className="text-xl font-bold mb-6 flex items-center gap-2 font-serif">
                 <Gift size={24} />
@@ -96,46 +98,8 @@ export default function Home() {
               </h3>
               <OrderForm />
             </div>
-
-            {/* テキスト生成後: 画像追加セクション */}
-            {newspaperData && (
-              <div className="bg-[#faf8f3] rounded-lg shadow-lg border-2 border-[#1a1a1a] p-6">
-                <PaymentSection />
-              </div>
-            )}
           </div>
         </div>
-
-        {/* テキスト生成結果プレビュー */}
-        {newspaperData && (
-          <section className="mt-8">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-bold flex items-center gap-2 font-serif">
-                <Sparkles size={24} className="text-[#8b4513]" />
-                {isImagesPaid ? '完成した新聞' : '生成された記事（プレビュー）'}
-              </h3>
-              <button
-                onClick={() => reset()}
-                className="text-sm px-4 py-2 border border-[#1a1a1a]/20 rounded hover:bg-[#1a1a1a]/5 transition-colors"
-              >
-                最初からやり直す
-              </button>
-            </div>
-            <div className="bg-white p-4 md:p-6 rounded-lg shadow-lg border-2 border-[#1a1a1a]">
-              <NewspaperPreview
-                data={newspaperData}
-                style={style}
-                isPreview={!isImagesPaid}
-                images={generatedImages || undefined}
-              />
-            </div>
-            {!isImagesPaid && (
-              <p className="text-center text-sm text-[#1a1a1a]/60 mt-4">
-                ↑ 画像を追加すると、より本格的な新聞になります
-              </p>
-            )}
-          </section>
-        )}
 
         {/* 利用の流れ */}
         <section className="mt-16 py-8">
@@ -198,6 +162,57 @@ export default function Home() {
         </section>
       </main>
 
+      {/* 生成結果モーダル */}
+      {showModal && newspaperData && (
+        <div className="fixed inset-0 bg-black/70 z-50 overflow-y-auto">
+          <div className="min-h-screen py-8 px-4">
+            <div className="max-w-5xl mx-auto">
+              {/* モーダルヘッダー */}
+              <div className="bg-[#faf8f3] rounded-t-lg p-4 flex items-center justify-between border-b-2 border-[#1a1a1a]">
+                <h2 className="text-xl font-bold flex items-center gap-2">
+                  <Sparkles className="text-[#8b4513]" />
+                  {isImagesPaid ? '新聞が完成しました！' : '記事が生成されました！'}
+                </h2>
+                <button
+                  onClick={() => reset()}
+                  className="p-2 hover:bg-[#1a1a1a]/10 rounded-full transition-colors"
+                  title="閉じる"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              {/* 2カラムレイアウト: プレビュー + アクション */}
+              <div className="bg-white flex flex-col lg:flex-row">
+                {/* 左側: 新聞プレビュー */}
+                <div className="flex-1 p-4 md:p-6 border-r border-[#1a1a1a]/10">
+                  <NewspaperPreview
+                    data={newspaperData}
+                    style={style}
+                    isPreview={!isImagesPaid}
+                    images={generatedImages || undefined}
+                  />
+                </div>
+
+                {/* 右側: アクションパネル（画像追加 or PDF） */}
+                <div className="w-full lg:w-80 p-4 md:p-6 bg-[#faf8f3]">
+                  <PaymentSection />
+                </div>
+              </div>
+
+              {/* モーダルフッター */}
+              <div className="bg-[#faf8f3] rounded-b-lg p-4 flex justify-center border-t-2 border-[#1a1a1a]">
+                <button
+                  onClick={() => reset()}
+                  className="px-6 py-2 border-2 border-[#1a1a1a] rounded-lg font-bold hover:bg-[#1a1a1a]/5 transition-colors"
+                >
+                  別の日付で作成する
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* フッター */}
       <footer className="mt-16 border-t-2 border-[#1a1a1a]/20 bg-[#faf8f3]">
