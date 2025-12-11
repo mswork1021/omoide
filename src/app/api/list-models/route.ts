@@ -18,7 +18,8 @@ export async function GET() {
     const imagenModels: Array<{ name: string; methods?: string[] }> = [];
 
     for await (const model of models) {
-      if (model.name && model.name.includes('imagen')) {
+      // imagen または gemini を含むモデルをすべて表示
+      if (model.name && (model.name.includes('imagen') || model.name.includes('gemini'))) {
         // @ts-ignore - supportedGenerationMethods の型定義がない
         const methods = model.supportedGenerationMethods as string[] | undefined;
         imagenModels.push({
