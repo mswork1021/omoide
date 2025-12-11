@@ -25,10 +25,13 @@ interface AppState {
   generatedImages: GeneratedImages | null;
   pdfUrl: string | null;
 
-  // 決済状態
-  selectedTier: 'standard' | 'premium' | 'deluxe';
+  // 決済状態（新料金体系）
+  // text_only: テキスト生成（80円）
+  // add_images: 画像追加（500円）
+  purchaseType: 'text_only' | 'add_images' | null;
   paymentIntentId: string | null;
-  isPaid: boolean;
+  isTextPaid: boolean;      // テキスト生成の支払い完了
+  isImagesPaid: boolean;    // 画像追加の支払い完了
 
   // エラー
   error: string | null;
@@ -40,12 +43,13 @@ interface AppState {
   setSenderName: (name: string) => void;
   setPersonalMessage: (message: string) => void;
   setOccasion: (occasion: string) => void;
-  setSelectedTier: (tier: 'standard' | 'premium' | 'deluxe') => void;
+  setPurchaseType: (type: 'text_only' | 'add_images' | null) => void;
   setNewspaperData: (data: NewspaperData | null) => void;
   setGeneratedImages: (images: GeneratedImages | null) => void;
   setPdfUrl: (url: string | null) => void;
   setPaymentIntentId: (id: string | null) => void;
-  setIsPaid: (paid: boolean) => void;
+  setIsTextPaid: (paid: boolean) => void;
+  setIsImagesPaid: (paid: boolean) => void;
   setError: (error: string | null) => void;
   setGenerationStep: (step: AppState['generationStep']) => void;
   setGenerationProgress: (progress: number) => void;
@@ -67,9 +71,10 @@ const initialState = {
   newspaperData: null,
   generatedImages: null,
   pdfUrl: null,
-  selectedTier: 'standard' as const,
+  purchaseType: null as 'text_only' | 'add_images' | null,
   paymentIntentId: null,
-  isPaid: false,
+  isTextPaid: false,
+  isImagesPaid: false,
   error: null,
 };
 
@@ -82,12 +87,13 @@ export const useAppStore = create<AppState>((set, get) => ({
   setSenderName: (name) => set({ senderName: name }),
   setPersonalMessage: (message) => set({ personalMessage: message }),
   setOccasion: (occasion) => set({ occasion }),
-  setSelectedTier: (tier) => set({ selectedTier: tier }),
+  setPurchaseType: (type) => set({ purchaseType: type }),
   setNewspaperData: (data) => set({ newspaperData: data }),
   setGeneratedImages: (images) => set({ generatedImages: images }),
   setPdfUrl: (url) => set({ pdfUrl: url }),
   setPaymentIntentId: (id) => set({ paymentIntentId: id }),
-  setIsPaid: (paid) => set({ isPaid: paid }),
+  setIsTextPaid: (paid) => set({ isTextPaid: paid }),
+  setIsImagesPaid: (paid) => set({ isImagesPaid: paid }),
   setError: (error) => set({ error }),
   setGenerationStep: (step) => set({ generationStep: step }),
   setGenerationProgress: (progress) => set({ generationProgress: progress }),
@@ -116,11 +122,15 @@ export const useAppStore = create<AppState>((set, get) => ({
   reset: () => set(initialState),
 }));
 
-// 生成フロー管理用のヘルパーフック
+// 生成フロー管理用のヘルパーフック（新料金体系対応）
 export const useGenerationFlow = () => {
   const store = useAppStore();
 
-  const startPreviewGeneration = async () => {
+  /**
+   * テキスト生成（80円）
+   * 画像なしで新聞コンテンツのみを生成
+   */
+  const startTextGeneration = async () => {
     store.setIsGenerating(true);
     store.setGenerationStep('content');
     store.setError(null);
@@ -129,7 +139,7 @@ export const useGenerationFlow = () => {
       const request = store.getGenerationRequest();
 
       // コンテンツ生成
-      store.setGenerationProgress(20);
+      store.setGenerationProgress(30);
       const response = await fetch('/api/gemini', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -143,66 +153,9 @@ export const useGenerationFlow = () => {
       }
 
       store.setNewspaperData(data.newspaper);
-      store.setGenerationProgress(50);
-
-      // 画像生成
-      store.setGenerationStep('images');
-      const imagePrompts: string[] = [];
-
-      // メイン記事の画像プロンプト（なければデフォルト生成）
-      const mainPrompt = data.newspaper.mainArticle?.imagePrompt
-        || `A photograph for newspaper article about: ${data.newspaper.mainArticle?.headline || 'news event'}`;
-      imagePrompts.push(mainPrompt);
-
-      // サブ記事の画像プロンプト（必ず3枚生成、なければデフォルト）
-      if (data.newspaper.subArticles) {
-        for (let i = 0; i < 3; i++) {
-          const article = data.newspaper.subArticles[i];
-          if (article?.imagePrompt) {
-            imagePrompts.push(article.imagePrompt);
-          } else if (article) {
-            // imagePromptがない場合、headlineからデフォルト生成
-            imagePrompts.push(`A photograph for newspaper article about: ${article.headline || 'news'}`);
-          } else {
-            // 記事自体がない場合のフォールバック
-            imagePrompts.push('A vintage Japanese newspaper photograph of daily life');
-          }
-        }
-      }
-
-      if (imagePrompts.length > 0) {
-        try {
-          // スタイルをeraとして渡す（showa/heisei/reiwa）
-          const imageResponse = await fetch('/api/image', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              prompts: imagePrompts,
-              era: store.style,  // showa/heisei/reiwa
-            }),
-          });
-
-          const imageData = await imageResponse.json();
-          if (imageData.success && imageData.images?.length > 0) {
-            // nullをundefinedに変換（順序を保持するため）
-            store.setGeneratedImages({
-              mainImage: imageData.images[0] ?? undefined,
-              subImages: (imageData.images.slice(1) || []).map((img: string | null) => img ?? undefined),
-            });
-          } else if (imageData.error) {
-            // 画像生成エラーを表示（致命的ではないので続行）
-            console.error('Image generation error:', imageData.error);
-            store.setError(`画像生成エラー: ${imageData.error}`);
-          }
-        } catch (imageError) {
-          console.error('Image generation failed:', imageError);
-          const errorMsg = imageError instanceof Error ? imageError.message : String(imageError);
-          store.setError(`画像生成失敗: ${errorMsg}`);
-        }
-      }
-
       store.setGenerationProgress(100);
       store.setGenerationStep('complete');
+      store.setIsTextPaid(true);
     } catch (error) {
       store.setError(error instanceof Error ? error.message : 'Unknown error');
       store.setGenerationStep('idle');
@@ -211,9 +164,13 @@ export const useGenerationFlow = () => {
     }
   };
 
-  const startProductionGeneration = async () => {
+  /**
+   * 画像生成（500円）
+   * 既存の新聞データに画像を追加
+   */
+  const startImageGeneration = async () => {
     if (!store.newspaperData) {
-      store.setError('No newspaper data available');
+      store.setError('新聞データがありません');
       return;
     }
 
@@ -222,39 +179,86 @@ export const useGenerationFlow = () => {
     store.setError(null);
 
     try {
-      // 画像生成とPDF生成を並列実行
-      store.setGenerationProgress(30);
+      store.setGenerationProgress(20);
 
       // 画像プロンプトを収集
       const imagePrompts: string[] = [];
-      if (store.newspaperData.mainArticle.imagePrompt) {
-        imagePrompts.push(store.newspaperData.mainArticle.imagePrompt);
+
+      // メイン記事の画像プロンプト
+      const mainPrompt = store.newspaperData.mainArticle?.imagePrompt
+        || `A photograph for newspaper article about: ${store.newspaperData.mainArticle?.headline || 'news event'}`;
+      imagePrompts.push(mainPrompt);
+
+      // サブ記事の画像プロンプト（3枚）
+      if (store.newspaperData.subArticles) {
+        for (let i = 0; i < 3; i++) {
+          const article = store.newspaperData.subArticles[i];
+          if (article?.imagePrompt) {
+            imagePrompts.push(article.imagePrompt);
+          } else if (article) {
+            imagePrompts.push(`A photograph for newspaper article about: ${article.headline || 'news'}`);
+          } else {
+            imagePrompts.push('A vintage Japanese newspaper photograph of daily life');
+          }
+        }
       }
 
-      // 画像生成（eraに応じたスタイルで生成）
+      store.setGenerationProgress(40);
+
+      // 画像生成
       const imageResponse = await fetch('/api/image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          prompts: imagePrompts.length > 0 ? imagePrompts : ['vintage newspaper header image'],
-          era: store.style,  // showa/heisei/reiwa
+          prompts: imagePrompts,
+          era: store.style,
         }),
       });
 
-      store.setGenerationProgress(60);
-
       const imageData = await imageResponse.json();
+
+      store.setGenerationProgress(80);
+
       if (imageData.success && imageData.images?.length > 0) {
-        // nullをundefinedに変換（順序を保持するため）
         store.setGeneratedImages({
           mainImage: imageData.images[0] ?? undefined,
           subImages: (imageData.images.slice(1) || []).map((img: string | null) => img ?? undefined),
         });
+        store.setIsImagesPaid(true);
+      } else if (imageData.error) {
+        throw new Error(imageData.error);
       }
 
-      // PDF生成
-      store.setGenerationStep('pdf');
-      store.setGenerationProgress(80);
+      store.setGenerationProgress(100);
+      store.setGenerationStep('complete');
+    } catch (error) {
+      store.setError(error instanceof Error ? error.message : '画像生成に失敗しました');
+      store.setGenerationStep('idle');
+    } finally {
+      store.setIsGenerating(false);
+    }
+  };
+
+  /**
+   * PDF生成（画像購入者のみ無料）
+   */
+  const generatePdf = async () => {
+    if (!store.newspaperData) {
+      store.setError('新聞データがありません');
+      return;
+    }
+
+    if (!store.isImagesPaid) {
+      store.setError('PDF出力には画像の購入が必要です');
+      return;
+    }
+
+    store.setIsGenerating(true);
+    store.setGenerationStep('pdf');
+    store.setError(null);
+
+    try {
+      store.setGenerationProgress(30);
 
       const pdfResponse = await fetch('/api/generate-pdf', {
         method: 'POST',
@@ -263,29 +267,40 @@ export const useGenerationFlow = () => {
           paymentIntentId: store.paymentIntentId,
           newspaperData: store.newspaperData,
           images: store.generatedImages,
-          quality: store.selectedTier,
+          quality: 'premium', // 画像購入者は高品質PDF
         }),
       });
 
+      store.setGenerationProgress(70);
+
       const pdfData = await pdfResponse.json();
       if (pdfData.success) {
-        // Base64 PDFをBlobに変換してURLを作成
         const pdfBlob = base64ToBlob(pdfData.pdf, 'application/pdf');
         const pdfUrl = URL.createObjectURL(pdfBlob);
         store.setPdfUrl(pdfUrl);
+      } else {
+        throw new Error(pdfData.error || 'PDF生成に失敗しました');
       }
 
       store.setGenerationProgress(100);
       store.setGenerationStep('complete');
     } catch (error) {
-      store.setError(error instanceof Error ? error.message : 'Production generation failed');
+      store.setError(error instanceof Error ? error.message : 'PDF生成に失敗しました');
       store.setGenerationStep('idle');
     } finally {
       store.setIsGenerating(false);
     }
   };
 
+  // 後方互換性のため古い関数名も維持
+  const startPreviewGeneration = startTextGeneration;
+  const startProductionGeneration = startImageGeneration;
+
   return {
+    startTextGeneration,
+    startImageGeneration,
+    generatePdf,
+    // 後方互換性
     startPreviewGeneration,
     startProductionGeneration,
   };

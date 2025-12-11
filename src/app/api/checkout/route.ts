@@ -1,6 +1,6 @@
 /**
  * Stripe Checkout API Endpoint
- * 決済処理
+ * 新料金体系: テキスト生成（80円）/ 画像追加（500円）
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -10,25 +10,29 @@ import { createPaymentIntent, verifyPayment, PRICING, type PricingTier } from '@
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { tier, metadata } = body;
+    // purchaseType: 'text_only' | 'add_images'
+    const { purchaseType, tier, metadata } = body;
+
+    // 新旧両方のパラメータに対応（後方互換性）
+    const pricingKey = purchaseType || tier;
 
     // バリデーション
-    if (!tier || !PRICING[tier as PricingTier]) {
+    if (!pricingKey || !PRICING[pricingKey as PricingTier]) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Invalid pricing tier',
-          availableTiers: Object.keys(PRICING),
+          error: 'Invalid purchase type',
+          availableTypes: Object.keys(PRICING),
         },
         { status: 400 }
       );
     }
 
-    const pricing = PRICING[tier as PricingTier];
+    const pricing = PRICING[pricingKey as PricingTier];
 
     // 支払いインテント作成
     const { clientSecret, paymentIntentId } = await createPaymentIntent(
-      tier as PricingTier,
+      pricingKey as PricingTier,
       metadata
     );
 

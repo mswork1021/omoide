@@ -21,27 +21,22 @@ function getStripe(): Stripe {
   return stripeInstance;
 }
 
-// 商品価格設定
+// 商品価格設定（新料金体系）
+// Step 1: テキスト生成（80円）- 画像なし新聞
+// Step 2: 画像追加（500円）- 4枚の画像を追加、PDF出力無料
 export const PRICING = {
-  standard: {
-    id: 'timetravel_standard',
-    name: 'TimeTravel Press Standard',
-    description: '記念日新聞 スタンダード版（PDF出力）',
-    price: 980, // 日本円
+  text_only: {
+    id: 'timetravel_text',
+    name: '記事生成',
+    description: '記念日新聞のテキスト生成（画像なし）',
+    price: 80, // 日本円
     currency: 'jpy',
   },
-  premium: {
-    id: 'timetravel_premium',
-    name: 'TimeTravel Press Premium',
-    description: '記念日新聞 プレミアム版（高画質PDF + 追加ページ）',
-    price: 1980,
-    currency: 'jpy',
-  },
-  deluxe: {
-    id: 'timetravel_deluxe',
-    name: 'TimeTravel Press Deluxe',
-    description: '記念日新聞 デラックス版（印刷用高解像度 + 額装対応）',
-    price: 3980,
+  add_images: {
+    id: 'timetravel_images',
+    name: '画像追加',
+    description: '記事に画像を追加（4枚）+ PDF出力無料',
+    price: 500,
     currency: 'jpy',
   },
 } as const;
