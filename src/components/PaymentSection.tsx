@@ -2,96 +2,67 @@
 
 /**
  * PaymentSection Component
- * Stripe決済フロー
+ * 新料金体系: テキスト生成済み → 画像追加（500円）→ PDF出力（無料）
  */
 
-import React, { useState, useEffect } from 'react';
-import { loadStripe } from '@stripe/stripe-js';
+import React, { useState } from 'react';
 import { useAppStore, useGenerationFlow } from '@/lib/store';
-import { CreditCard, Check, Loader2, Download, Shield } from 'lucide-react';
+import {
+  ImagePlus,
+  Check,
+  Loader2,
+  Download,
+  Shield,
+  FileText,
+  Sparkles,
+  Camera
+} from 'lucide-react';
 
-// Stripeの公開鍵
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ''
-);
-
-interface PricingOption {
-  tier: 'standard' | 'premium' | 'deluxe';
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  currency: string;
-  features: string[];
-}
+// テストモード（Stripeスキップ）
+const TEST_MODE = true;
 
 export function PaymentSection() {
   const {
     newspaperData,
-    selectedTier,
-    setSelectedTier,
-    isPaid,
-    setIsPaid,
-    setPaymentIntentId,
+    generatedImages,
+    isTextPaid,
+    isImagesPaid,
+    setIsImagesPaid,
     pdfUrl,
     generationStep,
     generationProgress,
     isGenerating,
+    style,
   } = useAppStore();
 
-  const { startProductionGeneration } = useGenerationFlow();
+  const { startImageGeneration, generatePdf } = useGenerationFlow();
 
-  const [pricing, setPricing] = useState<PricingOption[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
 
-  // 価格情報を取得
-  useEffect(() => {
-    const fetchPricing = async () => {
-      try {
-        const response = await fetch('/api/checkout');
-        const data = await response.json();
-        if (data.success) {
-          // 機能リストを追加
-          const pricingWithFeatures = data.pricing.map((p: PricingOption) => ({
-            ...p,
-            features: getPlanFeatures(p.tier),
-          }));
-          setPricing(pricingWithFeatures);
-        }
-      } catch (error) {
-        console.error('Failed to fetch pricing:', error);
-      }
-    };
-    fetchPricing();
-  }, []);
+  // 新聞データがなければ表示しない
+  if (!newspaperData) {
+    return null;
+  }
 
-  const getPlanFeatures = (tier: string): string[] => {
-    switch (tier) {
-      case 'standard':
-        return ['A3サイズPDF', '150dpi画質', '基本レイアウト'];
-      case 'premium':
-        return ['A3サイズPDF', '300dpi高画質', '追加コラム', 'カスタムメッセージ枠'];
-      case 'deluxe':
-        return ['A2サイズPDF', '300dpi最高画質', '額装対応サイズ', '全ての機能'];
-      default:
-        return [];
-    }
-  };
-
-  const handlePayment = async () => {
-    if (!newspaperData) return;
-
+  // 画像追加の決済処理
+  const handleImagePurchase = async () => {
     setIsProcessing(true);
     setPaymentError(null);
 
     try {
-      // 支払いインテント作成
+      if (TEST_MODE) {
+        // テストモード: 決済スキップして直接生成
+        await startImageGeneration();
+        return;
+      }
+
+      // 本番: Stripe決済（500円）
       const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          tier: selectedTier,
+          purchaseType: 'add_images',
           metadata: {
             targetDate: newspaperData.date.toString(),
           },
@@ -100,38 +71,42 @@ export function PaymentSection() {
 
       const data = await response.json();
       if (!data.success) {
-        throw new Error(data.error || 'Payment initialization failed');
+        throw new Error(data.error || '決済に失敗しました');
       }
 
-      // デモモード: 実際のStripe決済をスキップ
-      // 本番環境では Stripe Elements を使用
-      console.log('Payment Intent Created:', data.paymentIntentId);
-
-      // デモ用: 支払い成功として処理
-      setPaymentIntentId(data.paymentIntentId);
-      setIsPaid(true);
-
-      // Production生成を開始
-      await startProductionGeneration();
+      // 決済成功後に画像生成
+      await startImageGeneration();
     } catch (error) {
-      setPaymentError(error instanceof Error ? error.message : 'Payment failed');
+      setPaymentError(error instanceof Error ? error.message : '決済に失敗しました');
     } finally {
       setIsProcessing(false);
     }
   };
 
+  // PDF生成処理
+  const handlePdfGeneration = async () => {
+    setIsProcessing(true);
+    setPaymentError(null);
+
+    try {
+      await generatePdf();
+    } catch (error) {
+      setPaymentError(error instanceof Error ? error.message : 'PDF生成に失敗しました');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // PDFダウンロード
   const handleDownload = () => {
     if (!pdfUrl) return;
 
     const link = document.createElement('a');
     link.href = pdfUrl;
-    link.download = `timetravel-press-${new Date(newspaperData?.date || Date.now()).toISOString().split('T')[0]}.pdf`;
+    const dateStr = new Date(newspaperData.date).toISOString().split('T')[0];
+    link.download = `timetravel-press-${dateStr}.pdf`;
     link.click();
   };
-
-  if (!newspaperData) {
-    return null;
-  }
 
   // 生成中の表示
   if (isGenerating) {
@@ -142,7 +117,7 @@ export function PaymentSection() {
           <h3 className="text-xl font-bold mb-2">
             {generationStep === 'images' && '画像を生成中...'}
             {generationStep === 'pdf' && 'PDFを生成中...'}
-            {generationStep === 'content' && 'コンテンツを生成中...'}
+            {generationStep === 'content' && '記事を生成中...'}
           </h3>
           <div className="w-full bg-[#1a1a1a]/10 rounded-full h-2 mb-2">
             <div
@@ -156,15 +131,15 @@ export function PaymentSection() {
     );
   }
 
-  // 決済完了後のダウンロード表示
-  if (isPaid && pdfUrl) {
+  // PDF生成完了 → ダウンロード表示
+  if (isImagesPaid && pdfUrl) {
     return (
       <div className="payment-section bg-green-50 rounded-lg p-6 border-2 border-green-600">
         <div className="text-center">
           <div className="w-16 h-16 mx-auto mb-4 bg-green-600 rounded-full flex items-center justify-center">
             <Check className="w-10 h-10 text-white" />
           </div>
-          <h3 className="text-2xl font-bold text-green-800 mb-2">生成完了</h3>
+          <h3 className="text-2xl font-bold text-green-800 mb-2">完成しました！</h3>
           <p className="text-green-700 mb-6">
             あなただけの記念日新聞が完成しました
           </p>
@@ -180,47 +155,100 @@ export function PaymentSection() {
     );
   }
 
-  return (
-    <div className="payment-section space-y-6">
-      <div className="text-center">
-        <h3 className="text-2xl font-bold mb-2">高画質PDFを取得</h3>
-        <p className="text-[#1a1a1a]/60">
-          プラン選択して、印刷可能な高画質PDFをダウンロード
-        </p>
-      </div>
+  // 画像購入済み → PDF生成ボタン
+  if (isImagesPaid && generatedImages) {
+    return (
+      <div className="payment-section bg-blue-50 rounded-lg p-6 border-2 border-blue-500">
+        <div className="text-center">
+          <div className="w-16 h-16 mx-auto mb-4 bg-blue-500 rounded-full flex items-center justify-center">
+            <Camera className="w-8 h-8 text-white" />
+          </div>
+          <h3 className="text-xl font-bold text-blue-800 mb-2">画像が追加されました</h3>
+          <p className="text-blue-700 mb-4">
+            PDFを生成してダウンロードできます（無料）
+          </p>
 
-      {/* 価格プラン */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {pricing.map((plan) => (
+          {paymentError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+              {paymentError}
+            </div>
+          )}
+
           <button
-            key={plan.tier}
-            onClick={() => setSelectedTier(plan.tier)}
+            onClick={handlePdfGeneration}
+            disabled={isProcessing}
             className={`
-              p-4 rounded-lg border-2 text-left transition-all
-              ${
-                selectedTier === plan.tier
-                  ? 'border-[#1a1a1a] bg-[#1a1a1a] text-white'
-                  : 'border-[#1a1a1a]/20 hover:border-[#1a1a1a]/40 bg-[#faf8f3]'
+              inline-flex items-center gap-2 px-8 py-4 font-bold rounded-lg transition-colors
+              ${isProcessing
+                ? 'bg-blue-300 cursor-not-allowed'
+                : 'bg-blue-600 hover:bg-blue-700 text-white'
               }
             `}
           >
-            <div className="text-lg font-bold">{plan.name.split(' ').pop()}</div>
-            <div className="text-2xl font-black my-2">
-              ¥{plan.price.toLocaleString()}
-            </div>
-            <ul className="text-sm space-y-1">
-              {plan.features.map((feature, i) => (
-                <li key={i} className="flex items-center gap-1">
-                  <Check
-                    size={14}
-                    className={selectedTier === plan.tier ? '' : 'text-green-600'}
-                  />
-                  {feature}
-                </li>
-              ))}
-            </ul>
+            {isProcessing ? (
+              <>
+                <Loader2 className="animate-spin" size={20} />
+                処理中...
+              </>
+            ) : (
+              <>
+                <FileText size={20} />
+                PDFを生成（無料）
+              </>
+            )}
           </button>
-        ))}
+        </div>
+      </div>
+    );
+  }
+
+  // テキスト生成済み → 画像追加ボタン
+  return (
+    <div className="payment-section space-y-6">
+      <div className="text-center">
+        <h3 className="text-2xl font-bold mb-2">記事が完成しました！</h3>
+        <p className="text-[#1a1a1a]/60">
+          画像を追加して、より本格的な新聞に仕上げましょう
+        </p>
+      </div>
+
+      {/* 画像追加オプション */}
+      <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-6 border-2 border-purple-300">
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
+            <ImagePlus className="w-6 h-6 text-white" />
+          </div>
+          <div className="flex-1">
+            <h4 className="text-lg font-bold text-purple-800 mb-1">
+              画像を追加する
+            </h4>
+            <p className="text-sm text-purple-700 mb-3">
+              AIが記事に合った画像を4枚生成します。
+              {style === 'showa' && '昭和風のモノクロ写真'}
+              {style === 'heisei' && '平成風のカラフルな写真'}
+              {style === 'reiwa' && '令和風の高画質写真'}
+              で雰囲気を演出。
+            </p>
+            <ul className="text-sm text-purple-600 space-y-1 mb-4">
+              <li className="flex items-center gap-2">
+                <Check size={14} />
+                メイン記事の画像1枚
+              </li>
+              <li className="flex items-center gap-2">
+                <Check size={14} />
+                サブ記事の画像3枚
+              </li>
+              <li className="flex items-center gap-2">
+                <Check size={14} />
+                PDF出力が無料
+              </li>
+            </ul>
+            <div className="text-2xl font-black text-purple-800">
+              ¥500
+              <span className="text-sm font-normal ml-2">（税込）</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* エラー表示 */}
@@ -230,19 +258,18 @@ export function PaymentSection() {
         </div>
       )}
 
-      {/* 決済ボタン */}
+      {/* 購入ボタン */}
       <button
-        onClick={handlePayment}
+        onClick={handleImagePurchase}
         disabled={isProcessing}
         className={`
           w-full py-4 text-lg font-bold rounded-lg transition-all
           flex items-center justify-center gap-2
           ${
             isProcessing
-              ? 'bg-[#1a1a1a]/50 cursor-not-allowed'
-              : 'bg-[#1a1a1a] hover:bg-[#1a1a1a]/90'
+              ? 'bg-purple-300 cursor-not-allowed'
+              : 'bg-purple-600 hover:bg-purple-700 text-white'
           }
-          text-white
         `}
       >
         {isProcessing ? (
@@ -250,20 +277,33 @@ export function PaymentSection() {
             <Loader2 className="animate-spin" size={20} />
             処理中...
           </>
+        ) : TEST_MODE ? (
+          <>
+            <Sparkles size={20} />
+            テスト: 画像を追加（無料）
+          </>
         ) : (
           <>
-            <CreditCard size={20} />
-            {pricing.find((p) => p.tier === selectedTier)?.price.toLocaleString() || '---'}
-            円で購入
+            <ImagePlus size={20} />
+            画像を追加（¥500）
           </>
         )}
       </button>
 
       {/* セキュリティバッジ */}
-      <div className="flex items-center justify-center gap-2 text-sm text-[#1a1a1a]/60">
-        <Shield size={16} />
-        Stripeによる安全な決済
-      </div>
+      {!TEST_MODE && (
+        <div className="flex items-center justify-center gap-2 text-sm text-[#1a1a1a]/60">
+          <Shield size={16} />
+          Stripeによる安全な決済
+        </div>
+      )}
+
+      {/* テストモード表示 */}
+      {TEST_MODE && (
+        <p className="text-center text-xs text-orange-600 bg-orange-50 p-2 rounded">
+          🧪 テストモード: 決済をスキップして画像生成をテストできます
+        </p>
+      )}
     </div>
   );
 }

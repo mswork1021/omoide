@@ -2,12 +2,12 @@
 
 /**
  * OrderForm Component
- * 日付選択 → 決済直行のシンプルなフォーム
+ * 新料金体系: テキスト生成（80円）→ 画像追加（500円）
  */
 
 import React, { useState } from 'react';
 import { DatePicker } from './DatePicker';
-import { Calendar, Gift, CreditCard, Sparkles, User, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import { Calendar, Gift, Sparkles, User, ChevronDown, ChevronUp, Loader2, FileText } from 'lucide-react';
 import { useAppStore, useGenerationFlow } from '@/lib/store';
 
 // テストモード（Stripeスキップ）
@@ -30,8 +30,7 @@ export function OrderForm() {
     setPersonalMessage,
     occasion,
     setOccasion,
-    selectedTier,
-    setSelectedTier,
+    newspaperData,
   } = useAppStore();
 
   const [showPersonalMessage, setShowPersonalMessage] = useState(false);
@@ -42,7 +41,7 @@ export function OrderForm() {
   const isTestCodeValid = testCode === TEST_PASSWORD;
 
   const { isGenerating, generationStep, generationProgress, error } = useAppStore();
-  const { startPreviewGeneration } = useGenerationFlow();
+  const { startTextGeneration } = useGenerationFlow();
 
   const styleOptions = [
     { value: 'showa', label: '昭和風', description: '重厚な活字文化' },
@@ -54,31 +53,28 @@ export function OrderForm() {
     '誕生日', '結婚記念日', '還暦祝い', '入学祝い', '卒業祝い', '退職記念', 'その他',
   ];
 
-  const pricingOptions = [
-    { tier: 'standard' as const, label: 'スタンダード', price: 980, features: ['A3サイズPDF', '150dpi'] },
-    { tier: 'premium' as const, label: 'プレミアム', price: 1980, features: ['A3 / 300dpi', '追加コラム'] },
-    { tier: 'deluxe' as const, label: 'デラックス', price: 3980, features: ['A2 / 300dpi', '額装対応'] },
-  ];
+  // 既に新聞データがある場合は生成済み
+  const isGenerated = !!newspaperData;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!targetDate) return;
 
-    // テストモード: Stripeスキップして直接生成
+    // テストモード: Stripeスキップして直接テキスト生成
     if (TEST_MODE) {
-      await startPreviewGeneration();
+      await startTextGeneration();
       return;
     }
 
     setIsSubmitting(true);
 
-    // 決済処理へ遷移（実際の実装ではStripe Checkoutを使用）
+    // 本番: テキスト生成の決済（80円）
     try {
       const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          tier: selectedTier,
+          purchaseType: 'text_only',
           metadata: {
             targetDate: targetDate.toISOString(),
             style,
@@ -92,9 +88,10 @@ export function OrderForm() {
 
       const data = await response.json();
       if (data.success) {
-        // Stripe Checkout にリダイレクト（本番実装時）
-        // 今はアラートで代替
-        alert(`決済画面へ遷移します\n\n金額: ¥${data.amount}\n商品: ${data.productName}\n\n※ 実際の環境ではStripe決済画面が開きます`);
+        // 決済完了後にテキスト生成
+        await startTextGeneration();
+      } else {
+        throw new Error(data.error || '決済に失敗しました');
       }
     } catch (error) {
       console.error('Checkout error:', error);
@@ -239,46 +236,6 @@ export function OrderForm() {
         )}
       </div>
 
-      {/* ステップ3: プラン選択 */}
-      <div className="form-section">
-        <div className="flex items-center gap-2 mb-3">
-          <div className="w-6 h-6 rounded-full bg-[#8b4513] text-white flex items-center justify-center text-sm font-bold">
-            3
-          </div>
-          <label className="text-lg font-bold flex items-center gap-2">
-            <CreditCard size={20} />
-            プランを選択
-          </label>
-        </div>
-        <div className="space-y-2">
-          {pricingOptions.map((option) => (
-            <button
-              key={option.tier}
-              type="button"
-              onClick={() => setSelectedTier(option.tier)}
-              className={`
-                w-full p-3 border-2 rounded-lg text-left transition-all flex items-center justify-between
-                ${
-                  selectedTier === option.tier
-                    ? 'border-[#8b4513] bg-[#8b4513]/5'
-                    : 'border-[#1a1a1a]/20 hover:border-[#8b4513]/40'
-                }
-              `}
-            >
-              <div>
-                <div className="font-bold">{option.label}</div>
-                <div className="text-xs text-[#1a1a1a]/60">
-                  {option.features.join(' / ')}
-                </div>
-              </div>
-              <div className="text-xl font-black">
-                ¥{option.price.toLocaleString()}
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* テストコード入力（テストモード時のみ） */}
       {TEST_MODE && (
         <div className="form-section">
@@ -304,12 +261,12 @@ export function OrderForm() {
       {/* 送信ボタン */}
       <button
         type="submit"
-        disabled={!targetDate || isSubmitting || isGenerating || (TEST_MODE && !isTestCodeValid)}
+        disabled={!targetDate || isSubmitting || isGenerating || isGenerated || (TEST_MODE && !isTestCodeValid)}
         className={`
           w-full py-4 text-lg font-bold rounded-lg transition-all
           flex items-center justify-center gap-2
           ${
-            !targetDate || isSubmitting || isGenerating || (TEST_MODE && !isTestCodeValid)
+            !targetDate || isSubmitting || isGenerating || isGenerated || (TEST_MODE && !isTestCodeValid)
               ? 'bg-[#1a1a1a]/20 text-[#1a1a1a]/40 cursor-not-allowed'
               : 'bg-[#8b4513] text-white hover:bg-[#6b3410] active:scale-[0.99]'
           }
@@ -318,10 +275,15 @@ export function OrderForm() {
         {isSubmitting || isGenerating ? (
           <>
             <Loader2 size={20} className="animate-spin" />
-            {generationStep === 'content' && '新聞を生成中...'}
+            {generationStep === 'content' && '記事を生成中...'}
             {generationStep === 'images' && '画像を生成中...'}
             {generationStep === 'pdf' && 'PDF作成中...'}
             {generationStep === 'idle' && '処理中...'}
+          </>
+        ) : isGenerated ? (
+          <>
+            <FileText size={20} />
+            生成済み（下のプレビューを確認）
           </>
         ) : TEST_MODE ? (
           <>
@@ -330,8 +292,8 @@ export function OrderForm() {
           </>
         ) : (
           <>
-            <CreditCard size={20} />
-            ¥{pricingOptions.find(p => p.tier === selectedTier)?.price.toLocaleString()} で購入する
+            <FileText size={20} />
+            記事を生成する（¥80）
           </>
         )}
       </button>
@@ -343,16 +305,19 @@ export function OrderForm() {
         </div>
       )}
 
-      {/* テストモード表示 */}
-      {TEST_MODE ? (
-        <p className="text-center text-xs text-orange-600 bg-orange-50 p-2 rounded">
-          🧪 テストモード: Stripe決済をスキップしてAI生成をテストできます
-        </p>
-      ) : (
-        <p className="text-center text-xs text-[#1a1a1a]/50">
-          決済完了後、AIが新聞を生成しPDFをダウンロードできます
-        </p>
-      )}
+      {/* 料金説明 */}
+      <div className="text-center text-xs text-[#1a1a1a]/60 space-y-1">
+        {TEST_MODE ? (
+          <p className="text-orange-600 bg-orange-50 p-2 rounded">
+            🧪 テストモード: 決済をスキップしてAI生成をテストできます
+          </p>
+        ) : (
+          <>
+            <p>記事生成: ¥80 / 画像追加: ¥500</p>
+            <p>画像を追加すると、PDF出力が無料でできます</p>
+          </>
+        )}
+      </div>
     </form>
   );
 }
