@@ -29,6 +29,16 @@ export function SampleCarousel() {
   const currentSample = sampleNewspapers[currentIndex];
   const currentMeta = sampleMeta[currentIndex];
 
+  // サンプル画像のパス（public/samples/ に保存された静的画像）
+  const sampleImages = {
+    mainImage: `/samples/${currentMeta.style}-main.png`,
+    subImages: [
+      `/samples/${currentMeta.style}-sub-1.png`,
+      `/samples/${currentMeta.style}-sub-2.png`,
+      `/samples/${currentMeta.style}-sub-3.png`,
+    ],
+  };
+
   // スタイルに応じた色
   const styleColors = {
     reiwa: { bg: 'bg-[#3b82f6]', text: 'text-white' },
@@ -69,6 +79,7 @@ export function SampleCarousel() {
               data={currentSample}
               style={currentMeta.style}
               isPreview={true}
+              images={sampleImages}
             />
           </div>
         </div>
@@ -109,7 +120,7 @@ export function SampleCarousel() {
           実際のご注文では、ご指定の日付・スタイルで生成されます。
         </p>
         <p className="text-xs text-[#1a1a1a]/40 mt-2">
-          ※ 画像部分は本番では AI が生成します
+          ※ 本番ではご指定の日付に合わせた画像が AI で生成されます
         </p>
       </div>
     </div>
