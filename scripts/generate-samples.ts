@@ -37,7 +37,27 @@
 import { GoogleGenAI } from '@google/genai';
 import * as fs from 'fs';
 import * as path from 'path';
-import 'dotenv/config';
+import * as dotenv from 'dotenv';
+
+// ============================================
+// 環境変数の読み込み（.env.local を明示的に指定）
+// ============================================
+const envPath = path.join(process.cwd(), '.env.local');
+console.log('');
+console.log(`環境変数ファイルを確認中: ${envPath}`);
+
+if (fs.existsSync(envPath)) {
+  console.log('  → ファイルが見つかりました');
+  dotenv.config({ path: envPath });
+} else {
+  console.log('  → ファイルが見つかりません！');
+  console.log('');
+  console.log('【解決方法】');
+  console.log('  以下の場所にファイルを作成してください:');
+  console.log(`  ${envPath}`);
+  console.log('');
+  process.exit(1);
+}
 
 // ============================================
 // 設定
@@ -49,6 +69,7 @@ const OUTPUT_DIR = path.join(process.cwd(), 'public', 'samples');
 // APIキー確認
 // ============================================
 const GOOGLE_AI_API_KEY = process.env.GOOGLE_AI_API_KEY;
+console.log(`APIキー: ${GOOGLE_AI_API_KEY ? '設定済み ✓' : '未設定 ✗'}`);
 
 if (!GOOGLE_AI_API_KEY) {
   console.log('');
