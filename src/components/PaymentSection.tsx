@@ -33,12 +33,16 @@ export function PaymentSection() {
     generationProgress,
     isGenerating,
     style,
+    error: storeError,
   } = useAppStore();
 
   const { startImageGeneration, generatePdf } = useGenerationFlow();
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+
+  // エラー表示（ローカルとストア両方）
+  const displayError = paymentError || storeError;
 
   // 新聞データがなければ表示しない
   if (!newspaperData) {
@@ -168,9 +172,9 @@ export function PaymentSection() {
             PDFを生成してダウンロードできます（無料）
           </p>
 
-          {paymentError && (
+          {displayError && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
-              {paymentError}
+              {displayError}
             </div>
           )}
 
@@ -252,9 +256,9 @@ export function PaymentSection() {
       </div>
 
       {/* エラー表示 */}
-      {paymentError && (
+      {displayError && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {paymentError}
+          {displayError}
         </div>
       )}
 
