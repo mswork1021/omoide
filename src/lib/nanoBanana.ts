@@ -1,8 +1,8 @@
 /**
- * Gemini 2.5 Flash Image Generation Client
+ * Imagen 4.0 Image Generation Client
  * 時代別画像生成（昭和=モノクロ、平成=カラー、令和=高解像度カラー）
  *
- * 新SDK (@google/genai) + generateContent を使用
+ * 新SDK (@google/genai) + generateImages を使用
  */
 
 import { GoogleGenAI } from '@google/genai';
@@ -10,8 +10,8 @@ import type { ImageGenerationRequest, ImageGenerationResponse } from '@/types';
 
 const GOOGLE_AI_API_KEY = process.env.GOOGLE_AI_API_KEY;
 
-// 画像生成モデル（Gemini 2.5 Flash Image Generation）
-const IMAGE_MODEL = 'gemini-2.5-flash-preview-image';
+// 画像生成モデル（Imagen 4.0 Preview - クォータが緩い可能性）
+const IMAGE_MODEL = 'imagen-4.0-generate-preview-06-06';
 
 // 画像生成APIを使用するか
 const USE_IMAGE_API = true;
@@ -148,32 +148,27 @@ export async function generateNewspaperImage(
     try {
       const genAI = getAI();
 
-      // Gemini 2.5 Flash Image は generateContent メソッドを使用
-      const response = await genAI.models.generateContent({
+      // Imagen 4.0 は generateImages メソッドを使用
+      // @ts-ignore - generateImages の型定義
+      const response = await genAI.models.generateImages({
         model: IMAGE_MODEL,
-        contents: fullPrompt,
+        prompt: fullPrompt,
         config: {
-          responseModalities: ['image', 'text'],
+          numberOfImages: 1,
         },
       });
 
       // レスポンスから画像データを抽出
-      // @ts-ignore - 型定義
-      const parts = response.candidates?.[0]?.content?.parts;
-      if (parts && parts.length > 0) {
-        for (const part of parts) {
-          // @ts-ignore
-          if (part.inlineData?.data) {
-            // @ts-ignore
-            const mimeType = part.inlineData.mimeType || 'image/png';
-            // @ts-ignore
-            const imageData = part.inlineData.data;
-            console.log(`[IMAGE] Generated successfully (${era} style)`);
-            return {
-              success: true,
-              imageUrl: `data:${mimeType};base64,${imageData}`,
-            };
-          }
+      // @ts-ignore - generatedImages の型定義
+      if (response.generatedImages && response.generatedImages.length > 0) {
+        // @ts-ignore
+        const imageBytes = response.generatedImages[0].image?.imageBytes;
+        if (imageBytes) {
+          console.log(`[IMAGE] Generated successfully (${era} style)`);
+          return {
+            success: true,
+            imageUrl: `data:image/png;base64,${imageBytes}`,
+          };
         }
       }
 
