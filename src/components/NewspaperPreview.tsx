@@ -37,15 +37,15 @@ const styleConfig = {
   },
   heisei: {
     name: '平成',
-    bg: '#fefefe',
+    bg: '#fff5f5',
     paper: '#ffffff',
-    text: '#333333',
-    accent: '#6366f1',
-    headerBg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    text: '#1a1a2e',
+    accent: '#e91e63',
+    headerBg: 'linear-gradient(135deg, #ff6b6b 0%, #feca57 50%, #48dbfb 100%)',
     headerText: '#ffffff',
-    secondaryBg: '#f8f7ff',
-    borderColor: '#e5e7eb',
-    filter: 'saturate(1.1)',
+    secondaryBg: '#fff0f5',
+    borderColor: '#ffb6c1',
+    filter: 'saturate(1.2) brightness(1.02)',
   },
   reiwa: {
     name: '令和',
@@ -411,38 +411,51 @@ export function NewspaperPreview({
     );
   }
 
-  // 平成スタイル（90年代ポップ・洗練されたデザイン）
+  // 平成スタイル（90年代ポップ・スポーツ新聞風）
   if (style === 'heisei') {
     return (
       <div
         id="newspaper-preview"
         className="font-sans"
         style={{
-          background: config.paper,
+          background: config.bg,
           color: config.text,
           minHeight: '900px',
-          boxShadow: '0 20px 40px -12px rgba(0, 0, 0, 0.15)',
+          boxShadow: '0 20px 40px -12px rgba(0, 0, 0, 0.2)',
+          filter: config.filter,
         }}
       >
-        {/* ヘッダー - グラデーション */}
+        {/* ヘッダー - カラフルグラデーション */}
         <header
           style={{
             background: config.headerBg,
             color: config.headerText,
-            padding: '16px 24px',
+            padding: '12px 20px 16px',
+            position: 'relative',
           }}
         >
-          <div className="flex justify-between items-center text-xs opacity-80 mb-2">
-            <span>{data.edition}</span>
-            <span>{dateStr}</span>
-            <span>{data.weather}</span>
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '4px',
+              background: 'linear-gradient(90deg, #ff0080, #ff8c00, #40e0d0, #ff0080)',
+            }}
+          />
+          <div className="flex justify-between items-center text-xs mb-2" style={{ opacity: 0.9 }}>
+            <span style={{ background: 'rgba(255,255,255,0.2)', padding: '2px 8px', borderRadius: '2px' }}>{data.edition}</span>
+            <span style={{ fontWeight: '600' }}>{dateStr}</span>
+            <span>☀ {data.weather}</span>
           </div>
           <h1
             className="text-center"
             style={{
-              fontSize: 'clamp(32px, 6vw, 56px)',
-              fontWeight: '300',
-              letterSpacing: '0.15em',
+              fontSize: 'clamp(36px, 7vw, 64px)',
+              fontWeight: '800',
+              letterSpacing: '0.08em',
+              textShadow: '2px 2px 0 rgba(0,0,0,0.1)',
             }}
           >
             {data.masthead}
@@ -453,74 +466,88 @@ export function NewspaperPreview({
         {data.personalMessage && (
           <div
             style={{
-              margin: '20px',
-              padding: '24px',
-              background: 'linear-gradient(135deg, #f8f7ff 0%, #e8e6ff 100%)',
-              borderRadius: '12px',
-              borderLeft: `3px solid ${config.accent}`,
+              margin: '16px',
+              padding: '20px',
+              background: 'linear-gradient(135deg, #fff0f5 0%, #ffe4ec 100%)',
+              border: `2px solid ${config.accent}`,
+              position: 'relative',
             }}
           >
-            <div className="text-center">
-              <span
-                style={{
-                  display: 'inline-block',
-                  background: config.accent,
-                  color: 'white',
-                  padding: '4px 16px',
-                  borderRadius: '20px',
-                  fontSize: '11px',
-                  marginBottom: '12px',
-                }}
-              >
-                {data.personalMessage.occasion}
-              </span>
+            <div
+              style={{
+                position: 'absolute',
+                top: '-12px',
+                left: '20px',
+                background: config.accent,
+                color: 'white',
+                padding: '4px 16px',
+                fontSize: '12px',
+                fontWeight: '600',
+              }}
+            >
+              ★ {data.personalMessage.occasion} ★
+            </div>
+            <div className="text-center" style={{ paddingTop: '8px' }}>
               <h2
                 style={{
-                  fontSize: 'clamp(24px, 5vw, 40px)',
-                  fontWeight: '300',
-                  color: config.text,
+                  fontSize: 'clamp(26px, 5vw, 44px)',
+                  fontWeight: '700',
+                  color: config.accent,
                   marginBottom: '12px',
                 }}
               >
                 {data.personalMessage.recipientName} 様へ
               </h2>
-              <p style={{ fontSize: '14px', lineHeight: '1.8', opacity: 0.8 }}>
+              <p style={{ fontSize: '14px', lineHeight: '1.9' }}>
                 {data.personalMessage.message}
               </p>
-              <p style={{ fontSize: '12px', marginTop: '12px', opacity: 0.6 }}>
-                — {data.personalMessage.senderName}
+              <p style={{ fontSize: '13px', marginTop: '12px', color: config.accent }}>
+                ♪ {data.personalMessage.senderName} より ♪
               </p>
             </div>
           </div>
         )}
 
         {/* メインコンテンツ */}
-        <div style={{ padding: '0 20px 20px' }}>
-          {/* メイン見出し */}
-          <div style={{ marginBottom: '16px' }}>
+        <div style={{ padding: '0 16px 16px' }}>
+          {/* メイン見出し - スポーツ新聞風 */}
+          <div
+            style={{
+              background: `linear-gradient(135deg, ${config.accent} 0%, #ff6b6b 100%)`,
+              color: 'white',
+              padding: '12px 16px',
+              marginBottom: '12px',
+            }}
+          >
             <h2
               style={{
-                fontSize: 'clamp(26px, 5vw, 42px)',
-                fontWeight: '600',
-                lineHeight: '1.2',
-                color: config.text,
+                fontSize: 'clamp(28px, 5vw, 48px)',
+                fontWeight: '900',
+                lineHeight: '1.15',
+                textShadow: '1px 1px 0 rgba(0,0,0,0.2)',
               }}
             >
               {data.mainArticle.headline}
             </h2>
             {data.mainArticle.subheadline && (
-              <p style={{ fontSize: '14px', color: config.accent, marginTop: '6px' }}>
-                {data.mainArticle.subheadline}
+              <p style={{ fontSize: '14px', marginTop: '6px', opacity: 0.9 }}>
+                ▶ {data.mainArticle.subheadline}
               </p>
             )}
           </div>
 
           {/* メイン画像 */}
-          <div style={{ marginBottom: '16px', borderRadius: '8px', overflow: 'hidden' }}>
+          <div
+            style={{
+              marginBottom: '12px',
+              border: `3px solid ${config.accent}`,
+              padding: '3px',
+              background: 'white',
+            }}
+          >
             <ImagePlaceholder
               src={images?.mainImage}
               alt="メイン記事"
-              filter={config.filter}
               style={{
                 width: '100%',
                 aspectRatio: '16/9',
@@ -530,73 +557,85 @@ export function NewspaperPreview({
           </div>
 
           {/* メイン記事本文 */}
-          <p
+          <div
             style={{
-              fontSize: '14px',
-              lineHeight: '1.9',
-              marginBottom: '24px',
-              columnCount: 2,
-              columnGap: '24px',
+              background: 'white',
+              padding: '16px',
+              marginBottom: '16px',
+              borderLeft: `4px solid ${config.accent}`,
             }}
           >
-            {data.mainArticle.content}
-          </p>
+            <p
+              style={{
+                fontSize: '14px',
+                lineHeight: '2',
+                columnCount: 2,
+                columnGap: '20px',
+              }}
+            >
+              {data.mainArticle.content}
+            </p>
+          </div>
 
-          {/* サブ記事グリッド */}
+          {/* サブ記事グリッド - カラフルカード */}
           <div
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: '16px',
-              marginBottom: '24px',
+              gap: '12px',
+              marginBottom: '16px',
             }}
           >
-            {data.subArticles.slice(0, 3).map((article, index) => (
-              <div
-                key={index}
-                style={{
-                  background: config.secondaryBg,
-                  borderRadius: '8px',
-                  overflow: 'hidden',
-                }}
-              >
-                <ImagePlaceholder
-                  src={images?.subImages?.[index]}
-                  alt={`サブ記事${index + 1}`}
-                  filter={config.filter}
+            {data.subArticles.slice(0, 3).map((article, index) => {
+              const cardColors = ['#ff6b6b', '#feca57', '#48dbfb'];
+              return (
+                <div
+                  key={index}
                   style={{
-                    width: '100%',
-                    aspectRatio: '4/3',
-                    objectFit: 'cover',
+                    background: 'white',
+                    border: `2px solid ${cardColors[index]}`,
+                    overflow: 'hidden',
                   }}
-                />
-                <div style={{ padding: '12px' }}>
-                  <span
+                >
+                  <div
                     style={{
+                      background: cardColors[index],
+                      color: 'white',
+                      padding: '4px 8px',
                       fontSize: '10px',
-                      color: config.accent,
-                      textTransform: 'uppercase',
-                    }}
-                  >
-                    {article.category}
-                  </span>
-                  <h4
-                    style={{
-                      fontSize: '13px',
                       fontWeight: '600',
-                      marginTop: '4px',
-                      marginBottom: '6px',
-                      lineHeight: '1.3',
                     }}
                   >
-                    {article.headline}
-                  </h4>
-                  <p style={{ fontSize: '11px', opacity: 0.7, lineHeight: '1.6' }}>
-                    {article.content.slice(0, 100)}...
-                  </p>
+                    {article.category.toUpperCase()}
+                  </div>
+                  <ImagePlaceholder
+                    src={images?.subImages?.[index]}
+                    alt={`サブ記事${index + 1}`}
+                    style={{
+                      width: '100%',
+                      aspectRatio: '4/3',
+                      objectFit: 'cover',
+                    }}
+                  />
+                  <div style={{ padding: '10px' }}>
+                    <h4
+                      style={{
+                        fontSize: '13px',
+                        fontWeight: '700',
+                        marginBottom: '6px',
+                        lineHeight: '1.3',
+                        color: config.text,
+                      }}
+                    >
+                      {article.headline}
+                    </h4>
+                    <p style={{ fontSize: '11px', opacity: 0.7, lineHeight: '1.6' }}>
+                      {article.content.slice(0, 80)}...
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* 下段 - 社説とコラム */}
@@ -604,72 +643,101 @@ export function NewspaperPreview({
             style={{
               display: 'grid',
               gridTemplateColumns: '1fr 1fr',
-              gap: '16px',
-              paddingTop: '20px',
-              borderTop: `1px solid ${config.borderColor}`,
+              gap: '12px',
+              marginBottom: '16px',
             }}
           >
             {/* 社説 */}
-            <div style={{ padding: '16px', background: config.secondaryBg, borderRadius: '8px' }}>
+            <div
+              style={{
+                background: 'white',
+                border: `2px solid ${config.borderColor}`,
+                padding: '12px',
+              }}
+            >
               <h3
                 style={{
-                  fontSize: '11px',
-                  color: config.accent,
-                  marginBottom: '8px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
+                  fontSize: '12px',
+                  color: 'white',
+                  background: config.accent,
+                  padding: '4px 8px',
+                  marginBottom: '10px',
+                  display: 'inline-block',
                 }}
               >
-                Editorial
+                ★ 社説
               </h3>
-              <h4 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '8px' }}>
+              <h4 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '8px' }}>
                 {data.editorial.headline}
               </h4>
-              <p style={{ fontSize: '12px', lineHeight: '1.7', opacity: 0.8 }}>
-                {data.editorial.content.slice(0, 200)}...
+              <p style={{ fontSize: '11px', lineHeight: '1.8' }}>
+                {data.editorial.content.slice(0, 180)}...
               </p>
             </div>
 
             {/* コラム */}
-            <div style={{ padding: '16px', background: config.secondaryBg, borderRadius: '8px' }}>
+            <div
+              style={{
+                background: 'white',
+                border: `2px solid ${config.borderColor}`,
+                padding: '12px',
+              }}
+            >
               <h3
                 style={{
-                  fontSize: '11px',
-                  color: config.accent,
-                  marginBottom: '8px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
+                  fontSize: '12px',
+                  color: 'white',
+                  background: '#feca57',
+                  padding: '4px 8px',
+                  marginBottom: '10px',
+                  display: 'inline-block',
                 }}
               >
-                Column
+                ♪ コラム
               </h3>
-              <h4 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '8px' }}>
+              <h4 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '8px' }}>
                 {data.columnTitle}
               </h4>
-              <p style={{ fontSize: '12px', lineHeight: '1.7', opacity: 0.8 }}>
+              <p style={{ fontSize: '11px', lineHeight: '1.8' }}>
                 {data.columnContent}
               </p>
             </div>
           </div>
 
-          {/* 広告 */}
-          <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: `1px solid ${config.borderColor}` }}>
-            <p style={{ fontSize: '10px', opacity: 0.5, marginBottom: '8px', textAlign: 'center' }}>
-              当時流行していたもの
+          {/* 広告 - レトロ風 */}
+          <div
+            style={{
+              background: 'linear-gradient(135deg, #fff0f5 0%, #fffaf0 100%)',
+              padding: '12px',
+              border: `2px dashed ${config.accent}`,
+            }}
+          >
+            <p
+              style={{
+                fontSize: '11px',
+                color: config.accent,
+                marginBottom: '10px',
+                textAlign: 'center',
+                fontWeight: '600',
+              }}
+            >
+              ★★★ 当時流行していたもの ★★★
             </p>
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
               {data.advertisements.slice(0, 3).map((ad, i) => (
                 <div
                   key={i}
                   style={{
-                    padding: '10px 16px',
-                    background: config.secondaryBg,
-                    borderRadius: '6px',
+                    padding: '10px 14px',
+                    background: 'white',
+                    border: `1px solid ${config.borderColor}`,
                     textAlign: 'center',
+                    flex: 1,
+                    maxWidth: '150px',
                   }}
                 >
-                  <div style={{ fontSize: '12px', fontWeight: '500' }}>{ad.title}</div>
-                  <div style={{ fontSize: '9px', opacity: 0.6, marginTop: '2px' }}>{ad.content}</div>
+                  <div style={{ fontSize: '13px', fontWeight: '700', color: config.accent }}>{ad.title}</div>
+                  <div style={{ fontSize: '10px', opacity: 0.7, marginTop: '4px' }}>{ad.content}</div>
                 </div>
               ))}
             </div>
@@ -679,15 +747,15 @@ export function NewspaperPreview({
         {/* フッター */}
         <footer
           style={{
-            padding: '12px 24px',
+            background: config.headerBg,
+            padding: '10px 20px',
             textAlign: 'center',
-            fontSize: '10px',
-            opacity: 0.4,
-            borderTop: `1px solid ${config.borderColor}`,
+            fontSize: '11px',
+            color: 'white',
           }}
         >
-          TimeTravel Press
-          {isPreview && <span style={{ color: config.accent, marginLeft: '8px' }}>Preview</span>}
+          ★ TimeTravel Press ★
+          {isPreview && <span style={{ marginLeft: '8px', opacity: 0.8 }}>[ Preview ]</span>}
         </footer>
       </div>
     );
