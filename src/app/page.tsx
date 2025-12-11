@@ -4,19 +4,16 @@
  * TimeTravel Press - Home Page
  * 記念日新聞生成サービス メインページ
  *
- * フロー: サンプル閲覧 → 日付選択 → 決済 → 生成 → PDF
+ * 新フロー: サンプル閲覧 → 日付選択 → テキスト生成(80円) → 画像追加(500円) → PDF(無料)
  */
 
 import React from 'react';
-import { SampleCarousel, OrderForm, NewspaperPreview } from '@/components';
-import { Newspaper, Clock, Sparkles, Gift, Printer, Shield, CheckCircle, X, Download } from 'lucide-react';
+import { SampleCarousel, OrderForm, NewspaperPreview, PaymentSection } from '@/components';
+import { Newspaper, Clock, Sparkles, Gift, Printer, Shield, CheckCircle } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 
 export default function Home() {
-  const { newspaperData, generationStep, generatedImages, error, reset, style } = useAppStore();
-
-  // 生成完了後の結果表示
-  const showResult = newspaperData && generationStep === 'complete';
+  const { newspaperData, generatedImages, isImagesPaid, reset, style } = useAppStore();
 
   return (
     <div className="min-h-screen bg-[#f5f0e6]">
@@ -89,8 +86,9 @@ export default function Home() {
             <SampleCarousel />
           </div>
 
-          {/* 右側: 注文フォーム */}
-          <div>
+          {/* 右側: 注文フォーム & 決済セクション */}
+          <div className="space-y-6">
+            {/* 注文フォーム */}
             <div className="bg-[#faf8f3] rounded-lg shadow-lg border-2 border-[#1a1a1a] p-6">
               <h3 className="text-xl font-bold mb-6 flex items-center gap-2 font-serif">
                 <Gift size={24} />
@@ -98,18 +96,56 @@ export default function Home() {
               </h3>
               <OrderForm />
             </div>
+
+            {/* テキスト生成後: 画像追加セクション */}
+            {newspaperData && (
+              <div className="bg-[#faf8f3] rounded-lg shadow-lg border-2 border-[#1a1a1a] p-6">
+                <PaymentSection />
+              </div>
+            )}
           </div>
         </div>
+
+        {/* テキスト生成結果プレビュー */}
+        {newspaperData && (
+          <section className="mt-8">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold flex items-center gap-2 font-serif">
+                <Sparkles size={24} className="text-[#8b4513]" />
+                {isImagesPaid ? '完成した新聞' : '生成された記事（プレビュー）'}
+              </h3>
+              <button
+                onClick={() => reset()}
+                className="text-sm px-4 py-2 border border-[#1a1a1a]/20 rounded hover:bg-[#1a1a1a]/5 transition-colors"
+              >
+                最初からやり直す
+              </button>
+            </div>
+            <div className="bg-white p-4 md:p-6 rounded-lg shadow-lg border-2 border-[#1a1a1a]">
+              <NewspaperPreview
+                data={newspaperData}
+                style={style}
+                isPreview={!isImagesPaid}
+                images={generatedImages || undefined}
+              />
+            </div>
+            {!isImagesPaid && (
+              <p className="text-center text-sm text-[#1a1a1a]/60 mt-4">
+                ↑ 画像を追加すると、より本格的な新聞になります
+              </p>
+            )}
+          </section>
+        )}
 
         {/* 利用の流れ */}
         <section className="mt-16 py-8">
           <h3 className="text-2xl font-bold text-center mb-8 font-serif">ご利用の流れ</h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {[
-              { step: 1, title: '日付を選択', desc: '1900年〜現在まで対応' },
-              { step: 2, title: 'スタイルを選択', desc: '昭和・平成・令和風' },
-              { step: 3, title: 'お支払い', desc: 'Stripeで安全決済' },
-              { step: 4, title: 'PDFダウンロード', desc: 'AIが生成した新聞をお届け' },
+              { step: 1, title: '日付を選択', desc: '1900年〜現在まで対応', price: '' },
+              { step: 2, title: '記事を生成', desc: 'AIがその日の出来事を調査', price: '¥80' },
+              { step: 3, title: '画像を追加', desc: '気に入ったら画像をプラス', price: '¥500' },
+              { step: 4, title: 'PDFダウンロード', desc: '高画質PDFで保存', price: '無料' },
             ].map((item) => (
               <div key={item.step} className="text-center">
                 <div className="w-12 h-12 rounded-full bg-[#8b4513] text-white flex items-center justify-center text-xl font-bold mx-auto mb-3">
@@ -117,6 +153,11 @@ export default function Home() {
                 </div>
                 <h4 className="font-bold mb-1">{item.title}</h4>
                 <p className="text-sm text-[#1a1a1a]/60">{item.desc}</p>
+                {item.price && (
+                  <span className="inline-block mt-2 px-2 py-1 bg-[#8b4513]/10 text-[#8b4513] text-xs font-bold rounded">
+                    {item.price}
+                  </span>
+                )}
               </div>
             ))}
           </div>
@@ -157,65 +198,6 @@ export default function Home() {
         </section>
       </main>
 
-      {/* 生成結果モーダル */}
-      {showResult && newspaperData && (
-        <div className="fixed inset-0 bg-black/70 z-50 overflow-y-auto">
-          <div className="min-h-screen py-8 px-4">
-            <div className="max-w-4xl mx-auto">
-              {/* モーダルヘッダー */}
-              <div className="bg-[#faf8f3] rounded-t-lg p-4 flex items-center justify-between border-b-2 border-[#1a1a1a]">
-                <h2 className="text-xl font-bold flex items-center gap-2">
-                  <Sparkles className="text-[#8b4513]" />
-                  生成完了！
-                </h2>
-                <button
-                  onClick={() => reset()}
-                  className="p-2 hover:bg-[#1a1a1a]/10 rounded-full transition-colors"
-                >
-                  <X size={24} />
-                </button>
-              </div>
-
-              {/* 画像エラー表示 */}
-              {error && (
-                <div className="bg-yellow-50 border border-yellow-300 p-3 text-yellow-800 text-sm">
-                  ⚠️ {error}
-                </div>
-              )}
-
-              {/* 新聞プレビュー */}
-              <div className="bg-white p-6 shadow-2xl">
-                <NewspaperPreview
-                  data={newspaperData}
-                  style={style}
-                  isPreview={false}
-                  images={generatedImages || undefined}
-                />
-              </div>
-
-              {/* アクションボタン */}
-              <div className="bg-[#faf8f3] rounded-b-lg p-4 flex flex-col sm:flex-row gap-3 justify-center border-t-2 border-[#1a1a1a]">
-                <button
-                  onClick={() => {
-                    // TODO: PDF生成実装
-                    alert('PDF生成機能は本番環境で利用可能です');
-                  }}
-                  className="flex items-center justify-center gap-2 px-6 py-3 bg-[#8b4513] text-white rounded-lg font-bold hover:bg-[#6b3410] transition-colors"
-                >
-                  <Download size={20} />
-                  PDFをダウンロード
-                </button>
-                <button
-                  onClick={() => reset()}
-                  className="flex items-center justify-center gap-2 px-6 py-3 border-2 border-[#1a1a1a] rounded-lg font-bold hover:bg-[#1a1a1a]/5 transition-colors"
-                >
-                  別の日付で作成
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* フッター */}
       <footer className="mt-16 border-t-2 border-[#1a1a1a]/20 bg-[#faf8f3]">
