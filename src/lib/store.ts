@@ -322,11 +322,20 @@ export const useGenerationFlow = () => {
       // キャンバスのアスペクト比を計算
       const canvasRatio = canvas.height / canvas.width;
 
-      // A4に収まるようにサイズ計算
-      let pdfWidth = a4Width;
-      let pdfHeight = a4Width * canvasRatio;
+      // A4 1枚に必ず収める（縮小してフィット）
+      let pdfWidth: number;
+      let pdfHeight: number;
 
-      // 高さがA4を超える場合は複数ページに分割
+      if (canvasRatio <= a4Height / a4Width) {
+        // 横長または正方形に近い：幅基準
+        pdfWidth = a4Width;
+        pdfHeight = a4Width * canvasRatio;
+      } else {
+        // 縦長：高さ基準で縮小
+        pdfHeight = a4Height;
+        pdfWidth = a4Height / canvasRatio;
+      }
+
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -335,55 +344,10 @@ export const useGenerationFlow = () => {
 
       const imgData = canvas.toDataURL('image/jpeg', 0.95);
 
-      if (pdfHeight <= a4Height) {
-        // 1ページに収まる場合
-        const offsetY = (a4Height - pdfHeight) / 2; // 中央揃え
-        pdf.addImage(imgData, 'JPEG', 0, offsetY, pdfWidth, pdfHeight);
-      } else {
-        // 複数ページに分割
-        const pageCount = Math.ceil(pdfHeight / a4Height);
-        const scaledCanvas = document.createElement('canvas');
-        const ctx = scaledCanvas.getContext('2d');
-
-        // A4幅に合わせたピクセルサイズ（300dpi相当）
-        const pixelWidth = Math.round(a4Width * 11.81); // 約2480px
-        const pixelHeight = Math.round(pdfHeight * 11.81);
-        scaledCanvas.width = pixelWidth;
-        scaledCanvas.height = pixelHeight;
-
-        if (ctx) {
-          ctx.drawImage(canvas, 0, 0, pixelWidth, pixelHeight);
-
-          const pagePixelHeight = Math.round(a4Height * 11.81);
-
-          for (let page = 0; page < pageCount; page++) {
-            if (page > 0) pdf.addPage();
-
-            // ページ用のキャンバスを作成
-            const pageCanvas = document.createElement('canvas');
-            pageCanvas.width = pixelWidth;
-            pageCanvas.height = pagePixelHeight;
-            const pageCtx = pageCanvas.getContext('2d');
-
-            if (pageCtx) {
-              pageCtx.fillStyle = '#ffffff';
-              pageCtx.fillRect(0, 0, pixelWidth, pagePixelHeight);
-
-              const sourceY = page * pagePixelHeight;
-              const sourceHeight = Math.min(pagePixelHeight, pixelHeight - sourceY);
-
-              pageCtx.drawImage(
-                scaledCanvas,
-                0, sourceY, pixelWidth, sourceHeight,
-                0, 0, pixelWidth, sourceHeight
-              );
-
-              const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.95);
-              pdf.addImage(pageImgData, 'JPEG', 0, 0, a4Width, a4Height);
-            }
-          }
-        }
-      }
+      // 中央配置
+      const offsetX = (a4Width - pdfWidth) / 2;
+      const offsetY = (a4Height - pdfHeight) / 2;
+      pdf.addImage(imgData, 'JPEG', offsetX, offsetY, pdfWidth, pdfHeight);
 
       store.setGenerationProgress(90);
 
