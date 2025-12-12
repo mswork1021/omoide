@@ -295,7 +295,6 @@ export const useGenerationFlow = () => {
       const measureClone = element.cloneNode(true) as HTMLElement;
       measureClone.style.width = '100%';
       measureClone.style.margin = '0';
-      measureClone.style.padding = '20px';
       measureClone.style.boxSizing = 'border-box';
 
       measureContainer.appendChild(measureClone);
@@ -314,32 +313,37 @@ export const useGenerationFlow = () => {
 
       store.setGenerationProgress(30);
 
-      // Step 2: A4比率に合わせた幅を計算
-      // 幅を広げると高さが縮む（テキストの折り返しが減る）
-      // renderWidth : renderHeight = a4Width : a4Height になるようにする
-      let renderWidth = a4PixelWidth;
-      if (naturalHeight > a4PixelHeight) {
-        // 高さが超過している場合、幅を広げて短くする
-        // 公式: renderWidth = a4PixelWidth * sqrt(naturalHeight / a4PixelHeight)
-        renderWidth = Math.round(a4PixelWidth * Math.sqrt(naturalHeight / a4PixelHeight));
-      }
-      console.log('[PDF] Render width:', renderWidth, 'Natural height:', naturalHeight);
+      // Step 2: A4に収めるためのスケール計算
+      const scale = naturalHeight > a4PixelHeight
+        ? a4PixelHeight / naturalHeight
+        : 1;
+      console.log('[PDF] Scale factor:', scale);
 
+      // スケール後にA4幅になるように、レンダリング幅を逆算
+      // scale適用後に794pxになるように、レンダリング幅 = 794 / scale
+      const renderWidth = Math.round(a4PixelWidth / scale);
+      console.log('[PDF] Render width:', renderWidth);
+
+      // Step 3: A4サイズの固定コンテナを作成
       cloneContainer = document.createElement('div');
       cloneContainer.style.cssText = `
         position: fixed;
         left: -9999px;
         top: 0;
-        width: ${renderWidth}px;
+        width: ${a4PixelWidth}px;
+        height: ${a4PixelHeight}px;
         background: white;
         z-index: -1;
+        overflow: hidden;
       `;
 
+      // 広い幅でレンダリングし、scaleで縮小してA4に収める
       const clone = element.cloneNode(true) as HTMLElement;
       clone.style.width = `${renderWidth}px`;
       clone.style.margin = '0';
-      clone.style.padding = '20px';
       clone.style.boxSizing = 'border-box';
+      clone.style.transformOrigin = 'top left';
+      clone.style.transform = `scale(${scale})`;
 
       cloneContainer.appendChild(clone);
       document.body.appendChild(cloneContainer);
@@ -349,13 +353,15 @@ export const useGenerationFlow = () => {
 
       store.setGenerationProgress(50);
 
-      // html2canvasでキャプチャ
+      // html2canvasでキャプチャ（A4固定サイズ）
       const canvas = await html2canvas(cloneContainer, {
         scale: 2,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
         logging: false,
+        width: a4PixelWidth,
+        height: a4PixelHeight,
       });
 
       store.setGenerationProgress(70);
