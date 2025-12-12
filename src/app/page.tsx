@@ -9,7 +9,7 @@
 
 import React from 'react';
 import { SampleCarousel, OrderForm, NewspaperPreview, PaymentSection } from '@/components';
-import { Newspaper, Clock, Sparkles, Gift, Printer, Shield, CheckCircle, X } from 'lucide-react';
+import { Newspaper, Clock, Sparkles, Gift, Printer, Shield, CheckCircle, X, Lightbulb, Star, Zap, Users } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 
 export default function Home() {
@@ -124,6 +124,113 @@ export default function Home() {
                 )}
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* おすすめの作り方（チュートリアル） */}
+        <section className="mt-16 py-10 bg-gradient-to-r from-[#8b4513]/5 to-[#d4a574]/10 rounded-xl border-2 border-[#8b4513]/20">
+          <div className="px-6">
+            <h3 className="text-2xl font-bold text-center mb-2 font-serif flex items-center justify-center gap-2">
+              <Lightbulb className="text-[#8b4513]" size={28} />
+              おすすめの作り方
+            </h3>
+            <p className="text-center text-[#1a1a1a]/60 mb-8">
+              設定を組み合わせて、世界に一つだけの面白い新聞を作ろう！
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* レシピ1: フィクション全開 */}
+              <div className="bg-white rounded-lg p-4 shadow-md border border-[#1a1a1a]/10 hover:shadow-lg transition-shadow">
+                <div className="flex items-center gap-2 mb-3">
+                  <Zap className="text-purple-500" size={20} />
+                  <h4 className="font-bold text-sm">フィクション全開</h4>
+                </div>
+                <div className="space-y-1 text-xs mb-3">
+                  <p className="flex justify-between">
+                    <span className="text-[#1a1a1a]/60">正確性:</span>
+                    <span className="font-bold text-purple-600">0%</span>
+                  </p>
+                  <p className="flex justify-between">
+                    <span className="text-[#1a1a1a]/60">ユーモア度:</span>
+                    <span className="font-bold text-orange-500">100%</span>
+                  </p>
+                </div>
+                <p className="text-xs text-[#1a1a1a]/60">
+                  完全に架空の面白おかしい記事が生成されます。爆笑必至！
+                </p>
+              </div>
+
+              {/* レシピ2: 矛盾を楽しむ */}
+              <div className="bg-white rounded-lg p-4 shadow-md border border-[#1a1a1a]/10 hover:shadow-lg transition-shadow">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles className="text-yellow-500" size={20} />
+                  <h4 className="font-bold text-sm">矛盾を楽しむ</h4>
+                </div>
+                <div className="space-y-1 text-xs mb-3">
+                  <p className="flex justify-between">
+                    <span className="text-[#1a1a1a]/60">正確性:</span>
+                    <span className="font-bold text-blue-600">100%</span>
+                  </p>
+                  <p className="flex justify-between">
+                    <span className="text-[#1a1a1a]/60">ユーモア度:</span>
+                    <span className="font-bold text-orange-500">100%</span>
+                  </p>
+                </div>
+                <p className="text-xs text-[#1a1a1a]/60">
+                  史実をベースに東スポ風の大げさ表現で！ごちゃ混ぜ感が面白い
+                </p>
+              </div>
+
+              {/* レシピ3: 主役登場（超おすすめ） */}
+              <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg p-4 shadow-md border-2 border-[#8b4513] hover:shadow-lg transition-shadow relative">
+                <div className="absolute -top-2 -right-2 bg-[#8b4513] text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                  <Star size={12} />
+                  超おすすめ
+                </div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Users className="text-[#8b4513]" size={20} />
+                  <h4 className="font-bold text-sm">主役登場</h4>
+                </div>
+                <div className="space-y-1 text-xs mb-3">
+                  <p className="flex justify-between">
+                    <span className="text-[#1a1a1a]/60">宛名登場:</span>
+                    <span className="font-bold text-[#8b4513]">主役として</span>
+                  </p>
+                  <p className="flex justify-between">
+                    <span className="text-[#1a1a1a]/60">登場記事:</span>
+                    <span className="font-bold">メイン記事</span>
+                  </p>
+                </div>
+                <p className="text-xs text-[#1a1a1a]/60">
+                  贈る相手が記事の主役に！「○○さんが大活躍！」と見出しに名前が載る！
+                </p>
+              </div>
+
+              {/* レシピ4: コメンテーター登場 */}
+              <div className="bg-white rounded-lg p-4 shadow-md border border-[#1a1a1a]/10 hover:shadow-lg transition-shadow">
+                <div className="flex items-center gap-2 mb-3">
+                  <Gift className="text-pink-500" size={20} />
+                  <h4 className="font-bold text-sm">関係者登場</h4>
+                </div>
+                <div className="space-y-1 text-xs mb-3">
+                  <p className="flex justify-between">
+                    <span className="text-[#1a1a1a]/60">宛名登場:</span>
+                    <span className="font-bold text-pink-600">関係者として</span>
+                  </p>
+                  <p className="flex justify-between">
+                    <span className="text-[#1a1a1a]/60">正確性:</span>
+                    <span className="font-bold">お好みで</span>
+                  </p>
+                </div>
+                <p className="text-xs text-[#1a1a1a]/60">
+                  「〜について○○さんは語った」と、さりげなく登場。自然な形で名前入り！
+                </p>
+              </div>
+            </div>
+
+            <p className="text-center text-xs text-[#1a1a1a]/50 mt-6">
+              ※ 設定を組み合わせて、あなただけのオリジナル新聞を作ってみてください！
+            </p>
           </div>
         </section>
 
