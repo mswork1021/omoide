@@ -177,10 +177,9 @@ export const useGenerationFlow = () => {
     store.setIsGenerating(true);
     store.setGenerationStep('images');
     store.setError(null);
+    store.setGenerationProgress(0);
 
     try {
-      store.setGenerationProgress(20);
-
       // 画像プロンプトを収集
       const imagePrompts: string[] = [];
 
@@ -203,9 +202,9 @@ export const useGenerationFlow = () => {
         }
       }
 
-      store.setGenerationProgress(40);
+      store.setGenerationProgress(10);
 
-      // 画像生成
+      // 画像生成（これが時間がかかるメイン処理）
       const imageResponse = await fetch('/api/image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -215,9 +214,9 @@ export const useGenerationFlow = () => {
         }),
       });
 
-      const imageData = await imageResponse.json();
+      store.setGenerationProgress(90);
 
-      store.setGenerationProgress(80);
+      const imageData = await imageResponse.json();
 
       if (imageData.success && imageData.images?.length > 0) {
         store.setGeneratedImages({
