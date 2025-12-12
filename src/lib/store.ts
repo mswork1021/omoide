@@ -239,7 +239,7 @@ export const useGenerationFlow = () => {
   };
 
   /**
-   * PDF生成（html2canvasでプレビューをキャプチャ）
+   * PDF生成（固定サイズでキャプチャしてA4出力）
    */
   const generatePdf = async () => {
     if (!store.newspaperData) {
@@ -257,8 +257,10 @@ export const useGenerationFlow = () => {
     store.setError(null);
     store.setGenerationProgress(0);
 
+    let cloneContainer: HTMLDivElement | null = null;
+
     try {
-      console.log('[PDF] Starting PDF generation with html2canvas...');
+      console.log('[PDF] Starting PDF generation...');
 
       // プレビュー要素を取得
       const element = document.getElementById('newspaper-preview-for-pdf');
@@ -266,48 +268,122 @@ export const useGenerationFlow = () => {
         throw new Error('プレビュー要素が見つかりません');
       }
 
-      store.setGenerationProgress(20);
+      store.setGenerationProgress(10);
 
       // 動的インポート
       const html2canvas = (await import('html2canvas')).default;
       const jsPDF = (await import('jspdf')).default;
 
+      store.setGenerationProgress(20);
+
+      // オフスクリーンにクローンを作成（固定幅でレンダリング）
+      cloneContainer = document.createElement('div');
+      cloneContainer.style.cssText = `
+        position: fixed;
+        left: -9999px;
+        top: 0;
+        width: 800px;
+        background: white;
+        z-index: -1;
+      `;
+
+      // 要素をクローン
+      const clone = element.cloneNode(true) as HTMLElement;
+      clone.style.width = '800px';
+      clone.style.maxWidth = '800px';
+      clone.style.margin = '0';
+      clone.style.padding = '20px';
+      clone.style.boxSizing = 'border-box';
+
+      cloneContainer.appendChild(clone);
+      document.body.appendChild(cloneContainer);
+
+      // レンダリングを待つ
+      await new Promise(resolve => setTimeout(resolve, 100));
+
       store.setGenerationProgress(40);
 
       // html2canvasでキャプチャ（高画質設定）
-      const canvas = await html2canvas(element, {
-        scale: 2, // 2倍の解像度
-        useCORS: true, // 外部画像を許可
+      const canvas = await html2canvas(clone, {
+        scale: 2,
+        useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
         logging: false,
+        width: 800,
       });
 
       store.setGenerationProgress(70);
 
-      // キャンバスのサイズを取得
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
+      // A4サイズ（210mm x 297mm）
+      const a4Width = 210;
+      const a4Height = 297;
 
-      // A3サイズ（297mm x 420mm）に収まるように計算
-      const a3Width = 297;
-      const a3Height = 420;
+      // キャンバスのアスペクト比を計算
+      const canvasRatio = canvas.height / canvas.width;
 
-      // アスペクト比を維持してA3に収める
-      const ratio = Math.min(a3Width / (imgWidth / 3.78), a3Height / (imgHeight / 3.78));
-      const pdfWidth = (imgWidth / 3.78) * ratio;
-      const pdfHeight = (imgHeight / 3.78) * ratio;
+      // A4に収まるようにサイズ計算
+      let pdfWidth = a4Width;
+      let pdfHeight = a4Width * canvasRatio;
 
-      // PDFを作成（カスタムサイズ）
+      // 高さがA4を超える場合は複数ページに分割
       const pdf = new jsPDF({
-        orientation: pdfHeight > pdfWidth ? 'portrait' : 'landscape',
+        orientation: 'portrait',
         unit: 'mm',
-        format: [pdfWidth, pdfHeight],
+        format: 'a4',
       });
 
-      // キャンバスを画像としてPDFに追加
       const imgData = canvas.toDataURL('image/jpeg', 0.95);
-      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+
+      if (pdfHeight <= a4Height) {
+        // 1ページに収まる場合
+        const offsetY = (a4Height - pdfHeight) / 2; // 中央揃え
+        pdf.addImage(imgData, 'JPEG', 0, offsetY, pdfWidth, pdfHeight);
+      } else {
+        // 複数ページに分割
+        const pageCount = Math.ceil(pdfHeight / a4Height);
+        const scaledCanvas = document.createElement('canvas');
+        const ctx = scaledCanvas.getContext('2d');
+
+        // A4幅に合わせたピクセルサイズ（300dpi相当）
+        const pixelWidth = Math.round(a4Width * 11.81); // 約2480px
+        const pixelHeight = Math.round(pdfHeight * 11.81);
+        scaledCanvas.width = pixelWidth;
+        scaledCanvas.height = pixelHeight;
+
+        if (ctx) {
+          ctx.drawImage(canvas, 0, 0, pixelWidth, pixelHeight);
+
+          const pagePixelHeight = Math.round(a4Height * 11.81);
+
+          for (let page = 0; page < pageCount; page++) {
+            if (page > 0) pdf.addPage();
+
+            // ページ用のキャンバスを作成
+            const pageCanvas = document.createElement('canvas');
+            pageCanvas.width = pixelWidth;
+            pageCanvas.height = pagePixelHeight;
+            const pageCtx = pageCanvas.getContext('2d');
+
+            if (pageCtx) {
+              pageCtx.fillStyle = '#ffffff';
+              pageCtx.fillRect(0, 0, pixelWidth, pagePixelHeight);
+
+              const sourceY = page * pagePixelHeight;
+              const sourceHeight = Math.min(pagePixelHeight, pixelHeight - sourceY);
+
+              pageCtx.drawImage(
+                scaledCanvas,
+                0, sourceY, pixelWidth, sourceHeight,
+                0, 0, pixelWidth, sourceHeight
+              );
+
+              const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.95);
+              pdf.addImage(pageImgData, 'JPEG', 0, 0, a4Width, a4Height);
+            }
+          }
+        }
+      }
 
       store.setGenerationProgress(90);
 
@@ -324,6 +400,10 @@ export const useGenerationFlow = () => {
       store.setError(error instanceof Error ? error.message : 'PDF生成に失敗しました');
       store.setGenerationStep('idle');
     } finally {
+      // クリーンアップ
+      if (cloneContainer && cloneContainer.parentNode) {
+        cloneContainer.parentNode.removeChild(cloneContainer);
+      }
       store.setIsGenerating(false);
     }
   };
