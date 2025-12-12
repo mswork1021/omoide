@@ -151,7 +151,7 @@ export function NewspaperPreview({
               border: '3px double #fff9f0',
               textAlign: 'center',
               boxShadow: '2px 2px 8px rgba(0,0,0,0.3)',
-              maxWidth: '200px',
+              maxWidth: '500px',
             }}
           >
             <div style={{ fontSize: '9px', letterSpacing: '0.15em', marginBottom: '4px', opacity: 0.9 }}>
@@ -442,7 +442,7 @@ export function NewspaperPreview({
               borderRadius: '4px',
               textAlign: 'center',
               boxShadow: '3px 3px 10px rgba(0,0,0,0.3)',
-              maxWidth: '200px',
+              maxWidth: '500px',
             }}
           >
             <div style={{ fontSize: '9px', marginBottom: '4px' }}>
@@ -789,7 +789,7 @@ export function NewspaperPreview({
             borderRadius: '8px',
             textAlign: 'center',
             boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
-            maxWidth: '200px',
+            maxWidth: '500px',
           }}
         >
           <div style={{ fontSize: '9px', letterSpacing: '0.05em', marginBottom: '4px', opacity: 0.9 }}>
