@@ -276,24 +276,33 @@ export const useGenerationFlow = () => {
 
       store.setGenerationProgress(20);
 
-      // オフスクリーンにクローンを作成（固定幅でレンダリング）
+      // A4比率（210:297）で固定サイズのコンテナを作成
+      // 794px × 1123px = A4 at 96dpi
+      const a4PixelWidth = 794;
+      const a4PixelHeight = 1123;
+
+      // オフスクリーンにクローンを作成（A4比率で）
       cloneContainer = document.createElement('div');
       cloneContainer.style.cssText = `
         position: fixed;
         left: -9999px;
         top: 0;
-        width: 800px;
+        width: ${a4PixelWidth}px;
+        height: ${a4PixelHeight}px;
         background: white;
         z-index: -1;
+        overflow: hidden;
       `;
 
       // 要素をクローン
       const clone = element.cloneNode(true) as HTMLElement;
-      clone.style.width = '800px';
-      clone.style.maxWidth = '800px';
+      clone.style.width = '100%';
+      clone.style.maxWidth = '100%';
+      clone.style.height = '100%';
       clone.style.margin = '0';
       clone.style.padding = '20px';
       clone.style.boxSizing = 'border-box';
+      clone.style.overflow = 'hidden';
 
       cloneContainer.appendChild(clone);
       document.body.appendChild(cloneContainer);
@@ -303,14 +312,15 @@ export const useGenerationFlow = () => {
 
       store.setGenerationProgress(40);
 
-      // html2canvasでキャプチャ（高画質設定）
-      const canvas = await html2canvas(clone, {
+      // html2canvasでキャプチャ（A4サイズ固定）
+      const canvas = await html2canvas(cloneContainer, {
         scale: 2,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
         logging: false,
-        width: 800,
+        width: a4PixelWidth,
+        height: a4PixelHeight,
       });
 
       store.setGenerationProgress(70);
@@ -319,23 +329,6 @@ export const useGenerationFlow = () => {
       const a4Width = 210;
       const a4Height = 297;
 
-      // キャンバスのアスペクト比を計算
-      const canvasRatio = canvas.height / canvas.width;
-
-      // A4 1枚に必ず収める（縮小してフィット）
-      let pdfWidth: number;
-      let pdfHeight: number;
-
-      if (canvasRatio <= a4Height / a4Width) {
-        // 横長または正方形に近い：幅基準
-        pdfWidth = a4Width;
-        pdfHeight = a4Width * canvasRatio;
-      } else {
-        // 縦長：高さ基準で縮小
-        pdfHeight = a4Height;
-        pdfWidth = a4Height / canvasRatio;
-      }
-
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -343,11 +336,7 @@ export const useGenerationFlow = () => {
       });
 
       const imgData = canvas.toDataURL('image/jpeg', 0.95);
-
-      // 中央配置
-      const offsetX = (a4Width - pdfWidth) / 2;
-      const offsetY = (a4Height - pdfHeight) / 2;
-      pdf.addImage(imgData, 'JPEG', offsetX, offsetY, pdfWidth, pdfHeight);
+      pdf.addImage(imgData, 'JPEG', 0, 0, a4Width, a4Height);
 
       store.setGenerationProgress(90);
 
