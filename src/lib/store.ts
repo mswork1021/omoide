@@ -255,8 +255,13 @@ export const useGenerationFlow = () => {
     store.setIsGenerating(true);
     store.setGenerationStep('pdf');
     store.setError(null);
+    store.setGenerationProgress(0);
 
     try {
+      console.log('[PDF Client] Starting PDF generation request...');
+      console.log('[PDF Client] newspaperData:', JSON.stringify(store.newspaperData).slice(0, 200));
+      console.log('[PDF Client] images:', store.generatedImages ? 'present' : 'null');
+
       store.setGenerationProgress(30);
 
       const pdfResponse = await fetch('/api/generate-pdf', {
@@ -266,20 +271,22 @@ export const useGenerationFlow = () => {
           paymentIntentId: store.paymentIntentId,
           newspaperData: store.newspaperData,
           images: store.generatedImages,
-          quality: 'premium', // 画像購入者は高品質PDF
+          quality: 'premium',
         }),
       });
 
+      console.log('[PDF Client] Response status:', pdfResponse.status);
       store.setGenerationProgress(70);
 
       const pdfData = await pdfResponse.json();
+      console.log('[PDF Client] Response data:', pdfData.success, pdfData.error);
 
       if (!pdfResponse.ok) {
         throw new Error(pdfData.error || `HTTP Error: ${pdfResponse.status}`);
       }
 
       if (pdfData.success && pdfData.pdf) {
-        console.log('[PDF] Received base64 length:', pdfData.pdf.length);
+        console.log('[PDF Client] Received base64 length:', pdfData.pdf.length);
         const pdfBlob = base64ToBlob(pdfData.pdf, 'application/pdf');
         const pdfUrl = URL.createObjectURL(pdfBlob);
         store.setPdfUrl(pdfUrl);
@@ -290,6 +297,7 @@ export const useGenerationFlow = () => {
       store.setGenerationProgress(100);
       store.setGenerationStep('complete');
     } catch (error) {
+      console.error('[PDF Client] Error:', error);
       store.setError(error instanceof Error ? error.message : 'PDF生成に失敗しました');
       store.setGenerationStep('idle');
     } finally {
