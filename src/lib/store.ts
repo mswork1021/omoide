@@ -258,6 +258,7 @@ export const useGenerationFlow = () => {
     store.setGenerationProgress(0);
 
     let cloneContainer: HTMLDivElement | null = null;
+    let measureContainer: HTMLDivElement | null = null;
 
     try {
       console.log('[PDF] Starting PDF generation...');
@@ -276,12 +277,50 @@ export const useGenerationFlow = () => {
 
       store.setGenerationProgress(20);
 
-      // A4比率（210:297）で固定サイズのコンテナを作成
-      // 794px × 1123px = A4 at 96dpi
+      // A4比率（210:297）のピクセルサイズ
       const a4PixelWidth = 794;
       const a4PixelHeight = 1123;
 
-      // オフスクリーンにクローンを作成（A4比率で）
+      // Step 1: まず自然なサイズで測定
+      measureContainer = document.createElement('div');
+      measureContainer.style.cssText = `
+        position: fixed;
+        left: -9999px;
+        top: 0;
+        width: ${a4PixelWidth}px;
+        background: white;
+        z-index: -1;
+      `;
+
+      const measureClone = element.cloneNode(true) as HTMLElement;
+      measureClone.style.width = '100%';
+      measureClone.style.margin = '0';
+      measureClone.style.padding = '20px';
+      measureClone.style.boxSizing = 'border-box';
+
+      measureContainer.appendChild(measureClone);
+      document.body.appendChild(measureContainer);
+
+      // レンダリングを待つ
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // 自然な高さを取得
+      const naturalHeight = measureContainer.scrollHeight;
+      console.log('[PDF] Natural height:', naturalHeight, 'A4 height:', a4PixelHeight);
+
+      // 測定用コンテナを削除
+      document.body.removeChild(measureContainer);
+      measureContainer = null;
+
+      store.setGenerationProgress(30);
+
+      // Step 2: スケール計算（A4に収めるため）
+      const scale = naturalHeight > a4PixelHeight
+        ? a4PixelHeight / naturalHeight
+        : 1;
+      console.log('[PDF] Scale factor:', scale);
+
+      // Step 3: スケール適用してキャプチャ用コンテナ作成
       cloneContainer = document.createElement('div');
       cloneContainer.style.cssText = `
         position: fixed;
@@ -294,15 +333,13 @@ export const useGenerationFlow = () => {
         overflow: hidden;
       `;
 
-      // 要素をクローン
       const clone = element.cloneNode(true) as HTMLElement;
-      clone.style.width = '100%';
-      clone.style.maxWidth = '100%';
-      clone.style.height = '100%';
+      clone.style.width = `${a4PixelWidth}px`;
       clone.style.margin = '0';
       clone.style.padding = '20px';
       clone.style.boxSizing = 'border-box';
-      clone.style.overflow = 'hidden';
+      clone.style.transformOrigin = 'top left';
+      clone.style.transform = `scale(${scale})`;
 
       cloneContainer.appendChild(clone);
       document.body.appendChild(cloneContainer);
@@ -310,7 +347,7 @@ export const useGenerationFlow = () => {
       // レンダリングを待つ
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      store.setGenerationProgress(40);
+      store.setGenerationProgress(50);
 
       // html2canvasでキャプチャ（A4サイズ固定）
       const canvas = await html2canvas(cloneContainer, {
@@ -354,6 +391,9 @@ export const useGenerationFlow = () => {
       store.setGenerationStep('idle');
     } finally {
       // クリーンアップ
+      if (measureContainer && measureContainer.parentNode) {
+        measureContainer.parentNode.removeChild(measureContainer);
+      }
       if (cloneContainer && cloneContainer.parentNode) {
         cloneContainer.parentNode.removeChild(cloneContainer);
       }
