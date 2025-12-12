@@ -42,6 +42,8 @@ export interface GenerationRequest {
   personalMessage?: string;
   occasion?: string;
   style: 'showa' | 'heisei' | 'reiwa';
+  accuracy: number;      // 正確性（0-100）
+  humorLevel: number;    // ユーモア度（0-100）
 }
 
 export interface GenerationResponse {

@@ -109,7 +109,9 @@ export async function generateNewspaperContent(
     senderName: string;
     message: string;
     occasion: string;
-  }
+  },
+  accuracy: number = 50,
+  humorLevel: number = 50
 ): Promise<NewspaperData> {
   const genAI = getAI();
 
@@ -130,24 +132,57 @@ export async function generateNewspaperContent(
     reiwa: '令和のレトロ調新聞',
   }[style];
 
-  // 検索を確実に実行させるためのシステム指示
-  const systemInstruction = `あなたは新聞記者AIです。Google検索で実際の情報を調べて記事を書きます。
+  // 正確性に基づくシステム指示
+  const getAccuracyInstruction = () => {
+    if (accuracy >= 80) {
+      return `【正確性: 高 (${accuracy}%)】
+- Google検索で実際の情報を調べて記事を書く
+- 検索結果に基づく事実のみを使用
+- 検索で見つからない場合は「その年の一般的な話題」を使用してもよい
+- 映画・ゲーム・CDの発売日は検索で確認すること`;
+    } else if (accuracy >= 40) {
+      return `【正確性: 中 (${accuracy}%)】
+- 実際の出来事をベースに、エンタメ性のある脚色を加えてよい
+- 完全な創作も30%程度まで許容
+- 実在の人物・イベントを参考にしながら、面白くアレンジ`;
+    } else {
+      return `【正確性: 低 (${accuracy}%)】
+- 完全にフィクションでOK
+- その時代の雰囲気に合った架空の出来事を自由に創作
+- 検索は不要、創造性を優先`;
+    }
+  };
 
-【最重要ルール - 絶対厳守】
-1. 検索結果に基づく事実のみを書くこと
-2. 検索で確認できない情報は絶対に書かないこと
-3. 推測・創作・でっち上げは禁止
-4. 映画・ゲーム・CDの発売日は検索で確認してから書くこと
-5. 「〜かもしれない」「〜と思われる」ではなく、確認できた事実のみ
+  // ユーモア度に基づく文体指示
+  const getHumorInstruction = () => {
+    if (humorLevel >= 80) {
+      return `【ユーモア度: 高 (${humorLevel}%)】
+- ジョーク、ダジャレ、面白おかしい表現を積極的に使用
+- 読者が笑える、クスッとする記事を目指す
+- スポーツ新聞や東スポのようなノリでOK
+- 大げさな見出し、ツッコミどころのある表現を歓迎`;
+    } else if (humorLevel >= 40) {
+      return `【ユーモア度: 中 (${humorLevel}%)】
+- 適度なユーモアを織り交ぜつつ、読みやすい記事に
+- 真面目すぎず、ふざけすぎず、バランスの取れた文体
+- 時折クスッと笑える表現を入れる`;
+    } else {
+      return `【ユーモア度: 低 (${humorLevel}%)】
+- フォーマルで格調高い新聞文体
+- 真面目で重厚な表現を使用
+- 品格のある伝統的な新聞らしい書き方`;
+    }
+  };
+
+  const systemInstruction = `あなたは新聞記者AIです。
+
+${getAccuracyInstruction()}
+
+${getHumorInstruction()}
 
 【日付ルール】
-- ${year}年${month}月${day}日に実際に起きた出来事のみを使用
-- 日付が1日でもずれている情報は使用禁止
-
-【禁止事項】
-- 検索で見つからなかった出来事を創作すること
-- 実際の発売日・公開日と異なる日付で報道すること
-- 存在しない映画・ゲーム・イベントをでっち上げること
+- ${year}年${month}月${day}日を基準とした記事を作成
+${accuracy >= 60 ? '- できるだけその日に実際に起きた出来事を使用' : '- その時代らしい架空の出来事でもOK'}
 
 出力はJSON形式のみ。最初の文字は { で始めること。`;
 
@@ -272,16 +307,23 @@ ${personalMessage ? `
 `;
 
   try {
+    // 正確性が高い場合のみGoogle検索を使用
+    const useSearch = accuracy >= 40;
+
     const response = await genAI.models.generateContent({
       model: MODEL_NAME,
       contents: prompt,
       config: {
         systemInstruction: systemInstruction,
-        tools: [{
-          googleSearch: {},
-        }],
+        ...(useSearch && {
+          tools: [{
+            googleSearch: {},
+          }],
+        }),
       },
     });
+
+    console.log(`[GEMINI] Accuracy: ${accuracy}% | Humor: ${humorLevel}% | Search: ${useSearch ? 'enabled' : 'disabled'}`);
 
     const text = response.text || '';
 

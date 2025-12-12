@@ -7,7 +7,7 @@
 
 import React, { useState } from 'react';
 import { DatePicker } from './DatePicker';
-import { Calendar, Gift, Sparkles, User, ChevronDown, ChevronUp, Loader2, FileText } from 'lucide-react';
+import { Calendar, Gift, Sparkles, User, ChevronDown, ChevronUp, Loader2, FileText, Target, Smile } from 'lucide-react';
 import { useAppStore, useGenerationFlow } from '@/lib/store';
 
 // テストモード（Stripeスキップ）
@@ -30,6 +30,10 @@ export function OrderForm() {
     setPersonalMessage,
     occasion,
     setOccasion,
+    accuracy,
+    setAccuracy,
+    humorLevel,
+    setHumorLevel,
     newspaperData,
   } = useAppStore();
 
@@ -154,6 +158,68 @@ export function OrderForm() {
               <div className="text-xs mt-0.5 opacity-80">{option.description}</div>
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* ステップ3: 正確性ゲージ */}
+      <div className="form-section">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-6 h-6 rounded-full bg-[#8b4513] text-white flex items-center justify-center text-sm font-bold">
+            3
+          </div>
+          <label className="text-lg font-bold flex items-center gap-2">
+            <Target size={20} />
+            史実の正確性
+          </label>
+        </div>
+        <div className="space-y-2">
+          <div className="flex justify-between text-xs text-[#1a1a1a]/60">
+            <span>フィクション重視</span>
+            <span className="font-bold text-[#8b4513]">{accuracy}%</span>
+            <span>史実重視</span>
+          </div>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={accuracy}
+            onChange={(e) => setAccuracy(Number(e.target.value))}
+            className="w-full h-2 bg-[#1a1a1a]/10 rounded-lg appearance-none cursor-pointer accent-[#8b4513]"
+          />
+          <p className="text-xs text-[#1a1a1a]/50 mt-1">
+            ※ 100%でも、その日に大きな出来事がない場合は架空の記事になることがあります
+          </p>
+        </div>
+      </div>
+
+      {/* ステップ4: ユーモア度ゲージ */}
+      <div className="form-section">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-6 h-6 rounded-full bg-[#8b4513] text-white flex items-center justify-center text-sm font-bold">
+            4
+          </div>
+          <label className="text-lg font-bold flex items-center gap-2">
+            <Smile size={20} />
+            ユーモア度
+          </label>
+        </div>
+        <div className="space-y-2">
+          <div className="flex justify-between text-xs text-[#1a1a1a]/60">
+            <span>真面目・フォーマル</span>
+            <span className="font-bold text-[#8b4513]">{humorLevel}%</span>
+            <span>おもしろ・カジュアル</span>
+          </div>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={humorLevel}
+            onChange={(e) => setHumorLevel(Number(e.target.value))}
+            className="w-full h-2 bg-[#1a1a1a]/10 rounded-lg appearance-none cursor-pointer accent-[#8b4513]"
+          />
+          <p className="text-xs text-[#1a1a1a]/50 mt-1">
+            ※ 高いほど、ジョークや面白おかしい表現が増えます
+          </p>
         </div>
       </div>
 
