@@ -13,6 +13,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { paymentIntentId, newspaperData, images, quality } = body;
 
+    console.log('[PDF] Starting PDF generation...');
+    console.log('[PDF] newspaperData.date:', newspaperData?.date);
+
     // 支払い検証（本番環境では必須）
     if (paymentIntentId) {
       const paymentResult = await verifyPayment(paymentIntentId);
@@ -32,11 +35,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 日付をDateオブジェクトに変換
+    // 日付をDateオブジェクトに変換（より安全に）
+    let parsedDate: Date;
+    try {
+      parsedDate = new Date(newspaperData.date);
+      if (isNaN(parsedDate.getTime())) {
+        throw new Error('Invalid date');
+      }
+    } catch (e) {
+      console.error('[PDF] Date parsing error:', e);
+      // フォールバック: 現在日時
+      parsedDate = new Date();
+    }
+
     const data: NewspaperData = {
       ...newspaperData,
-      date: new Date(newspaperData.date),
+      date: parsedDate,
     };
+
+    console.log('[PDF] Parsed date:', parsedDate.toISOString());
 
     // PDF生成
     const pdfBuffer = await generateNewspaperPDF(
@@ -45,17 +62,19 @@ export async function POST(request: NextRequest) {
       quality || 'standard'
     );
 
+    console.log('[PDF] PDF generated, size:', pdfBuffer.byteLength);
+
     // PDFをBase64エンコードして返す
     const base64Pdf = Buffer.from(pdfBuffer).toString('base64');
 
     return NextResponse.json({
       success: true,
       pdf: base64Pdf,
-      filename: `timetravel-press-${data.date.toISOString().split('T')[0]}.pdf`,
+      filename: `timetravel-press-${parsedDate.toISOString().split('T')[0]}.pdf`,
       mimeType: 'application/pdf',
     });
   } catch (error) {
-    console.error('PDF Generation Error:', error);
+    console.error('[PDF] Generation Error:', error);
     return NextResponse.json(
       {
         success: false,

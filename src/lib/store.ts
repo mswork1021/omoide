@@ -273,7 +273,13 @@ export const useGenerationFlow = () => {
       store.setGenerationProgress(70);
 
       const pdfData = await pdfResponse.json();
-      if (pdfData.success) {
+
+      if (!pdfResponse.ok) {
+        throw new Error(pdfData.error || `HTTP Error: ${pdfResponse.status}`);
+      }
+
+      if (pdfData.success && pdfData.pdf) {
+        console.log('[PDF] Received base64 length:', pdfData.pdf.length);
         const pdfBlob = base64ToBlob(pdfData.pdf, 'application/pdf');
         const pdfUrl = URL.createObjectURL(pdfBlob);
         store.setPdfUrl(pdfUrl);
@@ -307,13 +313,21 @@ export const useGenerationFlow = () => {
 
 // ユーティリティ関数
 function base64ToBlob(base64: string, mimeType: string): Blob {
-  const byteCharacters = atob(base64);
-  const byteNumbers = new Array(byteCharacters.length);
+  try {
+    // base64文字列のクリーンアップ（改行や余分な文字を削除）
+    const cleanBase64 = base64.replace(/[\r\n\s]/g, '');
+    const byteCharacters = atob(cleanBase64);
+    const byteNumbers = new Array(byteCharacters.length);
 
-  for (let i = 0; i < byteCharacters.length; i++) {
-    byteNumbers[i] = byteCharacters.charCodeAt(i);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+
+    const byteArray = new Uint8Array(byteNumbers);
+    return new Blob([byteArray.buffer], { type: mimeType });
+  } catch (error) {
+    console.error('[PDF] base64ToBlob error:', error);
+    console.error('[PDF] base64 preview:', base64?.slice(0, 100));
+    throw new Error('PDFデータの変換に失敗しました');
   }
-
-  const byteArray = new Uint8Array(byteNumbers);
-  return new Blob([byteArray.buffer], { type: mimeType });
 }
