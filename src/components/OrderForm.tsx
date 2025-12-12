@@ -7,7 +7,7 @@
 
 import React, { useState } from 'react';
 import { DatePicker } from './DatePicker';
-import { Calendar, Gift, Sparkles, User, ChevronDown, ChevronUp, Loader2, FileText, Target, Smile } from 'lucide-react';
+import { Calendar, Gift, Sparkles, User, ChevronDown, ChevronUp, Loader2, FileText, Target, Smile, Star } from 'lucide-react';
 import { useAppStore, useGenerationFlow } from '@/lib/store';
 
 // テストモード（Stripeスキップ）
@@ -34,6 +34,12 @@ export function OrderForm() {
     setAccuracy,
     humorLevel,
     setHumorLevel,
+    appearInArticle,
+    setAppearInArticle,
+    appearanceType,
+    setAppearanceType,
+    appearanceTargets,
+    toggleAppearanceTarget,
     newspaperData,
   } = useAppStore();
 
@@ -298,6 +304,92 @@ export function OrderForm() {
                 className="w-full px-3 py-2 text-sm border border-[#1a1a1a]/20 rounded bg-white resize-none"
               />
             </div>
+
+            {/* 記事登場設定 */}
+            {recipientName && (
+              <div className="border-t border-[#1a1a1a]/10 pt-3 mt-3">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={appearInArticle}
+                    onChange={(e) => setAppearInArticle(e.target.checked)}
+                    className="w-4 h-4 rounded border-[#1a1a1a]/20 text-[#8b4513] focus:ring-[#8b4513]"
+                  />
+                  <span className="text-sm font-medium flex items-center gap-1">
+                    <Star size={14} />
+                    {recipientName}さんを記事に登場させる
+                  </span>
+                </label>
+
+                {appearInArticle && (
+                  <div className="mt-3 ml-6 space-y-3">
+                    {/* 登場方法 */}
+                    <div>
+                      <label className="block text-xs font-medium mb-1.5 text-[#1a1a1a]/60">登場のさせ方</label>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setAppearanceType('protagonist')}
+                          className={`flex-1 px-3 py-2 text-xs rounded-lg border-2 transition-all ${
+                            appearanceType === 'protagonist'
+                              ? 'border-[#8b4513] bg-[#8b4513] text-white'
+                              : 'border-[#1a1a1a]/20 hover:border-[#8b4513]/40'
+                          }`}
+                        >
+                          <div className="font-bold">主役として</div>
+                          <div className="opacity-80 mt-0.5">「○○さんが大活躍！」</div>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setAppearanceType('commentator')}
+                          className={`flex-1 px-3 py-2 text-xs rounded-lg border-2 transition-all ${
+                            appearanceType === 'commentator'
+                              ? 'border-[#8b4513] bg-[#8b4513] text-white'
+                              : 'border-[#1a1a1a]/20 hover:border-[#8b4513]/40'
+                          }`}
+                        >
+                          <div className="font-bold">関係者として</div>
+                          <div className="opacity-80 mt-0.5">「〜について○○さんは…」</div>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* 登場させる記事 */}
+                    <div>
+                      <label className="block text-xs font-medium mb-1.5 text-[#1a1a1a]/60">登場させる記事（複数選択可）</label>
+                      <div className="flex flex-wrap gap-1.5">
+                        {[
+                          { key: 'main', label: 'メイン記事' },
+                          { key: 'sub1', label: 'サブ記事1' },
+                          { key: 'sub2', label: 'サブ記事2' },
+                          { key: 'sub3', label: 'サブ記事3' },
+                        ].map((article) => (
+                          <button
+                            key={article.key}
+                            type="button"
+                            onClick={() => toggleAppearanceTarget(article.key)}
+                            className={`px-2.5 py-1 text-xs rounded-full border transition-colors ${
+                              appearanceTargets.includes(article.key)
+                                ? 'bg-[#8b4513] text-white border-[#8b4513]'
+                                : 'border-[#1a1a1a]/20 hover:border-[#8b4513]/40'
+                            }`}
+                          >
+                            {article.label}
+                          </button>
+                        ))}
+                      </div>
+                      {appearanceTargets.length === 0 && (
+                        <p className="text-xs text-orange-600 mt-1">※ 少なくとも1つ選択してください</p>
+                      )}
+                    </div>
+
+                    <p className="text-xs text-[#1a1a1a]/50">
+                      ※ どのように登場するかはお楽しみ！
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -44,6 +44,9 @@ export interface GenerationRequest {
   style: 'showa' | 'heisei' | 'reiwa';
   accuracy: number;      // 正確性（0-100）
   humorLevel: number;    // ユーモア度（0-100）
+  appearInArticle?: boolean;                         // 宛名の人を記事に登場させるか
+  appearanceType?: 'protagonist' | 'commentator';   // 登場方法（主役 or 関係者）
+  appearanceTargets?: string[];                      // 登場させる記事（main, sub1, sub2, sub3）
 }
 
 export interface GenerationResponse {

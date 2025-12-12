@@ -17,6 +17,11 @@ interface AppState {
   accuracy: number;      // 正確性（0-100）
   humorLevel: number;    // ユーモア度（0-100）
 
+  // 記事登場設定
+  appearInArticle: boolean;                           // 宛名の人を記事に登場させるか
+  appearanceType: 'protagonist' | 'commentator';     // 登場方法（主役 or 関係者）
+  appearanceTargets: string[];                        // 登場させる記事（main, sub1, sub2, sub3）
+
   // 生成状態
   isGenerating: boolean;
   generationStep: 'idle' | 'content' | 'images' | 'pdf' | 'complete';
@@ -47,6 +52,10 @@ interface AppState {
   setOccasion: (occasion: string) => void;
   setAccuracy: (accuracy: number) => void;
   setHumorLevel: (humorLevel: number) => void;
+  setAppearInArticle: (appear: boolean) => void;
+  setAppearanceType: (type: 'protagonist' | 'commentator') => void;
+  setAppearanceTargets: (targets: string[]) => void;
+  toggleAppearanceTarget: (target: string) => void;
   setPurchaseType: (type: 'text_only' | 'add_images' | null) => void;
   setNewspaperData: (data: NewspaperData | null) => void;
   setGeneratedImages: (images: GeneratedImages | null) => void;
@@ -71,6 +80,9 @@ const initialState = {
   occasion: '',
   accuracy: 50,         // デフォルト50%
   humorLevel: 50,       // デフォルト50%
+  appearInArticle: false,
+  appearanceType: 'protagonist' as const,
+  appearanceTargets: [] as string[],
   isGenerating: false,
   generationStep: 'idle' as const,
   generationProgress: 0,
@@ -95,6 +107,14 @@ export const useAppStore = create<AppState>((set, get) => ({
   setOccasion: (occasion) => set({ occasion }),
   setAccuracy: (accuracy) => set({ accuracy }),
   setHumorLevel: (humorLevel) => set({ humorLevel }),
+  setAppearInArticle: (appear) => set({ appearInArticle: appear }),
+  setAppearanceType: (type) => set({ appearanceType: type }),
+  setAppearanceTargets: (targets) => set({ appearanceTargets: targets }),
+  toggleAppearanceTarget: (target) => set((state) => ({
+    appearanceTargets: state.appearanceTargets.includes(target)
+      ? state.appearanceTargets.filter(t => t !== target)
+      : [...state.appearanceTargets, target]
+  })),
   setPurchaseType: (type) => set({ purchaseType: type }),
   setNewspaperData: (data) => set({ newspaperData: data }),
   setGeneratedImages: (images) => set({ generatedImages: images }),
@@ -126,6 +146,9 @@ export const useAppStore = create<AppState>((set, get) => ({
       style: state.style,
       accuracy: state.accuracy,
       humorLevel: state.humorLevel,
+      appearInArticle: state.appearInArticle,
+      appearanceType: state.appearanceType,
+      appearanceTargets: state.appearanceTargets,
     };
   },
 
