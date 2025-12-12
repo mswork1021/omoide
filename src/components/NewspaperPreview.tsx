@@ -137,42 +137,6 @@ export function NewspaperPreview({
           position: 'relative',
         }}
       >
-        {/* 角スタンプ（個人メッセージがある場合） */}
-        {data.personalMessage && (
-          <div
-            style={{
-              position: 'absolute',
-              top: '70px',
-              right: '12px',
-              zIndex: 10,
-              background: 'rgba(139, 69, 19, 0.95)',
-              color: '#fff9f0',
-              padding: '10px 20px',
-              border: '3px double #fff9f0',
-              textAlign: 'center',
-              boxShadow: '2px 2px 8px rgba(0,0,0,0.3)',
-              maxWidth: '500px',
-            }}
-          >
-            <div style={{ fontSize: '9px', letterSpacing: '0.15em', marginBottom: '4px', opacity: 0.9 }}>
-              {data.personalMessage.occasion}
-            </div>
-            <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '6px' }}>
-              祝 {data.personalMessage.recipientName}様
-            </div>
-            {data.personalMessage.message && (
-              <div style={{ fontSize: '9px', lineHeight: '1.5', marginBottom: '4px', opacity: 0.9 }}>
-                {data.personalMessage.message.length > 50
-                  ? data.personalMessage.message.slice(0, 50) + '...'
-                  : data.personalMessage.message}
-              </div>
-            )}
-            <div style={{ fontSize: '8px', opacity: 0.8 }}>
-              {data.personalMessage.senderName} より
-            </div>
-          </div>
-        )}
-
         {/* ヘッダー */}
         <header
           style={{
@@ -428,42 +392,6 @@ export function NewspaperPreview({
           position: 'relative',
         }}
       >
-        {/* 角スタンプ（個人メッセージがある場合） */}
-        {data.personalMessage && (
-          <div
-            style={{
-              position: 'absolute',
-              top: '65px',
-              right: '12px',
-              zIndex: 10,
-              background: 'linear-gradient(135deg, #e91e63 0%, #ff6b6b 100%)',
-              color: 'white',
-              padding: '10px 20px',
-              borderRadius: '4px',
-              textAlign: 'center',
-              boxShadow: '3px 3px 10px rgba(0,0,0,0.3)',
-              maxWidth: '500px',
-            }}
-          >
-            <div style={{ fontSize: '9px', marginBottom: '4px' }}>
-              ★ {data.personalMessage.occasion} ★
-            </div>
-            <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '6px' }}>
-              {data.personalMessage.recipientName}様
-            </div>
-            {data.personalMessage.message && (
-              <div style={{ fontSize: '9px', lineHeight: '1.5', marginBottom: '4px', opacity: 0.95 }}>
-                {data.personalMessage.message.length > 50
-                  ? data.personalMessage.message.slice(0, 50) + '...'
-                  : data.personalMessage.message}
-              </div>
-            )}
-            <div style={{ fontSize: '8px', opacity: 0.9 }}>
-              ♪ {data.personalMessage.senderName} より ♪
-            </div>
-          </div>
-        )}
-
         {/* ヘッダー - カラフルグラデーション */}
         <header
           style={{
@@ -775,42 +703,6 @@ export function NewspaperPreview({
         position: 'relative',
       }}
     >
-      {/* 角スタンプ（個人メッセージがある場合） */}
-      {data.personalMessage && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '80px',
-            right: '16px',
-            zIndex: 10,
-            background: config.accent,
-            color: 'white',
-            padding: '12px 20px',
-            borderRadius: '8px',
-            textAlign: 'center',
-            boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
-            maxWidth: '500px',
-          }}
-        >
-          <div style={{ fontSize: '9px', letterSpacing: '0.05em', marginBottom: '4px', opacity: 0.9 }}>
-            {data.personalMessage.occasion}
-          </div>
-          <div style={{ fontSize: '14px', fontWeight: '600', marginBottom: '6px' }}>
-            {data.personalMessage.recipientName} 様
-          </div>
-          {data.personalMessage.message && (
-            <div style={{ fontSize: '9px', lineHeight: '1.5', marginBottom: '4px', opacity: 0.9 }}>
-              {data.personalMessage.message.length > 50
-                ? data.personalMessage.message.slice(0, 50) + '...'
-                : data.personalMessage.message}
-            </div>
-          )}
-          <div style={{ fontSize: '8px', opacity: 0.8 }}>
-            — {data.personalMessage.senderName}
-          </div>
-        </div>
-      )}
-
       {/* ヘッダー - ミニマル */}
       <header
         style={{
