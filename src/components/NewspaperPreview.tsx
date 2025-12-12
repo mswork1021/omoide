@@ -8,7 +8,7 @@
  * - 令和風: モダン新聞、洗練されたミニマルデザイン
  */
 
-import React from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import type { NewspaperData } from '@/types';
 
 interface NewspaperPreviewProps {
@@ -107,6 +107,9 @@ function ImagePlaceholder({
   );
 }
 
+// 新聞の固定幅（A4横に近い比率）
+const NEWSPAPER_WIDTH = 800;
+
 export function NewspaperPreview({
   data,
   style = 'showa',
@@ -114,6 +117,23 @@ export function NewspaperPreview({
   images,
 }: NewspaperPreviewProps) {
   const config = styleConfig[style];
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+
+  // 画面幅に合わせてスケールを計算
+  useEffect(() => {
+    const calculateScale = () => {
+      if (containerRef.current) {
+        const containerWidth = containerRef.current.offsetWidth;
+        const newScale = Math.min(1, containerWidth / NEWSPAPER_WIDTH);
+        setScale(newScale);
+      }
+    };
+
+    calculateScale();
+    window.addEventListener('resize', calculateScale);
+    return () => window.removeEventListener('resize', calculateScale);
+  }, []);
 
   const dateStr = new Date(data.date).toLocaleDateString('ja-JP', {
     year: 'numeric',
@@ -122,21 +142,44 @@ export function NewspaperPreview({
     weekday: 'long',
   });
 
+  // スケーリングラッパー
+  const ScalingWrapper = ({ children }: { children: React.ReactNode }) => (
+    <div
+      ref={containerRef}
+      style={{
+        width: '100%',
+        overflow: 'hidden',
+      }}
+    >
+      <div
+        style={{
+          width: `${NEWSPAPER_WIDTH}px`,
+          transform: `scale(${scale})`,
+          transformOrigin: 'top left',
+          marginBottom: scale < 1 ? `calc(-100% * ${1 - scale})` : 0,
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+
   // 昭和スタイル（伝統的な新聞レイアウト）
   if (style === 'showa') {
     return (
-      <div
-        id="newspaper-preview"
-        className="font-serif"
-        style={{
-          background: config.paper,
-          color: config.text,
-          minHeight: '900px',
-          padding: '0',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-          position: 'relative',
-        }}
-      >
+      <ScalingWrapper>
+        <div
+          id="newspaper-preview"
+          className="font-serif"
+          style={{
+            background: config.paper,
+            color: config.text,
+            minHeight: '900px',
+            padding: '0',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            position: 'relative',
+          }}
+        >
         {/* ヘッダー */}
         <header
           style={{
@@ -380,15 +423,17 @@ export function NewspaperPreview({
           </div>
           {isPreview && <span style={{ color: '#f97316', marginTop: '4px', display: 'block' }}>※ プレビュー</span>}
         </footer>
-      </div>
+        </div>
+      </ScalingWrapper>
     );
   }
 
   // 平成スタイル（90年代ポップ・スポーツ新聞風）
   if (style === 'heisei') {
     return (
-      <div
-        id="newspaper-preview"
+      <ScalingWrapper>
+        <div
+          id="newspaper-preview"
         className="font-sans"
         style={{
           background: config.bg,
@@ -700,15 +745,17 @@ export function NewspaperPreview({
           </div>
           {isPreview && <span style={{ marginTop: '4px', opacity: 0.8, display: 'block' }}>[ Preview ]</span>}
         </footer>
-      </div>
+        </div>
+      </ScalingWrapper>
     );
   }
 
   // 令和スタイル（モダンミニマル）
   return (
-    <div
-      id="newspaper-preview"
-      className="font-sans"
+    <ScalingWrapper>
+      <div
+        id="newspaper-preview"
+        className="font-sans"
       style={{
         background: config.paper,
         color: config.text,
@@ -980,6 +1027,7 @@ export function NewspaperPreview({
         </div>
         {isPreview && <span style={{ color: '#f97316', marginTop: '4px', display: 'block' }}>PREVIEW</span>}
       </footer>
-    </div>
+      </div>
+    </ScalingWrapper>
   );
 }
