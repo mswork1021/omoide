@@ -186,12 +186,14 @@ export default function Home() {
               <div className="bg-white flex flex-col lg:flex-row">
                 {/* 左側: 新聞プレビュー */}
                 <div className="flex-1 p-4 md:p-6 border-r border-[#1a1a1a]/10">
-                  <NewspaperPreview
-                    data={newspaperData}
-                    style={style}
-                    isPreview={!isImagesPaid}
-                    images={generatedImages || undefined}
-                  />
+                  <div id="newspaper-preview-for-pdf">
+                    <NewspaperPreview
+                      data={newspaperData}
+                      style={style}
+                      isPreview={!isImagesPaid}
+                      images={generatedImages || undefined}
+                    />
+                  </div>
                 </div>
 
                 {/* 右側: アクションパネル（画像追加 or PDF） */}
