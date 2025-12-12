@@ -177,7 +177,7 @@ export default function Home() {
                   </p>
                 </div>
                 <p className="text-xs text-[#1a1a1a]/60">
-                  史実をベースに東スポ風の大げさ表現で！ごちゃ混ぜ感が面白い
+                  忠実な記事にユーモアが加わると…あれ、忠実じゃなくなる！？そこが面白い！
                 </p>
               </div>
 
