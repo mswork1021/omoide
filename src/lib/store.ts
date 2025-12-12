@@ -314,32 +314,32 @@ export const useGenerationFlow = () => {
 
       store.setGenerationProgress(30);
 
-      // Step 2: スケール計算（A4に収めるため）
-      const scale = naturalHeight > a4PixelHeight
-        ? a4PixelHeight / naturalHeight
-        : 1;
-      console.log('[PDF] Scale factor:', scale);
+      // Step 2: A4比率に合わせた幅を計算
+      // 幅を広げると高さが縮む（テキストの折り返しが減る）
+      // renderWidth : renderHeight = a4Width : a4Height になるようにする
+      let renderWidth = a4PixelWidth;
+      if (naturalHeight > a4PixelHeight) {
+        // 高さが超過している場合、幅を広げて短くする
+        // 公式: renderWidth = a4PixelWidth * sqrt(naturalHeight / a4PixelHeight)
+        renderWidth = Math.round(a4PixelWidth * Math.sqrt(naturalHeight / a4PixelHeight));
+      }
+      console.log('[PDF] Render width:', renderWidth, 'Natural height:', naturalHeight);
 
-      // Step 3: スケール適用してキャプチャ用コンテナ作成
       cloneContainer = document.createElement('div');
       cloneContainer.style.cssText = `
         position: fixed;
         left: -9999px;
         top: 0;
-        width: ${a4PixelWidth}px;
-        height: ${a4PixelHeight}px;
+        width: ${renderWidth}px;
         background: white;
         z-index: -1;
-        overflow: hidden;
       `;
 
       const clone = element.cloneNode(true) as HTMLElement;
-      clone.style.width = `${a4PixelWidth}px`;
+      clone.style.width = `${renderWidth}px`;
       clone.style.margin = '0';
       clone.style.padding = '20px';
       clone.style.boxSizing = 'border-box';
-      clone.style.transformOrigin = 'top left';
-      clone.style.transform = `scale(${scale})`;
 
       cloneContainer.appendChild(clone);
       document.body.appendChild(cloneContainer);
@@ -349,15 +349,13 @@ export const useGenerationFlow = () => {
 
       store.setGenerationProgress(50);
 
-      // html2canvasでキャプチャ（A4サイズ固定）
+      // html2canvasでキャプチャ
       const canvas = await html2canvas(cloneContainer, {
         scale: 2,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
         logging: false,
-        width: a4PixelWidth,
-        height: a4PixelHeight,
       });
 
       store.setGenerationProgress(70);
@@ -366,6 +364,31 @@ export const useGenerationFlow = () => {
       const a4Width = 210;
       const a4Height = 297;
 
+      // キャンバスのアスペクト比を維持してA4にフィット
+      const canvasWidth = canvas.width;
+      const canvasHeight = canvas.height;
+      const canvasRatio = canvasHeight / canvasWidth;
+      const a4Ratio = a4Height / a4Width;
+
+      let pdfImgWidth: number;
+      let pdfImgHeight: number;
+      let offsetX = 0;
+      let offsetY = 0;
+
+      if (canvasRatio > a4Ratio) {
+        // 縦長: 高さ基準でフィット
+        pdfImgHeight = a4Height;
+        pdfImgWidth = a4Height / canvasRatio;
+        offsetX = (a4Width - pdfImgWidth) / 2;
+      } else {
+        // 横長または同比率: 幅基準でフィット
+        pdfImgWidth = a4Width;
+        pdfImgHeight = a4Width * canvasRatio;
+        offsetY = (a4Height - pdfImgHeight) / 2;
+      }
+
+      console.log('[PDF] Canvas:', canvasWidth, 'x', canvasHeight, 'PDF img:', pdfImgWidth, 'x', pdfImgHeight);
+
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -373,7 +396,7 @@ export const useGenerationFlow = () => {
       });
 
       const imgData = canvas.toDataURL('image/jpeg', 0.95);
-      pdf.addImage(imgData, 'JPEG', 0, 0, a4Width, a4Height);
+      pdf.addImage(imgData, 'JPEG', offsetX, offsetY, pdfImgWidth, pdfImgHeight);
 
       store.setGenerationProgress(90);
 
