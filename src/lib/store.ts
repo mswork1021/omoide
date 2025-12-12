@@ -364,30 +364,7 @@ export const useGenerationFlow = () => {
       const a4Width = 210;
       const a4Height = 297;
 
-      // キャンバスのアスペクト比を維持してA4にフィット
-      const canvasWidth = canvas.width;
-      const canvasHeight = canvas.height;
-      const canvasRatio = canvasHeight / canvasWidth;
-      const a4Ratio = a4Height / a4Width;
-
-      let pdfImgWidth: number;
-      let pdfImgHeight: number;
-      let offsetX = 0;
-      let offsetY = 0;
-
-      if (canvasRatio > a4Ratio) {
-        // 縦長: 高さ基準でフィット
-        pdfImgHeight = a4Height;
-        pdfImgWidth = a4Height / canvasRatio;
-        offsetX = (a4Width - pdfImgWidth) / 2;
-      } else {
-        // 横長または同比率: 幅基準でフィット
-        pdfImgWidth = a4Width;
-        pdfImgHeight = a4Width * canvasRatio;
-        offsetY = (a4Height - pdfImgHeight) / 2;
-      }
-
-      console.log('[PDF] Canvas:', canvasWidth, 'x', canvasHeight, 'PDF img:', pdfImgWidth, 'x', pdfImgHeight);
+      console.log('[PDF] Canvas:', canvas.width, 'x', canvas.height);
 
       const pdf = new jsPDF({
         orientation: 'portrait',
@@ -395,8 +372,9 @@ export const useGenerationFlow = () => {
         format: 'a4',
       });
 
+      // A4全面に配置（余白なし）
       const imgData = canvas.toDataURL('image/jpeg', 0.95);
-      pdf.addImage(imgData, 'JPEG', offsetX, offsetY, pdfImgWidth, pdfImgHeight);
+      pdf.addImage(imgData, 'JPEG', 0, 0, a4Width, a4Height);
 
       store.setGenerationProgress(90);
 
