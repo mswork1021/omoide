@@ -476,6 +476,16 @@ export function OrderForm() {
           </>
         )}
       </div>
+
+      {/* 注意書き・免責事項 */}
+      <div className="text-xs text-[#1a1a1a]/50 space-y-2 p-3 bg-[#1a1a1a]/5 rounded-lg">
+        <p>
+          <span className="font-bold">⚠️ ご注意:</span> 矛盾する設定の組み合わせ（例：正確性100% × ユーモア度100%、正確性100% × 宛名登場）の場合、条件が混ざり合い予想外の結果になることがあります。そのごちゃ混ぜ感もお楽しみください！
+        </p>
+        <p>
+          <span className="font-bold">📜 免責事項:</span> 本サービスで生成される新聞記事はAIによるフィクションです。内容の正確性・事実性は保証しておりません。生成された記事に関して、当サービスは一切の責任を負いません。
+        </p>
+      </div>
     </form>
   );
 }
