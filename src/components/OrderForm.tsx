@@ -295,12 +295,16 @@ export function OrderForm() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">メッセージ</label>
+              <label className="block text-sm font-medium mb-1">
+                メッセージ
+                <span className="text-xs text-[#1a1a1a]/50 ml-2">({personalMessage.length}/50)</span>
+              </label>
               <textarea
                 value={personalMessage}
-                onChange={(e) => setPersonalMessage(e.target.value)}
+                onChange={(e) => setPersonalMessage(e.target.value.slice(0, 50))}
                 placeholder="お祝いのメッセージを入力..."
                 rows={2}
+                maxLength={50}
                 className="w-full px-3 py-2 text-sm border border-[#1a1a1a]/20 rounded bg-white resize-none"
               />
             </div>
