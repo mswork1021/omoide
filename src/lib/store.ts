@@ -342,8 +342,15 @@ export const useGenerationFlow = () => {
       clone.style.width = `${renderWidth}px`;
       clone.style.margin = '0';
       clone.style.boxSizing = 'border-box';
+      clone.style.background = '#ffffff';
       clone.style.transformOrigin = 'top left';
       clone.style.transform = `scale(${scale})`;
+
+      // 内部の新聞プレビュー要素も幅を100%に
+      const innerPreview = clone.querySelector('#newspaper-preview') as HTMLElement;
+      if (innerPreview) {
+        innerPreview.style.width = '100%';
+      }
 
       cloneContainer.appendChild(clone);
       document.body.appendChild(cloneContainer);
