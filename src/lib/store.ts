@@ -346,10 +346,11 @@ export const useGenerationFlow = () => {
       clone.style.transformOrigin = 'top left';
       clone.style.transform = `scale(${scale})`;
 
-      // 内部の新聞プレビュー要素も幅を100%に
+      // 内部の新聞プレビュー要素も幅を100%に、boxShadowを削除
       const innerPreview = clone.querySelector('#newspaper-preview') as HTMLElement;
       if (innerPreview) {
         innerPreview.style.width = '100%';
+        innerPreview.style.boxShadow = 'none';
       }
 
       cloneContainer.appendChild(clone);
