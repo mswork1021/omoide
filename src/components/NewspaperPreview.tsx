@@ -118,7 +118,9 @@ export function NewspaperPreview({
 }: NewspaperPreviewProps) {
   const config = styleConfig[style];
   const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
+  const [scaledHeight, setScaledHeight] = useState<number | undefined>();
 
   // 画面幅に合わせてスケールを計算
   useEffect(() => {
@@ -135,6 +137,14 @@ export function NewspaperPreview({
     return () => window.removeEventListener('resize', calculateScale);
   }, []);
 
+  // スケール後の高さを計算
+  useEffect(() => {
+    if (contentRef.current) {
+      const originalHeight = contentRef.current.offsetHeight;
+      setScaledHeight(originalHeight * scale);
+    }
+  }, [scale]);
+
   const dateStr = new Date(data.date).toLocaleDateString('ja-JP', {
     year: 'numeric',
     month: 'long',
@@ -149,14 +159,15 @@ export function NewspaperPreview({
       style={{
         width: '100%',
         overflow: 'hidden',
+        height: scaledHeight ? `${scaledHeight}px` : 'auto',
       }}
     >
       <div
+        ref={contentRef}
         style={{
           width: `${NEWSPAPER_WIDTH}px`,
           transform: `scale(${scale})`,
           transformOrigin: 'top left',
-          marginBottom: scale < 1 ? `calc(-100% * ${1 - scale})` : 0,
         }}
       >
         {children}
