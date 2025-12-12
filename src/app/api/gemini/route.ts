@@ -47,13 +47,23 @@ export async function POST(request: NextRequest) {
         }
       : undefined;
 
+    // 記事登場設定
+    const appearanceSettings = body.appearInArticle && body.recipientName
+      ? {
+          recipientName: body.recipientName,
+          type: body.appearanceType || 'protagonist',
+          targets: body.appearanceTargets || [],
+        }
+      : undefined;
+
     // Gemini 3.0で新聞コンテンツを生成
     const newspaper = await generateNewspaperContent(
       targetDate,
       body.style || 'showa',
       personalMessage,
       body.accuracy ?? 50,
-      body.humorLevel ?? 50
+      body.humorLevel ?? 50,
+      appearanceSettings
     );
 
     return NextResponse.json({

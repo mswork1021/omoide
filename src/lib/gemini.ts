@@ -158,7 +158,12 @@ export async function generateNewspaperContent(
     occasion: string;
   },
   accuracy: number = 50,
-  humorLevel: number = 50
+  humorLevel: number = 50,
+  appearanceSettings?: {
+    recipientName: string;
+    type: 'protagonist' | 'commentator';
+    targets: string[];
+  }
 ): Promise<NewspaperData> {
   const genAI = getAI();
 
@@ -283,7 +288,24 @@ ${personalMessage ? `
 - 記念日: ${personalMessage.occasion}
 - メッセージ: ${personalMessage.message}
 ` : ''}
-
+${appearanceSettings && appearanceSettings.targets.length > 0 ? `
+【特別指示: ${appearanceSettings.recipientName}さんを記事に登場させる】
+${appearanceSettings.type === 'protagonist' ? `
+登場方法: 主役として
+- ${appearanceSettings.recipientName}さんを記事の主人公として描写する
+- 「${appearanceSettings.recipientName}さんが○○で大活躍！」のような見出しにする
+- 架空の活躍や出来事を創作してOK
+- その日の実際の出来事と絡めて、${appearanceSettings.recipientName}さんが関わったように描写する
+` : `
+登場方法: 関係者/コメンテーターとして
+- ${appearanceSettings.recipientName}さんを記事の関係者として登場させる
+- 「〜について${appearanceSettings.recipientName}さんは『○○』とコメントした」のような形で引用する
+- 実際の出来事に対する${appearanceSettings.recipientName}さんのコメントや感想を創作する
+`}
+登場させる記事:
+${appearanceSettings.targets.includes('main') ? '- メイン記事（mainArticle）に登場させること\n' : ''}${appearanceSettings.targets.includes('sub1') ? '- サブ記事1（subArticles[0]）に登場させること\n' : ''}${appearanceSettings.targets.includes('sub2') ? '- サブ記事2（subArticles[1]）に登場させること\n' : ''}${appearanceSettings.targets.includes('sub3') ? '- サブ記事3（subArticles[2]）に登場させること\n' : ''}
+※ 指定された記事には必ず${appearanceSettings.recipientName}さんを登場させること！
+` : ''}
 【出力形式 - 必ずこのJSON形式で出力】
 ※全ての記事は${year}年${month}月${day}日に起きた出来事のみ
 
