@@ -14,6 +14,8 @@ interface AppState {
   senderName: string;
   personalMessage: string;
   occasion: string;
+  accuracy: number;      // 正確性（0-100）
+  humorLevel: number;    // ユーモア度（0-100）
 
   // 生成状態
   isGenerating: boolean;
@@ -43,6 +45,8 @@ interface AppState {
   setSenderName: (name: string) => void;
   setPersonalMessage: (message: string) => void;
   setOccasion: (occasion: string) => void;
+  setAccuracy: (accuracy: number) => void;
+  setHumorLevel: (humorLevel: number) => void;
   setPurchaseType: (type: 'text_only' | 'add_images' | null) => void;
   setNewspaperData: (data: NewspaperData | null) => void;
   setGeneratedImages: (images: GeneratedImages | null) => void;
@@ -65,6 +69,8 @@ const initialState = {
   senderName: '',
   personalMessage: '',
   occasion: '',
+  accuracy: 50,         // デフォルト50%
+  humorLevel: 50,       // デフォルト50%
   isGenerating: false,
   generationStep: 'idle' as const,
   generationProgress: 0,
@@ -87,6 +93,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   setSenderName: (name) => set({ senderName: name }),
   setPersonalMessage: (message) => set({ personalMessage: message }),
   setOccasion: (occasion) => set({ occasion }),
+  setAccuracy: (accuracy) => set({ accuracy }),
+  setHumorLevel: (humorLevel) => set({ humorLevel }),
   setPurchaseType: (type) => set({ purchaseType: type }),
   setNewspaperData: (data) => set({ newspaperData: data }),
   setGeneratedImages: (images) => set({ generatedImages: images }),
@@ -116,6 +124,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       personalMessage: state.personalMessage || undefined,
       occasion: state.occasion || undefined,
       style: state.style,
+      accuracy: state.accuracy,
+      humorLevel: state.humorLevel,
     };
   },
 

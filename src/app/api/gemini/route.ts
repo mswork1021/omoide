@@ -51,7 +51,9 @@ export async function POST(request: NextRequest) {
     const newspaper = await generateNewspaperContent(
       targetDate,
       body.style || 'showa',
-      personalMessage
+      personalMessage,
+      body.accuracy ?? 50,
+      body.humorLevel ?? 50
     );
 
     return NextResponse.json({
