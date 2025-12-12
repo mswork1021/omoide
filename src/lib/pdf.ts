@@ -132,12 +132,10 @@ function drawMasthead(
   y: number,
   width: number
 ): number {
-  const dateStr = data.date.toLocaleDateString('ja-JP', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    weekday: 'long',
-  });
+  // Node.js環境でも動作する日付フォーマット
+  const date = data.date;
+  const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+  const dateStr = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日（${weekdays[date.getDay()]}曜日）`;
 
   // 題字
   pdf.setFontSize(32);
