@@ -62,7 +62,7 @@ export function SampleCarousel() {
         {currentMeta.settingsLabel && (
           <div className="mt-4 text-left max-w-md mx-auto bg-[#f5f0e6] rounded-lg p-3 text-sm">
             <div className="mb-2 pb-2 border-b border-[#1a1a1a]/10">
-              <div className="text-xs text-[#1a1a1a]/50 mb-1">📰 記事の内容</div>
+              <div className="text-xs text-[#1a1a1a]/50 mb-1">📰 記事の内容はこのように設定しました</div>
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-[#1a1a1a]/70">{currentMeta.settingsLabel.contentSetting}</span>
                 <span className="text-[#1a1a1a]/40">→</span>
@@ -72,7 +72,7 @@ export function SampleCarousel() {
               </div>
             </div>
             <div>
-              <div className="text-xs text-[#1a1a1a]/50 mb-1">👤 記事への登場</div>
+              <div className="text-xs text-[#1a1a1a]/50 mb-1">👤 記事への登場(宛名の人)はこのように設定しました！</div>
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-[#1a1a1a]/70">{currentMeta.settingsLabel.appearanceSetting}</span>
                 <span className="text-[#1a1a1a]/40">→</span>
