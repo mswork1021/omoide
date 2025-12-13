@@ -58,21 +58,20 @@ export function SampleCarousel() {
         <h3 className="text-xl font-bold">{currentMeta.title}</h3>
         <p className="text-sm text-[#1a1a1a]/60">{currentMeta.description}</p>
 
-        {/* カスタマイズ設定バッジ */}
-        {currentMeta.settings && (
-          <div className="mt-3 flex flex-wrap justify-center gap-2">
-            <span className="inline-flex items-center text-xs bg-[#f5f0e6] text-[#1a1a1a]/70 px-2 py-1 rounded">
-              忠実度 {currentMeta.settings.accuracy}%
-            </span>
-            <span className="inline-flex items-center text-xs bg-[#f5f0e6] text-[#1a1a1a]/70 px-2 py-1 rounded">
-              ユーモア {currentMeta.settings.humor}%
-            </span>
-            <span className="inline-flex items-center text-xs bg-[#f5f0e6] text-[#1a1a1a]/70 px-2 py-1 rounded">
-              {currentMeta.settings.appearance}
-            </span>
-            <span className="inline-flex items-center text-xs bg-[#f5f0e6] text-[#1a1a1a]/70 px-2 py-1 rounded">
-              {currentMeta.occasion}
-            </span>
+        {/* カスタマイズ設定の説明 */}
+        {currentMeta.settingsLabel && (
+          <div className="mt-3 space-y-1">
+            <div className="flex flex-wrap justify-center gap-2">
+              <span className={`inline-flex items-center text-xs ${colors.bg} ${colors.text} px-3 py-1 rounded-full`}>
+                📰 {currentMeta.settingsLabel.content}
+              </span>
+              <span className="inline-flex items-center text-xs bg-[#f5f0e6] text-[#1a1a1a]/80 px-3 py-1 rounded-full">
+                🎁 {currentMeta.occasion}のプレゼント
+              </span>
+            </div>
+            <p className="text-xs text-[#1a1a1a]/60">
+              👤 {currentMeta.settingsLabel.appearance}
+            </p>
           </div>
         )}
       </div>
