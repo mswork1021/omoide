@@ -1,229 +1,248 @@
 /**
  * サンプル新聞データ
  * 令和 → 平成 → 昭和 の順番で表示
- * 本番生成と完全に同じレイアウトで表示
+ * 各サンプルで異なるカスタマイズ設定を示す
  */
 
 import type { NewspaperData } from '@/types';
 
 export const sampleNewspapers: NewspaperData[] = [
-  // サンプル1: 令和風 - 2020年7月24日（東京オリンピック予定日）
+  // サンプル1: 令和風
+  // 設定: 忠実度0% × ユーモア100% × 記念日 × メイン記事に主役として登場
   {
-    date: new Date('2020-07-24'),
+    date: new Date('2024-06-15'),
     masthead: '時空新報',
-    edition: '第45,678号 朝刊',
-    weather: '晴れ 最高気温32度',
+    edition: '第50,123号 特別号',
+    weather: '晴れ 最高気温28度',
     mainArticle: {
-      headline: '東京五輪 異例の1年延期後も開催困難か',
-      subheadline: '新型コロナ感染拡大で世界的な懸念広がる',
-      content: '新型コロナウイルスの世界的な感染拡大を受け、2020年夏に予定されていた東京オリンピック・パラリンピックの開催が危ぶまれている。国際オリンピック委員会（IOC）と日本政府は、史上初となる1年の延期を決定したものの、収束の見通しが立たない中、開催可否をめぐる議論は続いている。選手たちは練習環境の制限に苦しみながらも、大会実現に向けて準備を続けている。世界中のアスリートが集う平和の祭典が、このパンデミックという未曽有の危機を乗り越えて開催されるか、世界が注目している。医療従事者への感謝と、一日も早い収束を願う声が日本中から上がっている。',
+      headline: '佐藤花子さん 世界初「全人類から好かれる人」に認定',
+      subheadline: '国連が満場一致で決議 地球規模のお祝いムード',
+      content: '国際連合は15日、佐藤花子さん（32）を世界初の「全人類から好かれる人」として公式認定した。193カ国の代表が満場一致で賛成し、歴史的な決議となった。佐藤さんは「え、そんな大げさな...」と困惑気味だが、すでに各国首脳からお祝いのメッセージが殺到。アメリカ大統領は「彼女のインスタのフォロワーになれて光栄」、フランス大統領は「パリのエッフェル塔を花子カラーにライトアップする」と発表。日本政府は記念切手の発行を決定し、郵便局には早くも行列ができている。佐藤さんの飼い猫「もちまる」も準認定される見込み。',
       category: 'main',
-      imagePrompt: 'Tokyo 2020 Olympics empty stadium, modern sports facility, Japan, pandemic era, photojournalism style',
+      imagePrompt: 'Celebration ceremony, confetti, happy crowd cheering, international flags, joyful atmosphere, bright and colorful, photojournalism style',
     },
     subArticles: [
       {
-        headline: 'リモートワーク急速に普及',
-        content: '新型コロナウイルスの感染拡大に伴い、在宅勤務・リモートワークが急速に普及している。IT企業を中心に、オフィスに出社せずに働くスタイルが定着しつつある。Zoom、Teams等のビデオ会議ツールの利用者は前年比10倍以上に増加。「働き方改革」が一気に進んだ形となった。',
-        category: 'economy',
-        imagePrompt: 'Japanese person working from home, laptop, video conference, modern minimalist room, 2020s lifestyle photography',
+        headline: '「優しすぎて逆に心配」専門家分析',
+        content: '心理学者の山田教授は「佐藤さんの優しさレベルは人類史上最高値。道で会った野良猫にも敬語を使うらしい」と分析。周囲からは「たまには怒ってもいいのに」との声も。',
+        category: 'society',
+        imagePrompt: 'Kind person helping others, warm atmosphere, community scene, soft lighting, documentary style',
       },
       {
-        headline: '「鬼滅の刃」興行収入が歴代記録更新',
-        content: '劇場版「鬼滅の刃 無限列車編」が公開から73日で興行収入324億円を突破し、「千と千尋の神隠し」の記録を19年ぶりに塗り替えた。コロナ禍での映画館営業制限にも関わらず、社会現象的なヒットとなった。',
+        headline: '記念グッズ、発売3秒で完売',
+        content: '佐藤さん認定記念のマグカップが発売されたが、オンラインショップでは3秒で完売。転売サイトでは100倍の価格で取引されている。佐藤さん本人は「私のグッズって需要あるの？」と驚きを隠せない様子。',
+        category: 'economy',
+        imagePrompt: 'Merchandise shop, crowded store, people excited shopping, celebratory atmosphere, retail photography',
+      },
+      {
+        headline: '花子フィーバー 世界各地で',
+        content: 'ニューヨークのタイムズスクエア、ロンドンのピカデリーサーカス、東京の渋谷スクランブル交差点で同時に「花子」コールが発生。地球規模の同時多発的お祝いは史上初。',
         category: 'entertainment',
-        imagePrompt: 'Japanese anime movie theater premiere, crowds with masks, movie poster, entertainment news photography style',
+        imagePrompt: 'Global celebration, city lights, Times Square style big screens, crowd celebration, night city photography',
+      },
+    ],
+    editorial: {
+      headline: '愛される才能',
+      content: '「全人類から好かれる」という偉業を成し遂げた佐藤花子さん。その秘訣を尋ねると「特に何もしてないんですけど...」との答え。この謙虚さこそが、彼女が愛される理由なのかもしれない。我々も見習いたいものである。なお、編集部員も全員ファンである。',
+      category: 'editorial',
+    },
+    columnTitle: '天声人語',
+    columnContent: '「好かれる」とは何だろう。佐藤さんは言う。「みんなを好きでいること、かな」。シンプルだが深い。今日も彼女は誰かに「ありがとう」と言っているのだろう。',
+    advertisements: [
+      {
+        title: '花子さん認定記念',
+        content: '祝・世界認定！記念セール開催中。全品15%OFF。',
+        style: 'modern-retro',
       },
       {
-        headline: '菅内閣発足 デジタル庁創設へ',
-        content: '安倍晋三首相の辞任を受け、菅義偉氏が第99代内閣総理大臣に就任した。新内閣は行政のデジタル化を最優先課題に掲げ、2021年のデジタル庁創設を目指す方針を表明。「縦割り打破」をスローガンに改革を進める。',
+        title: '優しさ検定',
+        content: 'あなたの優しさレベルは？オンライン診断スタート。',
+        style: 'modern-retro',
+      },
+      {
+        title: '猫カフェもちまる',
+        content: '準認定記念！ドリンク無料キャンペーン実施中。',
+        style: 'modern-retro',
+      },
+    ],
+    personalMessage: {
+      recipientName: '佐藤 花子',
+      senderName: 'ご家族一同',
+      message: '結婚10周年おめでとう！これからも世界一愛される人でいてね。',
+      occasion: '結婚記念日',
+    },
+  },
+
+  // サンプル2: 平成風
+  // 設定: 忠実度100% × ユーモア0% × 誕生日 × 記事には登場しない
+  {
+    date: new Date('1995-01-17'),
+    masthead: '時空新報',
+    edition: '第15,234号 号外',
+    weather: '曇り 最高気温8度',
+    mainArticle: {
+      headline: '阪神大震災 死者5000人超の恐れ',
+      subheadline: '神戸市中心部で甚大な被害 救助活動続く',
+      content: '17日午前5時46分、淡路島北部を震源とするマグニチュード7.3の直下型地震が発生し、神戸市を中心に甚大な被害をもたらした。気象庁はこの地震を「平成7年兵庫県南部地震」と命名。神戸市内では多くの建物が倒壊し、各地で火災が発生している。高速道路や鉄道も寸断され、交通網は麻痺状態。政府は直ちに非常災害対策本部を設置し、自衛隊の災害派遣を決定した。被災地では懸命の救助活動が続いているが、倒壊した建物の下敷きになった住民の救出が急がれる。ライフラインも広範囲で停止しており、復旧には相当の時間を要する見通し。',
+      category: 'main',
+      imagePrompt: '1995 Kobe earthquake aftermath, collapsed buildings, rescue workers, damaged highway, documentary photography, serious tone',
+    },
+    subArticles: [
+      {
+        headline: '高速道路が横倒し 衝撃の光景',
+        content: '阪神高速道路の高架橋が約600メートルにわたって横倒しになり、通行中の車両が取り残された。この衝撃的な光景は、都市型地震の恐ろしさを如実に物語っている。専門家は耐震基準の見直しを訴えている。',
+        category: 'society',
+        imagePrompt: '1995 Kobe earthquake collapsed highway, Hanshin Expressway fallen, dramatic damage, news photography style',
+      },
+      {
+        headline: '全国から救援物資続々',
+        content: '被災地への救援物資が全国から届き始めている。各自治体は毛布、飲料水、食料品などの支援を表明。ボランティアの受け入れ態勢も整いつつあるが、現地へのアクセスが困難な状況が続いている。',
+        category: 'society',
+        imagePrompt: 'Relief supplies, volunteers organizing aid packages, humanitarian response, 1990s Japan, documentary style',
+      },
+      {
+        headline: '安否確認に電話殺到 回線パンク',
+        content: '被災地の安否を確認しようとする電話が殺到し、通信回線がパンク状態に。NTTは災害用伝言ダイヤル「171」の運用を開始したが、依然として繋がりにくい状況が続いている。',
         category: 'news',
-        imagePrompt: 'Japanese prime minister press conference, government building, official ceremony, news photography style',
+        imagePrompt: 'People using public phones, worried expressions, 1995 Japan, communication during disaster, news photography',
       },
     ],
     editorial: {
-      headline: 'コロナ後の社会を見据えて',
-      content: 'パンデミックは社会のあり方を根底から問い直す機会となった。リモートワークの普及は、都市一極集中の是正や地方創生の可能性を示している。また、医療・介護従事者の献身に改めて感謝するとともに、エッセンシャルワーカーの処遇改善が急務である。この危機を乗り越えた先に、より強靭で持続可能な社会を築くことが、私たちの責務である。困難な時こそ、人と人との繋がりの大切さを忘れずにいたい。',
+      headline: '未曾有の災害に立ち向かう',
+      content: '戦後最大級の都市直下型地震が、我が国を襲った。高度経済成長期に建設された構造物の脆弱さが露呈し、防災体制の再検討が急務である。今は一人でも多くの命を救うことに全力を注ぐべきときだ。そして、この悲劇を教訓として、真に災害に強い国づくりを進めなければならない。被災された方々に心よりお見舞い申し上げる。',
       category: 'editorial',
     },
     columnTitle: '天声人語',
-    columnContent: 'マスクが日常の一部となった。顔の半分を覆うその布越しに、私たちは言葉を交わし、目で微笑む。不自由さの中にも、人間の適応力と創意工夫を見る。この経験は、きっと未来への教訓となるだろう。',
+    columnContent: '早朝の静寂を破る激しい揺れ。一瞬にして日常が崩れ去った。しかし、瓦礫の下から聞こえる声に、救助隊員は不眠不休で応える。人間の絆が試される時である。',
     advertisements: [
       {
-        title: 'オンライン診療',
-        content: '自宅から医師に相談。初診からOK。専用アプリでかんたん予約。',
-        style: 'modern-retro',
+        title: '義援金受付',
+        content: '日本赤十字社にて義援金を受け付けております。被災地支援にご協力ください。',
+        style: 'vintage',
       },
       {
-        title: 'Uber Eats',
-        content: 'お家時間を美味しく。人気レストランの味をお届け。初回配送無料。',
-        style: 'modern-retro',
+        title: '災害用伝言ダイヤル',
+        content: '171 + 被災地の電話番号で安否確認ができます。ご活用ください。',
+        style: 'vintage',
       },
       {
-        title: 'Netflix',
-        content: 'おうち時間に映画三昧。初月無料キャンペーン実施中。',
-        style: 'modern-retro',
+        title: '献血のお願い',
+        content: '各地の献血センターにて、献血へのご協力をお願いいたします。',
+        style: 'vintage',
       },
     ],
     personalMessage: {
-      recipientName: '田中 美咲',
+      recipientName: '田中 健太',
       senderName: 'ご家族一同',
-      message: 'お誕生日おめでとうございます。困難な時代でしたが、あなたの笑顔がいつも家族の支えでした。',
+      message: 'お誕生日おめでとう。大変な日に生まれたけれど、その分強く優しく育ってくれました。',
       occasion: '誕生日',
     },
   },
 
-  // サンプル2: 平成風 - 1990年4月1日（平成2年）
+  // サンプル3: 昭和風
+  // 設定: 忠実度50% × ユーモア50% × サブ記事に関係者として登場
   {
-    date: new Date('1990-04-01'),
+    date: new Date('1970-03-15'),
     masthead: '時空新報',
-    edition: '第12,847号 朝刊',
-    weather: '晴れ 最高気温18度',
+    edition: '第5,678号 朝刊',
+    weather: '晴れ 最高気温16度',
     mainArticle: {
-      headline: '新年度幕開け 平成二年の春到来',
-      subheadline: '全国各地で入社式・入学式 新たな門出を祝う',
-      content: '四月一日、全国各地で新年度の幕が開いた。企業では入社式が執り行われ、真新しいスーツに身を包んだ新入社員たちが緊張した面持ちで社会人としての第一歩を踏み出した。東京都内の大手企業では、約五百名の新入社員が一堂に会し、社長訓示に耳を傾けた。「平成の時代を担う若者として、創造性と挑戦心を忘れずに」との言葉に、新入社員たちは力強く頷いていた。一方、学校では入学式が行われ、桜の花びらが舞う中、新一年生たちが校門をくぐった。少子化の影響が懸念される中、教育現場では一人ひとりの個性を大切にする教育方針が打ち出されている。',
+      headline: '大阪万博 開幕まであと半月',
+      subheadline: '人類の進歩と調和を世界に発信 準備は最終段階',
+      content: '日本万国博覧会（大阪万博）の開幕が3月15日に迫り、会場の千里丘陵では準備作業が最終段階を迎えている。「人類の進歩と調和」をテーマに掲げる今回の万博には、77カ国が参加を表明。岡本太郎氏がデザインした「太陽の塔」は高さ70メートルの威容を誇り、すでに万博のシンボルとして注目を集めている。開幕後は6,400万人の来場者を見込んでおり、日本の高度経済成長を世界にアピールする絶好の機会となる。各パビリオンでは最新技術の展示が予定されており、未来の生活を垣間見ることができる。',
       category: 'main',
-      imagePrompt: 'Japanese company entrance ceremony 1990, new employees in suits, cherry blossoms, vintage newspaper photo style',
+      imagePrompt: '1970 Osaka Expo, Tower of the Sun, construction site, workers, vintage Japanese newspaper photography, black and white',
     },
     subArticles: [
       {
-        headline: '日経平均株価 三万円台を維持',
-        content: '東京株式市場は堅調な動きを見せ、日経平均株価は三万円台を維持した。バブル景気の恩恵を受け、企業業績は好調を維持している。市場関係者は「当面は高値圏での推移が続く」との見方を示している。',
-        category: 'economy',
-        imagePrompt: 'Tokyo stock exchange 1990, traders, electronic board showing numbers, vintage Japanese newspaper photo',
-      },
-      {
-        headline: '春の選抜高校野球 熱戦続く',
-        content: '第六十二回選抜高等学校野球大会は甲子園球場で熱戦が繰り広げられている。各地の代表校が白球を追い、球児たちの真剣な眼差しがスタンドの観客を魅了した。',
-        category: 'sports',
-        imagePrompt: 'Koshien baseball stadium 1990, high school baseball players, cheering crowd, vintage sports photography',
-      },
-      {
-        headline: '新元号「平成」二年目の春',
-        content: '昭和から平成へと時代が移り、二度目の春を迎えた。国民生活にも新時代の空気が浸透し、若者文化を中心に新たな潮流が生まれつつある。',
+        headline: '「月の石」展示に長蛇の列か',
+        content: 'アメリカ館で展示予定の「月の石」に注目が集まっている。アポロ11号が持ち帰った本物の月の石を見ようと、連日長蛇の列ができる見込み。地元住民の山本一郎さん（45）は「孫と一緒に見に行きたい。宇宙の神秘を感じられそうだ」と期待を語る。',
         category: 'society',
-        imagePrompt: 'Japanese street scene 1990, fashion, young people, colorful clothes, vintage photography style',
+        imagePrompt: 'Apollo moon rock display, museum exhibit, 1970s crowd waiting in line, vintage photography',
+      },
+      {
+        headline: '万博記念 新メニュー続々登場',
+        content: '万博開催を記念し、大阪市内の飲食店では新メニューが続々と登場している。「太陽の塔カレー」「進歩と調和パフェ」など、ユニークな名前の料理が話題に。商店街も万博ムード一色で、記念グッズの販売も好調だ。',
+        category: 'economy',
+        imagePrompt: '1970 Osaka restaurant, Expo themed food display, retro Japanese cafe, vintage color photography',
+      },
+      {
+        headline: '交通整理に警察官3000人動員',
+        content: '万博期間中の交通渋滞対策として、大阪府警は延べ3000人の警察官を動員する方針を発表。会場周辺の駐車場は計2万台分を確保したが、公共交通機関の利用を呼びかけている。',
+        category: 'news',
+        imagePrompt: '1970 Japanese traffic police, directing traffic, Osaka streets, vintage news photography',
       },
     ],
     editorial: {
-      headline: '新時代を生きる若者たちへ',
-      content: '平成二年の春、新たな門出を迎えた若者たちに贈る言葉がある。激動の昭和を経て、我が国は世界有数の経済大国となった。しかし、真の豊かさとは何か。物質的な繁栄のみならず、心の豊かさ、人と人との繋がりを大切にする社会の実現こそが、これからの時代に求められる。新入社員諸君、新入生諸君。困難に直面したとき、諦めずに立ち向かう勇気を持ち続けてほしい。諸君の双肩には、この国の未来がかかっているのである。',
+      headline: '万博が拓く未来',
+      content: '戦後25年、焼け野原から立ち上がった日本が、世界に誇る万博を開催する。これは単なる博覧会ではない。我が国の復興と発展を世界に示す、歴史的な節目である。「人類の進歩と調和」というテーマは、高度成長のひずみが見え始めた今こそ、深く噛みしめるべき言葉だ。技術の進歩と人間らしさの調和。この万博を機に、真の豊かさとは何かを考えたい。',
       category: 'editorial',
     },
     columnTitle: '天声人語',
-    columnContent: '桜前線が列島を北上する季節となった。花びらが風に舞う様は、古来より日本人の心を捉えて離さない。散りゆく花に儚さを見出し、だからこそ今この瞬間を大切にする。そんな美意識が、この国の文化の根底に流れている。',
+    columnContent: '「こんにちは」と笑顔で迎える万博。外国人客との交流に胸を躍らせる若者たち。言葉が通じなくても、笑顔は万国共通。国際化の波が、この大阪から始まる。',
     advertisements: [
       {
-        title: '春の新生活応援セール',
-        content: '家電・家具が特別価格！ 新生活を応援します。全国のデパートにて開催中。',
+        title: '万博記念乗車券',
+        content: '国鉄・私鉄共通フリーパス発売中。会場へは電車が便利です。',
         style: 'vintage',
       },
       {
-        title: '国鉄からJRへ',
-        content: '新しい鉄道の時代。快適な旅をお届けします。春の行楽にJRをご利用ください。',
+        title: 'ナショナル',
+        content: '未来の暮らしをナショナルから。万博パビリオンにてお待ちしております。',
         style: 'vintage',
       },
       {
-        title: '資生堂 春の新色',
-        content: '花咲く季節に、あなたも輝く。新作口紅「桜色の誘惑」発売中。',
+        title: '三ツ矢サイダー',
+        content: '万博のお供に爽やかな一杯。会場内売店にて販売中。',
         style: 'vintage',
       },
     ],
     personalMessage: {
-      recipientName: '山田 太郎',
+      recipientName: '山本 一郎',
       senderName: 'ご家族一同',
-      message: 'お誕生日おめでとうございます。あなたが生まれたこの日、世界はこんなニュースで溢れていました。',
-      occasion: '誕生日',
-    },
-  },
-
-  // サンプル3: 昭和風 - 1964年10月10日（東京オリンピック開会式）
-  {
-    date: new Date('1964-10-10'),
-    masthead: '時空新報',
-    edition: '第3,456号 特別号',
-    weather: '快晴 最高気温20度',
-    mainArticle: {
-      headline: '東京五輪 華やかに開幕',
-      subheadline: '国立競技場に七万の歓声 聖火台に炎燃ゆ',
-      content: '第十八回オリンピック東京大会は十日午後二時、東京・国立競技場において盛大に開会式が挙行された。秋晴れの青空の下、九十四カ国から集った選手団約五千五百名が次々と入場行進を行い、七万人の観衆は惜しみない拍手を送った。日本選手団は最後に入場し、旗手を先頭に堂々の行進。場内は歓声に包まれた。式典のクライマックスでは、最終聖火ランナーの坂井義則選手が聖火台への階段を駆け上がり、高らかに燃え上がる炎に場内は感動の渦に包まれた。戦後復興を遂げた日本が、世界に平和の祭典を届ける歴史的瞬間となった。',
-      category: 'main',
-      imagePrompt: '1964 Tokyo Olympics opening ceremony, National Stadium, athletes marching, Japanese flags, vintage black and white newspaper photo',
-    },
-    subArticles: [
-      {
-        headline: '新幹線「夢の超特急」好調',
-        content: '十月一日に開業した東海道新幹線は連日満席の盛況。東京ー新大阪間を四時間で結ぶ「夢の超特急」に、利用客は「まるで飛行機のよう」と驚きの声を上げている。',
-        category: 'society',
-        imagePrompt: '1964 Shinkansen bullet train, Tokyo station platform, passengers, vintage black and white Japanese newspaper photo',
-      },
-      {
-        headline: '首都高速 五輪に間に合う',
-        content: '東京オリンピックに合わせて建設が進められていた首都高速道路が完成。近代都市東京の新たな大動脈として、交通事情の改善が期待されている。',
-        category: 'economy',
-        imagePrompt: '1964 Tokyo expressway construction completion, highway, cars, vintage monochrome newspaper photography',
-      },
-      {
-        headline: '日本選手団 金メダル期待',
-        content: '柔道、体操、レスリングなど、日本のお家芸での金メダル獲得が期待される。選手団主将の小野喬選手は「必ずや国民の期待に応えたい」と決意を語った。',
-        category: 'sports',
-        imagePrompt: '1964 Tokyo Olympics Japanese athletes, judo or gymnastics, determined faces, vintage black and white sports photography',
-      },
-    ],
-    editorial: {
-      headline: '平和の祭典に寄せて',
-      content: '十九年前、焦土と化したこの東京に、今日、世界中から若人が集った。廃墟から立ち上がり、奇跡的な復興を遂げた我が国が、平和の祭典を主催する日が来ようとは、あの終戦の日に誰が想像し得ただろうか。聖火台に燃える炎は、平和への誓いの象徴である。二度と戦争の惨禍を繰り返してはならない。このオリンピックを通じて、世界の若者たちが友情を育み、相互理解を深めることを切に願う。今日この日を、新しい日本の出発点としたい。',
-      category: 'editorial',
-    },
-    columnTitle: '天声人語',
-    columnContent: '青空に五つの輪が描かれた。赤、青、黄、緑、黒。五大陸の結束を象徴するオリンピックの輪が、東京の空に翻っている。戦争で断ち切られた世界との絆を、スポーツという共通言語が再び結び直す。この日の感動を、私たちは永く記憶に留めたい。',
-    advertisements: [
-      {
-        title: '東京オリンピック記念',
-        content: '記念切手・記念硬貨 発売中。郵便局にてお買い求めください。',
-        style: 'vintage',
-      },
-      {
-        title: 'ナショナル テレビ',
-        content: 'オリンピックを鮮明な画面で。カラーテレビ新発売。',
-        style: 'vintage',
-      },
-      {
-        title: '日本航空',
-        content: '世界への翼 JAL。オリンピックで広がる国際交流を応援します。',
-        style: 'vintage',
-      },
-    ],
-    personalMessage: {
-      recipientName: '鈴木 正夫',
-      senderName: 'ご家族一同',
-      message: '還暦おめでとうございます。あなたが生まれたこの日、東京オリンピックが開幕しました。日本中が希望に満ちていたあの日から60年。これからも健康で。',
-      occasion: '還暦祝い',
+      message: '古希おめでとうございます！万博の思い出話、また聞かせてください。',
+      occasion: '古希祝い',
     },
   },
 ];
 
 // サンプル表示用のメタ情報（令和→平成→昭和の順）
+// カスタマイズ設定を明示
 export const sampleMeta = [
   {
-    id: 'reiwa-2020',
+    id: 'reiwa-2024',
     title: '令和風の新聞',
-    description: '2020年7月24日 - コロナ禍の東京',
-    occasion: '誕生日',
+    description: '2024年6月15日 - 架空のお祝いニュース',
+    occasion: '結婚記念日',
     style: 'reiwa' as const,
+    settings: {
+      accuracy: 0,
+      humor: 100,
+      appearance: 'メイン記事に主役として登場',
+    },
   },
   {
-    id: 'heisei-1990',
+    id: 'heisei-1995',
     title: '平成風の新聞',
-    description: '1990年4月1日 - 平成二年の春',
+    description: '1995年1月17日 - 阪神・淡路大震災',
     occasion: '誕生日',
     style: 'heisei' as const,
+    settings: {
+      accuracy: 100,
+      humor: 0,
+      appearance: '記事には登場しない',
+    },
   },
   {
-    id: 'showa-1964',
+    id: 'showa-1970',
     title: '昭和風の新聞',
-    description: '1964年10月10日 - 東京オリンピック開幕',
-    occasion: '還暦祝い',
+    description: '1970年3月15日 - 大阪万博開幕前',
+    occasion: '古希祝い',
     style: 'showa' as const,
+    settings: {
+      accuracy: 50,
+      humor: 50,
+      appearance: 'サブ記事に関係者として登場',
+    },
   },
 ];
