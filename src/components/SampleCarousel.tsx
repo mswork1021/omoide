@@ -57,6 +57,24 @@ export function SampleCarousel() {
         </span>
         <h3 className="text-xl font-bold">{currentMeta.title}</h3>
         <p className="text-sm text-[#1a1a1a]/60">{currentMeta.description}</p>
+
+        {/* カスタマイズ設定バッジ */}
+        {currentMeta.settings && (
+          <div className="mt-3 flex flex-wrap justify-center gap-2">
+            <span className="inline-flex items-center text-xs bg-[#f5f0e6] text-[#1a1a1a]/70 px-2 py-1 rounded">
+              忠実度 {currentMeta.settings.accuracy}%
+            </span>
+            <span className="inline-flex items-center text-xs bg-[#f5f0e6] text-[#1a1a1a]/70 px-2 py-1 rounded">
+              ユーモア {currentMeta.settings.humor}%
+            </span>
+            <span className="inline-flex items-center text-xs bg-[#f5f0e6] text-[#1a1a1a]/70 px-2 py-1 rounded">
+              {currentMeta.settings.appearance}
+            </span>
+            <span className="inline-flex items-center text-xs bg-[#f5f0e6] text-[#1a1a1a]/70 px-2 py-1 rounded">
+              {currentMeta.occasion}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* カルーセル本体 */}
@@ -115,9 +133,9 @@ export function SampleCarousel() {
       {/* サンプル説明 */}
       <div className="mt-4 text-center">
         <p className="text-sm text-[#1a1a1a]/60">
-          これは{currentMeta.title}のサンプルです。
+          上記の設定で生成したサンプルです。
           <br />
-          実際のご注文では、ご指定の日付・スタイルで生成されます。
+          設定次第で全く違うテイストの新聞が作れます！
         </p>
         <p className="text-xs text-[#1a1a1a]/40 mt-2">
           ※ 本番ではご指定の日付に合わせた画像が AI で生成されます
