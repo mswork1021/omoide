@@ -215,10 +215,12 @@ export const sampleMeta = [
     description: '2024年6月15日',
     occasion: '結婚記念日',
     style: 'reiwa' as const,
-    // わかりやすい説明
+    // 設定と結果をセットで表示
     settingsLabel: {
-      content: '完全フィクション！面白さ全開',
-      appearance: '佐藤花子さんがトップ記事の主役に',
+      contentSetting: '忠実度 0% ＋ ユーモア 100%',
+      contentResult: '完全フィクション！面白さ全開の記事に',
+      appearanceSetting: 'メイン記事の主役として登場',
+      appearanceResult: '佐藤花子さんがトップニュースの主人公に！',
     },
   },
   {
@@ -228,8 +230,10 @@ export const sampleMeta = [
     occasion: '誕生日',
     style: 'heisei' as const,
     settingsLabel: {
-      content: 'その日の本当のニュースをそのまま',
-      appearance: '田中健太さんは記事には登場しない',
+      contentSetting: '忠実度 100% ＋ ユーモア 0%',
+      contentResult: 'その日の本物のニュースをそのまま掲載',
+      appearanceSetting: '記事には登場しない',
+      appearanceResult: '田中健太さんの名前はフッターのみに表示',
     },
   },
   {
@@ -239,8 +243,10 @@ export const sampleMeta = [
     occasion: '古希祝い',
     style: 'showa' as const,
     settingsLabel: {
-      content: '本当のニュース＋ちょっとユーモア',
-      appearance: '山本一郎さんがサブ記事にコメントで登場',
+      contentSetting: '忠実度 50% ＋ ユーモア 50%',
+      contentResult: '本当のニュースにちょっとユーモアを追加',
+      appearanceSetting: 'サブ記事に関係者として登場',
+      appearanceResult: '山本一郎さんがサブ記事でコメント！',
     },
   },
 ];

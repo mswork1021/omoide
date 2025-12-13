@@ -58,20 +58,29 @@ export function SampleCarousel() {
         <h3 className="text-xl font-bold">{currentMeta.title}</h3>
         <p className="text-sm text-[#1a1a1a]/60">{currentMeta.description}</p>
 
-        {/* カスタマイズ設定の説明 */}
+        {/* カスタマイズ設定の説明 - 設定→結果の形式 */}
         {currentMeta.settingsLabel && (
-          <div className="mt-3 space-y-1">
-            <div className="flex flex-wrap justify-center gap-2">
-              <span className={`inline-flex items-center text-xs ${colors.bg} ${colors.text} px-3 py-1 rounded-full`}>
-                📰 {currentMeta.settingsLabel.content}
-              </span>
-              <span className="inline-flex items-center text-xs bg-[#f5f0e6] text-[#1a1a1a]/80 px-3 py-1 rounded-full">
-                🎁 {currentMeta.occasion}のプレゼント
-              </span>
+          <div className="mt-4 text-left max-w-md mx-auto bg-[#f5f0e6] rounded-lg p-3 text-sm">
+            <div className="mb-2 pb-2 border-b border-[#1a1a1a]/10">
+              <div className="text-xs text-[#1a1a1a]/50 mb-1">📰 記事の内容</div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[#1a1a1a]/70">{currentMeta.settingsLabel.contentSetting}</span>
+                <span className="text-[#1a1a1a]/40">→</span>
+                <span className={`font-medium ${colors.bg === 'bg-[#3b82f6]' ? 'text-blue-600' : colors.bg === 'bg-[#e63946]' ? 'text-pink-600' : 'text-amber-700'}`}>
+                  {currentMeta.settingsLabel.contentResult}
+                </span>
+              </div>
             </div>
-            <p className="text-xs text-[#1a1a1a]/60">
-              👤 {currentMeta.settingsLabel.appearance}
-            </p>
+            <div>
+              <div className="text-xs text-[#1a1a1a]/50 mb-1">👤 記事への登場</div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[#1a1a1a]/70">{currentMeta.settingsLabel.appearanceSetting}</span>
+                <span className="text-[#1a1a1a]/40">→</span>
+                <span className={`font-medium ${colors.bg === 'bg-[#3b82f6]' ? 'text-blue-600' : colors.bg === 'bg-[#e63946]' ? 'text-pink-600' : 'text-amber-700'}`}>
+                  {currentMeta.settingsLabel.appearanceResult}
+                </span>
+              </div>
+            </div>
           </div>
         )}
       </div>
