@@ -330,6 +330,21 @@ export const useGenerationFlow = () => {
       measureClone.style.margin = '0';
       measureClone.style.boxSizing = 'border-box';
 
+      // モバイル用スケーリングをリセット
+      const measureInnerPreview = measureClone.querySelector('#newspaper-preview') as HTMLElement;
+      if (measureInnerPreview) {
+        const parent = measureInnerPreview.parentElement;
+        if (parent) {
+          parent.style.transform = 'none';
+          parent.style.width = '100%';
+        }
+        const grandParent = parent?.parentElement;
+        if (grandParent) {
+          grandParent.style.height = 'auto';
+          grandParent.style.overflow = 'visible';
+        }
+      }
+
       measureContainer.appendChild(measureClone);
       document.body.appendChild(measureContainer);
 
@@ -384,6 +399,19 @@ export const useGenerationFlow = () => {
       if (innerPreview) {
         innerPreview.style.width = '100%';
         innerPreview.style.boxShadow = 'none';
+
+        // モバイル用スケーリングをリセット（親要素のtransformを解除）
+        const parent = innerPreview.parentElement;
+        if (parent) {
+          parent.style.transform = 'none';
+          parent.style.width = '100%';
+        }
+        // スケーリングコンテナの高さ制限も解除
+        const grandParent = parent?.parentElement;
+        if (grandParent) {
+          grandParent.style.height = 'auto';
+          grandParent.style.overflow = 'visible';
+        }
       }
 
       cloneContainer.appendChild(clone);

@@ -15,6 +15,7 @@ interface NewspaperPreviewProps {
   data: NewspaperData;
   style?: 'showa' | 'heisei' | 'reiwa';
   isPreview?: boolean;
+  forPDF?: boolean; // PDF生成時はスケーリング無効
   images?: {
     mainImage?: string;
     subImages?: (string | undefined)[];
@@ -114,6 +115,7 @@ export function NewspaperPreview({
   data,
   style = 'showa',
   isPreview = true,
+  forPDF = false,
   images,
 }: NewspaperPreviewProps) {
   const config = styleConfig[style];
@@ -122,8 +124,14 @@ export function NewspaperPreview({
   const [scale, setScale] = useState(1);
   const [scaledHeight, setScaledHeight] = useState<number | undefined>();
 
-  // 画面幅に合わせてスケールを計算
+  // 画面幅に合わせてスケールを計算（PDF生成時は無効）
   useEffect(() => {
+    if (forPDF) {
+      setScale(1);
+      setScaledHeight(undefined);
+      return;
+    }
+
     const calculateScale = () => {
       if (containerRef.current) {
         const containerWidth = containerRef.current.offsetWidth;
@@ -135,15 +143,16 @@ export function NewspaperPreview({
     calculateScale();
     window.addEventListener('resize', calculateScale);
     return () => window.removeEventListener('resize', calculateScale);
-  }, []);
+  }, [forPDF]);
 
   // スケール後の高さを計算
   useEffect(() => {
+    if (forPDF) return;
     if (contentRef.current) {
       const originalHeight = contentRef.current.offsetHeight;
       setScaledHeight(originalHeight * scale);
     }
-  }, [scale]);
+  }, [scale, forPDF]);
 
   const dateStr = new Date(data.date).toLocaleDateString('ja-JP', {
     year: 'numeric',
@@ -152,28 +161,35 @@ export function NewspaperPreview({
     weekday: 'long',
   });
 
-  // スケーリングラッパー
-  const ScalingWrapper = ({ children }: { children: React.ReactNode }) => (
-    <div
-      ref={containerRef}
-      style={{
-        width: '100%',
-        overflow: 'hidden',
-        height: scaledHeight ? `${scaledHeight}px` : 'auto',
-      }}
-    >
+  // スケーリングラッパー（PDF生成時はスケーリング無効）
+  const ScalingWrapper = ({ children }: { children: React.ReactNode }) => {
+    if (forPDF) {
+      // PDF用: スケーリングなし
+      return <div style={{ width: `${NEWSPAPER_WIDTH}px` }}>{children}</div>;
+    }
+
+    return (
       <div
-        ref={contentRef}
+        ref={containerRef}
         style={{
-          width: `${NEWSPAPER_WIDTH}px`,
-          transform: `scale(${scale})`,
-          transformOrigin: 'top left',
+          width: '100%',
+          overflow: 'hidden',
+          height: scaledHeight ? `${scaledHeight}px` : 'auto',
         }}
       >
-        {children}
+        <div
+          ref={contentRef}
+          style={{
+            width: `${NEWSPAPER_WIDTH}px`,
+            transform: `scale(${scale})`,
+            transformOrigin: 'top left',
+          }}
+        >
+          {children}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // 昭和スタイル（伝統的な新聞レイアウト）
   if (style === 'showa') {
