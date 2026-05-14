@@ -330,17 +330,22 @@ export const useGenerationFlow = () => {
       measureClone.style.margin = '0';
       measureClone.style.boxSizing = 'border-box';
 
-      // モバイル用スケーリングをリセット
+      // モバイル用スケーリングを完全にリセット
       const measureInnerPreview = measureClone.querySelector('#newspaper-preview') as HTMLElement;
       if (measureInnerPreview) {
+        // newspaper-preview自体のスタイル
+        measureInnerPreview.style.minHeight = 'auto';
+
         const parent = measureInnerPreview.parentElement;
         if (parent) {
           parent.style.transform = 'none';
           parent.style.width = '100%';
+          parent.style.minHeight = 'auto';
         }
         const grandParent = parent?.parentElement;
         if (grandParent) {
           grandParent.style.height = 'auto';
+          grandParent.style.minHeight = 'auto';
           grandParent.style.overflow = 'visible';
         }
       }
@@ -348,8 +353,8 @@ export const useGenerationFlow = () => {
       measureContainer.appendChild(measureClone);
       document.body.appendChild(measureContainer);
 
-      // レンダリングを待つ
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // レンダリングを待つ（より長めに）
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       // 自然な高さを取得
       const naturalHeight = measureContainer.scrollHeight;
@@ -399,17 +404,20 @@ export const useGenerationFlow = () => {
       if (innerPreview) {
         innerPreview.style.width = '100%';
         innerPreview.style.boxShadow = 'none';
+        innerPreview.style.minHeight = 'auto';
 
         // モバイル用スケーリングをリセット（親要素のtransformを解除）
         const parent = innerPreview.parentElement;
         if (parent) {
           parent.style.transform = 'none';
           parent.style.width = '100%';
+          parent.style.minHeight = 'auto';
         }
         // スケーリングコンテナの高さ制限も解除
         const grandParent = parent?.parentElement;
         if (grandParent) {
           grandParent.style.height = 'auto';
+          grandParent.style.minHeight = 'auto';
           grandParent.style.overflow = 'visible';
         }
       }
@@ -417,8 +425,8 @@ export const useGenerationFlow = () => {
       cloneContainer.appendChild(clone);
       document.body.appendChild(cloneContainer);
 
-      // レンダリングを待つ
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // レンダリングを待つ（画像読み込み含め長めに）
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       store.setGenerationProgress(50);
 
