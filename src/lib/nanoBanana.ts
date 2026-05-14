@@ -10,8 +10,8 @@ import type { ImageGenerationRequest, ImageGenerationResponse } from '@/types';
 
 const GOOGLE_AI_API_KEY = process.env.GOOGLE_AI_API_KEY;
 
-// 画像生成モデル（Gemini 2.5 Flash Image Preview）
-const IMAGE_MODEL = 'gemini-2.5-flash-image-preview';
+// 画像生成モデル（Gemini 2.5 Flash Image - 安定版）
+const IMAGE_MODEL = 'gemini-2.5-flash-image';
 
 // 画像生成APIを使用するか
 const USE_IMAGE_API = true;
