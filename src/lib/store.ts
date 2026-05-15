@@ -291,7 +291,6 @@ export const useGenerationFlow = () => {
     store.setGenerationProgress(0);
 
     let cloneContainer: HTMLDivElement | null = null;
-    let measureContainer: HTMLDivElement | null = null;
 
     try {
       console.log('[PDF] Starting PDF generation...');
@@ -310,110 +309,39 @@ export const useGenerationFlow = () => {
 
       store.setGenerationProgress(20);
 
-      // A4比率（210:297）のピクセルサイズ
+      // A4幅のピクセルサイズ（高さは内容に合わせる）
       const a4PixelWidth = 794;
-      const a4PixelHeight = 1123;
 
-      // Step 1: まず自然なサイズで測定
-      measureContainer = document.createElement('div');
-      measureContainer.style.cssText = `
-        position: fixed;
-        left: -9999px;
-        top: 0;
-        width: ${a4PixelWidth}px;
-        background: white;
-        z-index: -1;
-      `;
-
-      const measureClone = element.cloneNode(true) as HTMLElement;
-      measureClone.style.width = '100%';
-      measureClone.style.margin = '0';
-      measureClone.style.boxSizing = 'border-box';
-
-      // モバイル用スケーリングを完全にリセット
-      const measureInnerPreview = measureClone.querySelector('#newspaper-preview') as HTMLElement;
-      if (measureInnerPreview) {
-        // newspaper-preview自体のスタイル
-        measureInnerPreview.style.minHeight = 'auto';
-
-        const parent = measureInnerPreview.parentElement;
-        if (parent) {
-          parent.style.transform = 'none';
-          parent.style.width = '100%';
-          parent.style.minHeight = 'auto';
-        }
-        const grandParent = parent?.parentElement;
-        if (grandParent) {
-          grandParent.style.height = 'auto';
-          grandParent.style.minHeight = 'auto';
-          grandParent.style.overflow = 'visible';
-        }
-      }
-
-      measureContainer.appendChild(measureClone);
-      document.body.appendChild(measureContainer);
-
-      // レンダリングを待つ（より長めに）
-      await new Promise(resolve => setTimeout(resolve, 200));
-
-      // 自然な高さを取得
-      const naturalHeight = measureContainer.scrollHeight;
-      console.log('[PDF] Natural height:', naturalHeight, 'A4 height:', a4PixelHeight);
-
-      // 測定用コンテナを削除
-      document.body.removeChild(measureContainer);
-      measureContainer = null;
-
-      store.setGenerationProgress(30);
-
-      // Step 2: A4に収めるためのスケール計算
-      const scale = naturalHeight > a4PixelHeight
-        ? a4PixelHeight / naturalHeight
-        : 1;
-      console.log('[PDF] Scale factor:', scale);
-
-      // スケール後にA4幅になるように、レンダリング幅を逆算
-      // scale適用後に794pxになるように、レンダリング幅 = 794 / scale
-      const renderWidth = Math.round(a4PixelWidth / scale);
-      console.log('[PDF] Render width:', renderWidth);
-
-      // Step 3: A4サイズの固定コンテナを作成
+      // Step 1: A4幅でレンダリングして自然な高さを取得
       cloneContainer = document.createElement('div');
       cloneContainer.style.cssText = `
         position: fixed;
         left: -9999px;
         top: 0;
         width: ${a4PixelWidth}px;
-        height: ${a4PixelHeight}px;
         background: white;
         z-index: -1;
-        overflow: hidden;
       `;
 
-      // 広い幅でレンダリングし、scaleで縮小してA4に収める
       const clone = element.cloneNode(true) as HTMLElement;
-      clone.style.width = `${renderWidth}px`;
+      clone.style.width = '100%';
       clone.style.margin = '0';
       clone.style.boxSizing = 'border-box';
       clone.style.background = '#ffffff';
-      clone.style.transformOrigin = 'top left';
-      clone.style.transform = `scale(${scale})`;
 
-      // 内部の新聞プレビュー要素も幅を100%に、boxShadowを削除
+      // モバイル用スケーリングを完全にリセット（形を変えない）
       const innerPreview = clone.querySelector('#newspaper-preview') as HTMLElement;
       if (innerPreview) {
         innerPreview.style.width = '100%';
         innerPreview.style.boxShadow = 'none';
         innerPreview.style.minHeight = 'auto';
 
-        // モバイル用スケーリングをリセット（親要素のtransformを解除）
         const parent = innerPreview.parentElement;
         if (parent) {
           parent.style.transform = 'none';
           parent.style.width = '100%';
           parent.style.minHeight = 'auto';
         }
-        // スケーリングコンテナの高さ制限も解除
         const grandParent = parent?.parentElement;
         if (grandParent) {
           grandParent.style.height = 'auto';
@@ -425,12 +353,18 @@ export const useGenerationFlow = () => {
       cloneContainer.appendChild(clone);
       document.body.appendChild(cloneContainer);
 
-      // レンダリングを待つ（画像読み込み含め長めに）
+      // レンダリングを待つ
       await new Promise(resolve => setTimeout(resolve, 300));
+
+      store.setGenerationProgress(40);
+
+      // 自然な高さを取得
+      const naturalHeight = cloneContainer.scrollHeight;
+      console.log('[PDF] Natural dimensions:', a4PixelWidth, 'x', naturalHeight);
 
       store.setGenerationProgress(50);
 
-      // html2canvasでキャプチャ（A4固定サイズ）
+      // html2canvasでキャプチャ（自然なサイズのまま）
       const canvas = await html2canvas(cloneContainer, {
         scale: 2,
         useCORS: true,
@@ -438,26 +372,28 @@ export const useGenerationFlow = () => {
         backgroundColor: '#ffffff',
         logging: false,
         width: a4PixelWidth,
-        height: a4PixelHeight,
+        height: naturalHeight,
       });
 
       store.setGenerationProgress(70);
 
-      // A4サイズ（210mm x 297mm）
-      const a4Width = 210;
-      const a4Height = 297;
+      // PDFサイズを計算（A4幅=210mm、高さは比率に合わせる）
+      const a4Width = 210; // mm
+      const pdfHeight = (naturalHeight / a4PixelWidth) * a4Width; // mm
 
       console.log('[PDF] Canvas:', canvas.width, 'x', canvas.height);
+      console.log('[PDF] PDF size:', a4Width, 'x', pdfHeight, 'mm');
 
+      // カスタムサイズのPDFを作成（形をそのまま維持）
       const pdf = new jsPDF({
-        orientation: 'portrait',
+        orientation: pdfHeight > a4Width ? 'portrait' : 'landscape',
         unit: 'mm',
-        format: 'a4',
+        format: [a4Width, pdfHeight],
       });
 
-      // A4全面に配置（余白なし）
+      // 全面に配置（余白なし、縮小なし）
       const imgData = canvas.toDataURL('image/jpeg', 0.95);
-      pdf.addImage(imgData, 'JPEG', 0, 0, a4Width, a4Height);
+      pdf.addImage(imgData, 'JPEG', 0, 0, a4Width, pdfHeight);
 
       store.setGenerationProgress(90);
 
@@ -475,9 +411,6 @@ export const useGenerationFlow = () => {
       store.setGenerationStep('idle');
     } finally {
       // クリーンアップ
-      if (measureContainer && measureContainer.parentNode) {
-        measureContainer.parentNode.removeChild(measureContainer);
-      }
       if (cloneContainer && cloneContainer.parentNode) {
         cloneContainer.parentNode.removeChild(cloneContainer);
       }
