@@ -274,7 +274,7 @@ export function NewspaperPreview({
               style={{
                 width: '100%',
                 aspectRatio: '16/9',
-                objectFit: 'cover',
+                objectFit: 'contain',
               }}
             />
             <p style={{ fontSize: '10px', textAlign: 'center', marginTop: '4px', opacity: 0.7 }}>
@@ -332,7 +332,7 @@ export function NewspaperPreview({
                   style={{
                     width: '100%',
                     aspectRatio: '4/3',
-                    objectFit: 'cover',
+                    objectFit: 'contain',
                     marginBottom: '8px',
                   }}
                 />
@@ -551,7 +551,7 @@ export function NewspaperPreview({
               style={{
                 width: '100%',
                 aspectRatio: '16/9',
-                objectFit: 'cover',
+                objectFit: 'contain',
               }}
             />
           </div>
@@ -614,7 +614,7 @@ export function NewspaperPreview({
                     style={{
                       width: '100%',
                       aspectRatio: '4/3',
-                      objectFit: 'cover',
+                      objectFit: 'contain',
                     }}
                   />
                   <div style={{ padding: '10px' }}>
@@ -846,7 +846,7 @@ export function NewspaperPreview({
               style={{
                 width: '100%',
                 aspectRatio: '21/9',
-                objectFit: 'cover',
+                objectFit: 'contain',
                 borderRadius: '8px',
               }}
             />
@@ -890,7 +890,7 @@ export function NewspaperPreview({
                 style={{
                   width: '100%',
                   aspectRatio: '16/9',
-                  objectFit: 'cover',
+                  objectFit: 'contain',
                 }}
               />
               <div style={{ padding: '16px' }}>
