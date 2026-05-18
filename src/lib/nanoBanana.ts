@@ -111,10 +111,12 @@ function getAI(): GoogleGenAI {
  * Gemini 2.5 Flash を使用して画像を生成（リトライ付き）
  * @param request - 画像生成リクエスト
  * @param era - 時代スタイル（showa/heisei/reiwa）
+ * @param aspectRatio - アスペクト比（'16:9', '4:3', '1:1' など）
  */
 export async function generateNewspaperImage(
   request: ImageGenerationRequest,
-  era: 'showa' | 'heisei' | 'reiwa' = 'showa'
+  era: 'showa' | 'heisei' | 'reiwa' = 'showa',
+  aspectRatio: '16:9' | '4:3' | '1:1' | '3:4' | '9:16' = '16:9'
 ): Promise<ImageGenerationResponse> {
   // APIキーが未設定の場合はエラーを返す
   if (!GOOGLE_AI_API_KEY) {
@@ -153,6 +155,10 @@ export async function generateNewspaperImage(
         contents: fullPrompt,
         config: {
           responseModalities: ['image', 'text'],
+          // アスペクト比を指定
+          imageConfig: {
+            aspectRatio: aspectRatio,
+          },
         },
       });
 
@@ -199,7 +205,7 @@ export async function generateNewspaperImage(
 
 /**
  * 複数の画像を並列生成（Production用）
- * @param prompts - 画像プロンプトの配列
+ * @param prompts - 画像プロンプトの配列（最初がメイン、残りがサブ）
  * @param era - 時代スタイル（showa/heisei/reiwa）
  */
 export async function generateMultipleImages(
@@ -207,17 +213,21 @@ export async function generateMultipleImages(
   era: 'showa' | 'heisei' | 'reiwa' = 'showa'
 ): Promise<ImageGenerationResponse[]> {
   const resolution = ERA_RESOLUTIONS[era];
-  const requests = prompts.map((prompt) => ({
-    prompt,
-    style: 'vintage-newspaper' as const,
-    highFidelity: true,
-    width: resolution.width,
-    height: resolution.height,
-  }));
 
   // 並列実行で高速化
+  // 最初の画像はメイン記事用（16:9）、残りはサブ記事用（4:3）
   const results = await Promise.all(
-    requests.map((req) => generateNewspaperImage(req, era))
+    prompts.map((prompt, index) => {
+      const aspectRatio = index === 0 ? '16:9' : '4:3';
+      const request = {
+        prompt,
+        style: 'vintage-newspaper' as const,
+        highFidelity: true,
+        width: resolution.width,
+        height: resolution.height,
+      };
+      return generateNewspaperImage(request, era, aspectRatio);
+    })
   );
 
   return results;

@@ -845,7 +845,7 @@ export function NewspaperPreview({
               alt="メイン記事"
               style={{
                 width: '100%',
-                aspectRatio: '21/9',
+                aspectRatio: '16/9',
                 objectFit: 'contain',
                 borderRadius: '8px',
               }}
@@ -889,7 +889,7 @@ export function NewspaperPreview({
                 alt={`サブ記事${index + 1}`}
                 style={{
                   width: '100%',
-                  aspectRatio: '16/9',
+                  aspectRatio: '4/3',
                   objectFit: 'contain',
                 }}
               />
