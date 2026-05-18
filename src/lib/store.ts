@@ -309,27 +309,27 @@ export const useGenerationFlow = () => {
 
       store.setGenerationProgress(20);
 
-      // A4幅のピクセルサイズ（高さは内容に合わせる）
-      const a4PixelWidth = 794;
+      // プレビューと同じ幅（800px）でキャプチャ - レイアウト崩れを防ぐ
+      const previewWidth = 800;
 
-      // Step 1: A4幅でレンダリングして自然な高さを取得
+      // Step 1: プレビューと同じ幅でレンダリング
       cloneContainer = document.createElement('div');
       cloneContainer.style.cssText = `
         position: fixed;
         left: -9999px;
         top: 0;
-        width: ${a4PixelWidth}px;
+        width: ${previewWidth}px;
         background: white;
         z-index: -1;
       `;
 
       const clone = element.cloneNode(true) as HTMLElement;
-      clone.style.width = '100%';
+      clone.style.width = `${previewWidth}px`;
       clone.style.margin = '0';
       clone.style.boxSizing = 'border-box';
       clone.style.background = '#ffffff';
 
-      // モバイル用スケーリングを完全にリセット（形を変えない）
+      // モバイル用スケーリングを完全にリセット（プレビューと同じ状態に）
       const innerPreview = clone.querySelector('#newspaper-preview') as HTMLElement;
       if (innerPreview) {
         innerPreview.style.width = '100%';
@@ -339,11 +339,12 @@ export const useGenerationFlow = () => {
         const parent = innerPreview.parentElement;
         if (parent) {
           parent.style.transform = 'none';
-          parent.style.width = '100%';
+          parent.style.width = `${previewWidth}px`;
           parent.style.minHeight = 'auto';
         }
         const grandParent = parent?.parentElement;
         if (grandParent) {
+          grandParent.style.width = `${previewWidth}px`;
           grandParent.style.height = 'auto';
           grandParent.style.minHeight = 'auto';
           grandParent.style.overflow = 'visible';
@@ -360,40 +361,40 @@ export const useGenerationFlow = () => {
 
       // 自然な高さを取得
       const naturalHeight = cloneContainer.scrollHeight;
-      console.log('[PDF] Natural dimensions:', a4PixelWidth, 'x', naturalHeight);
+      console.log('[PDF] Natural dimensions:', previewWidth, 'x', naturalHeight);
 
       store.setGenerationProgress(50);
 
-      // html2canvasでキャプチャ（自然なサイズのまま）
+      // html2canvasでキャプチャ（プレビューと同じサイズ）
       const canvas = await html2canvas(cloneContainer, {
         scale: 2,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
         logging: false,
-        width: a4PixelWidth,
+        width: previewWidth,
         height: naturalHeight,
       });
 
       store.setGenerationProgress(70);
 
-      // PDFサイズを計算（A4幅=210mm、高さは比率に合わせる）
-      const a4Width = 210; // mm
-      const pdfHeight = (naturalHeight / a4PixelWidth) * a4Width; // mm
+      // PDFサイズを計算（幅210mm、高さは比率に合わせる）
+      const pdfWidth = 210; // mm
+      const pdfHeight = (naturalHeight / previewWidth) * pdfWidth; // mm
 
       console.log('[PDF] Canvas:', canvas.width, 'x', canvas.height);
-      console.log('[PDF] PDF size:', a4Width, 'x', pdfHeight, 'mm');
+      console.log('[PDF] PDF size:', pdfWidth, 'x', pdfHeight, 'mm');
 
-      // カスタムサイズのPDFを作成（形をそのまま維持）
+      // カスタムサイズのPDFを作成（プレビューと同じ見た目を維持）
       const pdf = new jsPDF({
-        orientation: pdfHeight > a4Width ? 'portrait' : 'landscape',
+        orientation: pdfHeight > pdfWidth ? 'portrait' : 'landscape',
         unit: 'mm',
-        format: [a4Width, pdfHeight],
+        format: [pdfWidth, pdfHeight],
       });
 
       // 全面に配置（余白なし、縮小なし）
       const imgData = canvas.toDataURL('image/jpeg', 0.95);
-      pdf.addImage(imgData, 'JPEG', 0, 0, a4Width, pdfHeight);
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
 
       store.setGenerationProgress(90);
 
