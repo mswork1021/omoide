@@ -101,10 +101,36 @@ export function PaymentSection() {
     }
   };
 
+  // LINEブラウザ検出
+  const isLineBrowser = () => {
+    if (typeof window === 'undefined') return false;
+    return /Line/i.test(navigator.userAgent);
+  };
+
   // PDFダウンロード
   const handleDownload = () => {
     if (!pdfUrl) return;
 
+    // LINEブラウザの場合は新しいタブで開く
+    if (isLineBrowser()) {
+      const newWindow = window.open();
+      if (newWindow) {
+        newWindow.document.write(`
+          <html>
+            <head><title>PDF</title></head>
+            <body style="margin:0;padding:0;">
+              <iframe src="${pdfUrl}" style="width:100%;height:100vh;border:none;"></iframe>
+            </body>
+          </html>
+        `);
+        newWindow.document.close();
+      } else {
+        alert('PDFを開けませんでした。右上メニューから「Safariで開く」を選択してください。');
+      }
+      return;
+    }
+
+    // 通常のブラウザ
     const link = document.createElement('a');
     link.href = pdfUrl;
     const dateStr = new Date(newspaperData.date).toISOString().split('T')[0];
