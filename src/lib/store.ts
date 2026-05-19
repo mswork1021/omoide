@@ -398,10 +398,9 @@ export const useGenerationFlow = () => {
 
       store.setGenerationProgress(90);
 
-      // PDFをBlobとして出力
-      const pdfBlob = pdf.output('blob');
-      const pdfUrl = URL.createObjectURL(pdfBlob);
-      store.setPdfUrl(pdfUrl);
+      // PDFをBase64データURLとして出力（LINEブラウザ等での互換性向上）
+      const pdfDataUrl = pdf.output('datauristring');
+      store.setPdfUrl(pdfDataUrl);
 
       console.log('[PDF] PDF generated successfully');
       store.setGenerationProgress(100);
