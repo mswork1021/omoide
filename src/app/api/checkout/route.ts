@@ -29,7 +29,13 @@ export async function POST(request: NextRequest) {
     }
 
     const pricing = PRICING[pricingKey as PricingTier];
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
+    // リダイレクトURLを動的に取得
+    const host = request.headers.get('host') || 'localhost:3000';
+    const protocol = host.includes('localhost') ? 'http' : 'https';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || `${protocol}://${host}`;
+
+    console.log('[Checkout] baseUrl:', baseUrl);
 
     // Checkout Session作成
     const { sessionId, url } = await createCheckoutSession(
