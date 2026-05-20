@@ -53,13 +53,13 @@ export function PaymentSection() {
   const handleImagePurchase = async () => {
     // LINEブラウザの場合は警告
     if (isLineBrowser()) {
-      const proceed = confirm(
-        'LINEアプリ内ブラウザではPDFをダウンロードできません。\n\n' +
-        '外部ブラウザで開き直してから購入することをお勧めします。\n' +
-        '（画面右上または右下の「︙」→「ブラウザで開く」）\n\n' +
-        'このまま続けますか？'
+      alert(
+        '⚠️ LINEアプリ内ブラウザではPDFをダウンロードできません！\n\n' +
+        '【必ず外部ブラウザで開き直してください】\n\n' +
+        '手順：画面右上または右下の「︙」メニュー → 「ブラウザで開く」\n\n' +
+        '※このまま購入するとPDFを受け取れません'
       );
-      if (!proceed) return;
+      return;
     }
 
     setIsProcessing(true);
