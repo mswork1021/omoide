@@ -8,7 +8,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { SampleCarousel, OrderForm, NewspaperPreview, PaymentSection } from '@/components';
+import { SampleCarousel, OrderForm, NewspaperPreview, PaymentSection, GenerationOverlay } from '@/components';
 import { Newspaper, Clock, Sparkles, Gift, Printer, Shield, CheckCircle, X, Lightbulb, Star, Zap, Users, AlertTriangle } from 'lucide-react';
 import { useAppStore, useGenerationFlow } from '@/lib/store';
 
@@ -144,6 +144,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#f5f0e6]">
+      {/* 生成中オーバーレイ（最前面） */}
+      <GenerationOverlay />
+
       {/* LINEブラウザ警告バナー */}
       {isLineBrowser && showLineBanner && (
         <div className="bg-yellow-500 text-black px-4 py-3">

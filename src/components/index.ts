@@ -9,3 +9,4 @@ export { GenerationForm } from './GenerationForm';
 export { PaymentSection } from './PaymentSection';
 export { SampleCarousel } from './SampleCarousel';
 export { OrderForm } from './OrderForm';
+export { GenerationOverlay } from './GenerationOverlay';
