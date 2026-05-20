@@ -5,7 +5,7 @@
  * 新料金体系: テキスト生成済み → 画像追加（500円）→ PDF出力（無料）
  */
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAppStore, useGenerationFlow } from '@/lib/store';
 import {
   ImagePlus,
@@ -41,22 +41,12 @@ export function PaymentSection() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [testCode, setTestCode] = useState('');
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // テストコードが正しいか
   const isTestCodeValid = testCode === TEST_PASSWORD;
 
   // エラー表示（ローカルとストア両方）
   const displayError = paymentError || storeError;
-
-  // クリーンアップ
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
 
   // 新聞データがなければ表示しない
   if (!newspaperData) {
@@ -122,11 +112,7 @@ export function PaymentSection() {
     try {
       await generatePdf();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'PDF生成に失敗しました';
-      setPaymentError(`エラー: ${errorMessage}`);
-      // ストアの状態もリセット
-      useAppStore.getState().setIsGenerating(false);
-      useAppStore.getState().setGenerationStep('idle');
+      setPaymentError(error instanceof Error ? error.message : 'PDF生成に失敗しました');
     } finally {
       setIsProcessing(false);
     }
