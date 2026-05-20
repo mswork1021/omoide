@@ -560,15 +560,12 @@ export function OrderForm() {
 
       {/* 料金説明 */}
       <div className="text-center text-xs text-[#1a1a1a]/60 space-y-1">
-        {TEST_MODE ? (
-          <p className="text-orange-600 bg-orange-50 p-2 rounded">
-            🧪 テストモード: 決済をスキップしてAI生成をテストできます
+        <p>記事生成: ¥80 / 画像追加: ¥500</p>
+        <p>画像を追加すると、PDF出力が無料でできます</p>
+        {TEST_MODE && (
+          <p className="text-orange-600 bg-orange-50 p-2 rounded mt-2">
+            🧪 テストモード有効: 上のテストコード欄に正しいコードを入力すると無料で生成できます
           </p>
-        ) : (
-          <>
-            <p>記事生成: ¥80 / 画像追加: ¥500</p>
-            <p>画像を追加すると、PDF出力が無料でできます</p>
-          </>
         )}
       </div>
 
