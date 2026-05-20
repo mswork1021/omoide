@@ -275,14 +275,17 @@ export const useGenerationFlow = () => {
    * PDF生成（固定サイズでキャプチャしてA4出力）
    */
   const generatePdf = async () => {
+    console.log('[PDF] generatePdf called');
+    console.log('[PDF] newspaperData:', !!store.newspaperData);
+    console.log('[PDF] isImagesPaid:', store.isImagesPaid);
+    console.log('[PDF] generatedImages:', !!store.generatedImages);
+
     if (!store.newspaperData) {
-      store.setError('新聞データがありません');
-      return;
+      throw new Error('新聞データがありません');
     }
 
     if (!store.isImagesPaid) {
-      store.setError('PDF出力には画像の購入が必要です');
-      return;
+      throw new Error('PDF出力には画像の購入が必要です');
     }
 
     store.setIsGenerating(true);

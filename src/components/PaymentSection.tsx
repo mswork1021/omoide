@@ -106,8 +106,11 @@ export function PaymentSection() {
     setPaymentError(null);
 
     try {
+      console.log('[PDF Button] Starting PDF generation...');
       await generatePdf();
+      console.log('[PDF Button] PDF generation completed');
     } catch (error) {
+      console.error('[PDF Button] Error:', error);
       setPaymentError(error instanceof Error ? error.message : 'PDF生成に失敗しました');
     } finally {
       setIsProcessing(false);
