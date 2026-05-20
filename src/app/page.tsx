@@ -7,19 +7,50 @@
  * 新フロー: サンプル閲覧 → 日付選択 → テキスト生成(80円) → 画像追加(500円) → PDF(無料)
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { SampleCarousel, OrderForm, NewspaperPreview, PaymentSection } from '@/components';
-import { Newspaper, Clock, Sparkles, Gift, Printer, Shield, CheckCircle, X, Lightbulb, Star, Zap, Users } from 'lucide-react';
+import { Newspaper, Clock, Sparkles, Gift, Printer, Shield, CheckCircle, X, Lightbulb, Star, Zap, Users, AlertTriangle } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
+
+// LINEブラウザ検出
+function useIsLineBrowser() {
+  const [isLine, setIsLine] = useState(false);
+  useEffect(() => {
+    setIsLine(/Line/i.test(navigator.userAgent));
+  }, []);
+  return isLine;
+}
 
 export default function Home() {
   const { newspaperData, generatedImages, isImagesPaid, reset, style } = useAppStore();
+  const isLineBrowser = useIsLineBrowser();
+  const [showLineBanner, setShowLineBanner] = useState(true);
 
   // モーダル表示条件: 新聞データが生成されたら表示
   const showModal = !!newspaperData;
 
   return (
     <div className="min-h-screen bg-[#f5f0e6]">
+      {/* LINEブラウザ警告バナー */}
+      {isLineBrowser && showLineBanner && (
+        <div className="bg-yellow-500 text-black px-4 py-3 relative">
+          <div className="max-w-4xl mx-auto flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+            <div className="flex-1 text-sm">
+              <strong>LINEアプリ内ブラウザでは一部機能が制限されます。</strong>
+              <br />
+              右上の「︙」→「Safariで開く」で外部ブラウザをご利用ください。
+            </div>
+            <button
+              onClick={() => setShowLineBanner(false)}
+              className="p-1 hover:bg-yellow-600 rounded"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ヘッダー */}
       <header className="border-b-4 border-double border-[#1a1a1a] bg-[#faf8f3]">
         <div className="max-w-6xl mx-auto px-4 py-6">

@@ -111,22 +111,9 @@ export function PaymentSection() {
   const handleDownload = () => {
     if (!pdfUrl) return;
 
-    // LINEブラウザの場合は新しいタブで開く
+    // LINEブラウザの場合は案内を表示
     if (isLineBrowser()) {
-      const newWindow = window.open();
-      if (newWindow) {
-        newWindow.document.write(`
-          <html>
-            <head><title>PDF</title></head>
-            <body style="margin:0;padding:0;">
-              <iframe src="${pdfUrl}" style="width:100%;height:100vh;border:none;"></iframe>
-            </body>
-          </html>
-        `);
-        newWindow.document.close();
-      } else {
-        alert('PDFを開けませんでした。右上メニューから「Safariで開く」を選択してください。');
-      }
+      alert('LINEブラウザではPDFをダウンロードできません。\n\n右上の「︙」メニューから「Safariで開く」を選択してください。');
       return;
     }
 
