@@ -95,8 +95,24 @@ export function OrderForm() {
 
     setIsSubmitting(true);
 
-    // 本番: テキスト生成の決済（80円）
+    // 本番: Stripe Checkoutへリダイレクト
     try {
+      // フォームデータをlocalStorageに保存（決済後に復元するため）
+      const formData = {
+        targetDate: targetDate.toISOString(),
+        style,
+        recipientName,
+        senderName,
+        personalMessage,
+        occasion,
+        accuracy,
+        humorLevel,
+        appearInArticle,
+        appearanceType,
+        appearanceTargets,
+      };
+      localStorage.setItem('omoide_form_data', JSON.stringify(formData));
+
       const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -105,25 +121,20 @@ export function OrderForm() {
           metadata: {
             targetDate: targetDate.toISOString(),
             style,
-            recipientName,
-            senderName,
-            personalMessage,
-            occasion,
           },
         }),
       });
 
       const data = await response.json();
-      if (data.success) {
-        // 決済完了後にテキスト生成
-        await startTextGeneration();
+      if (data.success && data.url) {
+        // Stripe Checkoutページへリダイレクト
+        window.location.href = data.url;
       } else {
-        throw new Error(data.error || '決済に失敗しました');
+        throw new Error(data.error || '決済の準備に失敗しました');
       }
     } catch (error) {
       console.error('Checkout error:', error);
       alert('エラーが発生しました');
-    } finally {
       setIsSubmitting(false);
     }
   };
