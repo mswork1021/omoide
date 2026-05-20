@@ -167,17 +167,30 @@ export const useGenerationFlow = () => {
     store.setIsGenerating(true);
     store.setGenerationStep('content');
     store.setError(null);
+    store.setGenerationProgress(0);
+
+    // フェイク進捗用タイマー
+    let fakeProgress = 5;
+    const progressInterval = setInterval(() => {
+      fakeProgress += 2; // 2%ずつ増加
+      if (fakeProgress <= 85) {
+        useAppStore.getState().setGenerationProgress(fakeProgress);
+      }
+    }, 1000); // 1秒ごと（約40秒で85%に到達）
 
     try {
       const request = store.getGenerationRequest();
 
       // コンテンツ生成
-      store.setGenerationProgress(30);
       const response = await fetch('/api/gemini', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(request),
       });
+
+      // タイマー停止
+      clearInterval(progressInterval);
+      useAppStore.getState().setGenerationProgress(90);
 
       const data = await response.json();
 
@@ -185,15 +198,17 @@ export const useGenerationFlow = () => {
         throw new Error(data.error || 'コンテンツの生成に失敗しました');
       }
 
-      store.setNewspaperData(data.newspaper);
-      store.setGenerationProgress(100);
-      store.setGenerationStep('complete');
-      store.setIsTextPaid(true);
+      useAppStore.getState().setNewspaperData(data.newspaper);
+      useAppStore.getState().setGenerationProgress(100);
+      useAppStore.getState().setGenerationStep('complete');
+      useAppStore.getState().setIsTextPaid(true);
     } catch (error) {
-      store.setError(error instanceof Error ? error.message : 'Unknown error');
-      store.setGenerationStep('idle');
+      clearInterval(progressInterval);
+      useAppStore.getState().setError(error instanceof Error ? error.message : 'Unknown error');
+      useAppStore.getState().setGenerationStep('idle');
     } finally {
-      store.setIsGenerating(false);
+      clearInterval(progressInterval);
+      useAppStore.getState().setIsGenerating(false);
     }
   };
 
@@ -214,6 +229,15 @@ export const useGenerationFlow = () => {
     currentState.setGenerationStep('images');
     currentState.setError(null);
     currentState.setGenerationProgress(0);
+
+    // フェイク進捗用タイマー
+    let fakeProgress = 5;
+    const progressInterval = setInterval(() => {
+      fakeProgress += 2; // 2%ずつ増加
+      if (fakeProgress <= 85) {
+        useAppStore.getState().setGenerationProgress(fakeProgress);
+      }
+    }, 1000); // 1秒ごと（約40秒で85%に到達）
 
     try {
       // 画像プロンプトを収集
@@ -238,8 +262,6 @@ export const useGenerationFlow = () => {
         }
       }
 
-      currentState.setGenerationProgress(10);
-
       // 画像生成（これが時間がかかるメイン処理）
       const imageResponse = await fetch('/api/image', {
         method: 'POST',
@@ -250,27 +272,31 @@ export const useGenerationFlow = () => {
         }),
       });
 
-      currentState.setGenerationProgress(90);
+      // タイマー停止
+      clearInterval(progressInterval);
+      useAppStore.getState().setGenerationProgress(90);
 
       const imageData = await imageResponse.json();
 
       if (imageData.success && imageData.images?.length > 0) {
-        currentState.setGeneratedImages({
+        useAppStore.getState().setGeneratedImages({
           mainImage: imageData.images[0] ?? undefined,
           subImages: (imageData.images.slice(1) || []).map((img: string | null) => img ?? undefined),
         });
-        currentState.setIsImagesPaid(true);
+        useAppStore.getState().setIsImagesPaid(true);
       } else if (imageData.error) {
         throw new Error(imageData.error);
       }
 
-      currentState.setGenerationProgress(100);
-      currentState.setGenerationStep('complete');
+      useAppStore.getState().setGenerationProgress(100);
+      useAppStore.getState().setGenerationStep('complete');
     } catch (error) {
-      currentState.setError(error instanceof Error ? error.message : '画像生成に失敗しました');
-      currentState.setGenerationStep('idle');
+      clearInterval(progressInterval);
+      useAppStore.getState().setError(error instanceof Error ? error.message : '画像生成に失敗しました');
+      useAppStore.getState().setGenerationStep('idle');
     } finally {
-      currentState.setIsGenerating(false);
+      clearInterval(progressInterval);
+      useAppStore.getState().setIsGenerating(false);
     }
   };
 
