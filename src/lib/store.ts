@@ -275,45 +275,37 @@ export const useGenerationFlow = () => {
    * PDF生成（固定サイズでキャプチャしてA4出力）
    */
   const generatePdf = async () => {
-    console.log('[PDF] generatePdf called');
-    console.log('[PDF] newspaperData:', !!store.newspaperData);
-    console.log('[PDF] isImagesPaid:', store.isImagesPaid);
-    console.log('[PDF] generatedImages:', !!store.generatedImages);
-
     if (!store.newspaperData) {
-      throw new Error('新聞データがありません');
+      store.setError('新聞データがありません');
+      return;
     }
 
     if (!store.isImagesPaid) {
-      throw new Error('PDF出力には画像の購入が必要です');
+      store.setError('PDF出力には画像の購入が必要です');
+      return;
     }
 
     store.setIsGenerating(true);
     store.setGenerationStep('pdf');
     store.setError(null);
-    store.setGenerationProgress(5);
+    store.setGenerationProgress(0);
 
     let cloneContainer: HTMLDivElement | null = null;
 
     try {
+      console.log('[PDF] Starting PDF generation...');
+
       // プレビュー要素を取得
       const element = document.getElementById('newspaper-preview-for-pdf');
       if (!element) {
-        throw new Error('プレビュー要素が見つかりません。ページを再読み込みしてください。');
+        throw new Error('プレビュー要素が見つかりません');
       }
 
       store.setGenerationProgress(10);
 
       // 動的インポート
-      let html2canvas: typeof import('html2canvas').default;
-      let jsPDF: typeof import('jspdf').default;
-
-      try {
-        html2canvas = (await import('html2canvas')).default;
-        jsPDF = (await import('jspdf')).default;
-      } catch (importError) {
-        throw new Error('PDF生成ライブラリの読み込みに失敗しました。');
-      }
+      const html2canvas = (await import('html2canvas')).default;
+      const jsPDF = (await import('jspdf')).default;
 
       store.setGenerationProgress(20);
 
@@ -406,9 +398,10 @@ export const useGenerationFlow = () => {
 
       store.setGenerationProgress(90);
 
-      // PDFをBase64データURLとして出力（LINEブラウザ等での互換性向上）
-      const pdfDataUrl = pdf.output('datauristring');
-      store.setPdfUrl(pdfDataUrl);
+      // PDFをBlobとして出力
+      const pdfBlob = pdf.output('blob');
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      store.setPdfUrl(pdfUrl);
 
       console.log('[PDF] PDF generated successfully');
       store.setGenerationProgress(100);
