@@ -16,6 +16,12 @@ const TEST_MODE = true;
 // テスト用パスワード（変更してください）
 const TEST_PASSWORD = 'omoide2025';
 
+// LINEブラウザ検出
+const isLineBrowser = () => {
+  if (typeof window === 'undefined') return false;
+  return /Line/i.test(navigator.userAgent);
+};
+
 export function OrderForm() {
   const {
     targetDate,
@@ -69,6 +75,17 @@ export function OrderForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!targetDate) return;
+
+    // LINEブラウザの場合は警告してブロック
+    if (isLineBrowser()) {
+      alert(
+        '⚠️ LINEアプリ内ブラウザではPDFをダウンロードできません！\n\n' +
+        '【必ず外部ブラウザで開き直してください】\n\n' +
+        '手順：画面右上または右下の「︙」メニュー → 「ブラウザで開く」\n\n' +
+        '※このまま購入するとPDFを受け取れません'
+      );
+      return;
+    }
 
     // テストモード: Stripeスキップして直接テキスト生成
     if (TEST_MODE) {
