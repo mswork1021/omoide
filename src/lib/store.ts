@@ -202,29 +202,32 @@ export const useGenerationFlow = () => {
    * 既存の新聞データに画像を追加
    */
   const startImageGeneration = async () => {
-    if (!store.newspaperData) {
-      store.setError('新聞データがありません');
+    // 常に最新のstateを取得（Stripe決済後のコールバック対応）
+    const currentState = useAppStore.getState();
+
+    if (!currentState.newspaperData) {
+      currentState.setError('新聞データがありません');
       return;
     }
 
-    store.setIsGenerating(true);
-    store.setGenerationStep('images');
-    store.setError(null);
-    store.setGenerationProgress(0);
+    currentState.setIsGenerating(true);
+    currentState.setGenerationStep('images');
+    currentState.setError(null);
+    currentState.setGenerationProgress(0);
 
     try {
       // 画像プロンプトを収集
       const imagePrompts: string[] = [];
 
       // メイン記事の画像プロンプト
-      const mainPrompt = store.newspaperData.mainArticle?.imagePrompt
-        || `A photograph for newspaper article about: ${store.newspaperData.mainArticle?.headline || 'news event'}`;
+      const mainPrompt = currentState.newspaperData.mainArticle?.imagePrompt
+        || `A photograph for newspaper article about: ${currentState.newspaperData.mainArticle?.headline || 'news event'}`;
       imagePrompts.push(mainPrompt);
 
       // サブ記事の画像プロンプト（3枚）
-      if (store.newspaperData.subArticles) {
+      if (currentState.newspaperData.subArticles) {
         for (let i = 0; i < 3; i++) {
-          const article = store.newspaperData.subArticles[i];
+          const article = currentState.newspaperData.subArticles[i];
           if (article?.imagePrompt) {
             imagePrompts.push(article.imagePrompt);
           } else if (article) {
@@ -235,7 +238,7 @@ export const useGenerationFlow = () => {
         }
       }
 
-      store.setGenerationProgress(10);
+      currentState.setGenerationProgress(10);
 
       // 画像生成（これが時間がかかるメイン処理）
       const imageResponse = await fetch('/api/image', {
@@ -243,31 +246,31 @@ export const useGenerationFlow = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompts: imagePrompts,
-          era: store.style,
+          era: currentState.style,
         }),
       });
 
-      store.setGenerationProgress(90);
+      currentState.setGenerationProgress(90);
 
       const imageData = await imageResponse.json();
 
       if (imageData.success && imageData.images?.length > 0) {
-        store.setGeneratedImages({
+        currentState.setGeneratedImages({
           mainImage: imageData.images[0] ?? undefined,
           subImages: (imageData.images.slice(1) || []).map((img: string | null) => img ?? undefined),
         });
-        store.setIsImagesPaid(true);
+        currentState.setIsImagesPaid(true);
       } else if (imageData.error) {
         throw new Error(imageData.error);
       }
 
-      store.setGenerationProgress(100);
-      store.setGenerationStep('complete');
+      currentState.setGenerationProgress(100);
+      currentState.setGenerationStep('complete');
     } catch (error) {
-      store.setError(error instanceof Error ? error.message : '画像生成に失敗しました');
-      store.setGenerationStep('idle');
+      currentState.setError(error instanceof Error ? error.message : '画像生成に失敗しました');
+      currentState.setGenerationStep('idle');
     } finally {
-      store.setIsGenerating(false);
+      currentState.setIsGenerating(false);
     }
   };
 
