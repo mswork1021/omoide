@@ -107,6 +107,9 @@ export function PaymentSection() {
 
     // タイムアウト設定（30秒）
     const timeoutId = setTimeout(() => {
+      // ストアの状態もリセット
+      useAppStore.getState().setIsGenerating(false);
+      useAppStore.getState().setGenerationStep('idle');
       setPaymentError('PDF生成がタイムアウトしました。ページを再読み込みしてもう一度お試しください。');
       setIsProcessing(false);
     }, 30000);
@@ -116,6 +119,9 @@ export function PaymentSection() {
       clearTimeout(timeoutId);
     } catch (error) {
       clearTimeout(timeoutId);
+      // ストアの状態もリセット
+      useAppStore.getState().setIsGenerating(false);
+      useAppStore.getState().setGenerationStep('idle');
       const errorMessage = error instanceof Error ? error.message : 'PDF生成に失敗しました';
       setPaymentError(`エラー: ${errorMessage}`);
     } finally {
