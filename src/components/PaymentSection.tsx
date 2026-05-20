@@ -5,7 +5,7 @@
  * 新料金体系: テキスト生成済み → 画像追加（500円）→ PDF出力（無料）
  */
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAppStore, useGenerationFlow } from '@/lib/store';
 import {
   ImagePlus,
@@ -18,8 +18,8 @@ import {
   Camera
 } from 'lucide-react';
 
-// テストモード（Stripeスキップ）
-const TEST_MODE = true;
+// テストモード用パスワード（OrderFormと同じ）
+const TEST_PASSWORD = 'omoide2025';
 
 export function PaymentSection() {
   const {
@@ -40,9 +40,23 @@ export function PaymentSection() {
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [testCode, setTestCode] = useState('');
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // テストコードが正しいか
+  const isTestCodeValid = testCode === TEST_PASSWORD;
 
   // エラー表示（ローカルとストア両方）
   const displayError = paymentError || storeError;
+
+  // クリーンアップ
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   // 新聞データがなければ表示しない
   if (!newspaperData) {
@@ -66,8 +80,8 @@ export function PaymentSection() {
     setPaymentError(null);
 
     try {
-      if (TEST_MODE) {
-        // テストモード: 決済スキップして直接生成
+      // テストコードが正しい場合は無料で生成
+      if (isTestCodeValid) {
         await startImageGeneration();
         return;
       }
@@ -105,25 +119,14 @@ export function PaymentSection() {
     setIsProcessing(true);
     setPaymentError(null);
 
-    // タイムアウト設定（30秒）
-    const timeoutId = setTimeout(() => {
-      // ストアの状態もリセット
-      useAppStore.getState().setIsGenerating(false);
-      useAppStore.getState().setGenerationStep('idle');
-      setPaymentError('PDF生成がタイムアウトしました。ページを再読み込みしてもう一度お試しください。');
-      setIsProcessing(false);
-    }, 30000);
-
     try {
       await generatePdf();
-      clearTimeout(timeoutId);
     } catch (error) {
-      clearTimeout(timeoutId);
+      const errorMessage = error instanceof Error ? error.message : 'PDF生成に失敗しました';
+      setPaymentError(`エラー: ${errorMessage}`);
       // ストアの状態もリセット
       useAppStore.getState().setIsGenerating(false);
       useAppStore.getState().setGenerationStep('idle');
-      const errorMessage = error instanceof Error ? error.message : 'PDF生成に失敗しました';
-      setPaymentError(`エラー: ${errorMessage}`);
     } finally {
       setIsProcessing(false);
     }
@@ -296,6 +299,26 @@ export function PaymentSection() {
         </div>
       </div>
 
+      {/* テストコード入力 */}
+      <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
+        <label className="block text-sm font-medium text-orange-800 mb-2">
+          🔐 テストコード（無料生成用）
+        </label>
+        <input
+          type="password"
+          value={testCode}
+          onChange={(e) => setTestCode(e.target.value)}
+          placeholder="テストコードを入力"
+          className="w-full px-3 py-2 text-sm border border-orange-300 rounded bg-white"
+        />
+        {testCode && !isTestCodeValid && (
+          <p className="text-xs text-red-500 mt-1">コードが正しくありません</p>
+        )}
+        {isTestCodeValid && (
+          <p className="text-xs text-green-600 mt-1">✓ 認証OK - 無料で生成できます</p>
+        )}
+      </div>
+
       {/* エラー表示 */}
       {displayError && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
@@ -322,7 +345,7 @@ export function PaymentSection() {
             <Loader2 className="animate-spin" size={20} />
             処理中...
           </>
-        ) : TEST_MODE ? (
+        ) : isTestCodeValid ? (
           <>
             <Sparkles size={20} />
             テスト: 画像を追加（無料）
@@ -336,19 +359,17 @@ export function PaymentSection() {
       </button>
 
       {/* セキュリティバッジ */}
-      {!TEST_MODE && (
+      {!isTestCodeValid && (
         <div className="flex items-center justify-center gap-2 text-sm text-[#1a1a1a]/60">
           <Shield size={16} />
           Stripeによる安全な決済
         </div>
       )}
 
-      {/* テストモード表示 */}
-      {TEST_MODE && (
-        <p className="text-center text-xs text-orange-600 bg-orange-50 p-2 rounded">
-          🧪 テストモード: 決済をスキップして画像生成をテストできます
-        </p>
-      )}
+      {/* 料金説明 */}
+      <p className="text-center text-xs text-[#1a1a1a]/60">
+        画像を追加するとPDF出力が無料になります
+      </p>
     </div>
   );
 }
