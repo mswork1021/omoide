@@ -10,7 +10,7 @@
 import React, { useState, useEffect } from 'react';
 import { SampleCarousel, OrderForm, NewspaperPreview, PaymentSection } from '@/components';
 import { Newspaper, Clock, Sparkles, Gift, Printer, Shield, CheckCircle, X, Lightbulb, Star, Zap, Users, AlertTriangle } from 'lucide-react';
-import { useAppStore } from '@/lib/store';
+import { useAppStore, useGenerationFlow } from '@/lib/store';
 
 // LINEブラウザ検出
 function useIsLineBrowser() {
@@ -22,9 +22,122 @@ function useIsLineBrowser() {
 }
 
 export default function Home() {
-  const { newspaperData, generatedImages, isImagesPaid, reset, style } = useAppStore();
+  const {
+    newspaperData,
+    generatedImages,
+    isImagesPaid,
+    reset,
+    style,
+    setTargetDate,
+    setStyle,
+    setRecipientName,
+    setSenderName,
+    setPersonalMessage,
+    setOccasion,
+    setAccuracy,
+    setHumorLevel,
+    setAppearInArticle,
+    setAppearanceType,
+    setAppearanceTargets,
+    setIsTextPaid,
+  } = useAppStore();
+
+  const { startTextGeneration, startImageGeneration } = useGenerationFlow();
   const isLineBrowser = useIsLineBrowser();
   const [showLineBanner, setShowLineBanner] = useState(true);
+  const [paymentProcessing, setPaymentProcessing] = useState(false);
+
+  // Stripe決済後のコールバック処理
+  useEffect(() => {
+    const handleStripeCallback = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const sessionId = params.get('session_id');
+      const tier = params.get('tier');
+      const canceled = params.get('canceled');
+
+      // キャンセルの場合
+      if (canceled) {
+        // 画像追加のキャンセルの場合、保存した新聞データを復元
+        const savedNewspaper = localStorage.getItem('omoide_newspaper_data');
+        if (savedNewspaper) {
+          const npData = JSON.parse(savedNewspaper);
+          useAppStore.getState().setNewspaperData(npData);
+          localStorage.removeItem('omoide_newspaper_data');
+        }
+        alert('決済がキャンセルされました');
+        window.history.replaceState({}, '', '/');
+        return;
+      }
+
+      // session_idがない場合は何もしない
+      if (!sessionId) return;
+
+      // 既に処理中の場合はスキップ
+      if (paymentProcessing) return;
+
+      setPaymentProcessing(true);
+
+      try {
+        // 決済を確認
+        const response = await fetch('/api/checkout', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId }),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          // URLからパラメータを削除
+          window.history.replaceState({}, '', '/');
+
+          if (tier === 'text_only') {
+            // テキスト生成の決済完了
+            const savedData = localStorage.getItem('omoide_form_data');
+            if (savedData) {
+              const formData = JSON.parse(savedData);
+              setTargetDate(new Date(formData.targetDate));
+              setStyle(formData.style);
+              setRecipientName(formData.recipientName || '');
+              setSenderName(formData.senderName || '');
+              setPersonalMessage(formData.personalMessage || '');
+              setOccasion(formData.occasion || '');
+              setAccuracy(formData.accuracy || 50);
+              setHumorLevel(formData.humorLevel || 50);
+              setAppearInArticle(formData.appearInArticle || false);
+              setAppearanceType(formData.appearanceType || 'protagonist');
+              setAppearanceTargets(formData.appearanceTargets || []);
+              localStorage.removeItem('omoide_form_data');
+            }
+            setIsTextPaid(true);
+            await startTextGeneration();
+
+          } else if (tier === 'add_images') {
+            // 画像追加の決済完了
+            const savedNewspaper = localStorage.getItem('omoide_newspaper_data');
+            if (savedNewspaper) {
+              const npData = JSON.parse(savedNewspaper);
+              useAppStore.getState().setNewspaperData(npData);
+              localStorage.removeItem('omoide_newspaper_data');
+            }
+            useAppStore.getState().setIsImagesPaid(true);
+            await startImageGeneration();
+          }
+        } else {
+          alert('決済の確認に失敗しました。お問い合わせください。');
+          window.history.replaceState({}, '', '/');
+        }
+      } catch (error) {
+        console.error('Payment callback error:', error);
+        alert('エラーが発生しました');
+        window.history.replaceState({}, '', '/');
+      } finally {
+        setPaymentProcessing(false);
+      }
+    };
+
+    handleStripeCallback();
+  }, []);
 
   // モーダル表示条件: 新聞データが生成されたら表示
   const showModal = !!newspaperData;

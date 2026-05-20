@@ -4,9 +4,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createPaymentIntent, verifyPayment, PRICING, type PricingTier } from '@/lib/stripe';
+import { createCheckoutSession, getCheckoutSession, PRICING, type PricingTier } from '@/lib/stripe';
 
-// 支払いインテント作成
+// Checkout Session作成
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -29,17 +29,20 @@ export async function POST(request: NextRequest) {
     }
 
     const pricing = PRICING[pricingKey as PricingTier];
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
-    // 支払いインテント作成
-    const { clientSecret, paymentIntentId } = await createPaymentIntent(
+    // Checkout Session作成
+    const { sessionId, url } = await createCheckoutSession(
       pricingKey as PricingTier,
+      `${baseUrl}/?session_id={CHECKOUT_SESSION_ID}&tier=${pricingKey}`,
+      `${baseUrl}/?canceled=true`,
       metadata
     );
 
     return NextResponse.json({
       success: true,
-      clientSecret,
-      paymentIntentId,
+      sessionId,
+      url,
       amount: pricing.price,
       currency: pricing.currency,
       productName: pricing.name,
@@ -57,25 +60,26 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// 支払い確認
+// 支払い確認（Checkout Session）
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { paymentIntentId } = body;
+    const { sessionId } = body;
 
-    if (!paymentIntentId) {
+    if (!sessionId) {
       return NextResponse.json(
-        { success: false, error: 'paymentIntentId is required' },
+        { success: false, error: 'sessionId is required' },
         { status: 400 }
       );
     }
 
-    const result = await verifyPayment(paymentIntentId);
+    const result = await getCheckoutSession(sessionId);
 
     return NextResponse.json({
       success: result.success,
       verified: result.success,
       metadata: result.metadata,
+      tier: result.tier,
     });
   } catch (error) {
     console.error('Payment Verification Error:', error);

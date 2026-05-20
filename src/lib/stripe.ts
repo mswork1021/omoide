@@ -31,6 +31,7 @@ export const PRICING = {
     description: '記念日新聞のテキスト生成（画像なし）',
     price: 80, // 日本円
     currency: 'jpy',
+    priceId: process.env.STRIPE_PRICE_TEXT || '',
   },
   add_images: {
     id: 'timetravel_images',
@@ -38,13 +39,84 @@ export const PRICING = {
     description: '記事に画像を追加（4枚）+ PDF出力無料',
     price: 500,
     currency: 'jpy',
+    priceId: process.env.STRIPE_PRICE_IMAGES || '',
   },
 } as const;
 
 export type PricingTier = keyof typeof PRICING;
 
 /**
- * 支払いインテントを作成
+ * Stripe Checkout Session を作成
+ */
+export async function createCheckoutSession(
+  tier: PricingTier,
+  successUrl: string,
+  cancelUrl: string,
+  metadata?: Record<string, string>
+): Promise<{ sessionId: string; url: string }> {
+  const stripe = getStripe();
+  const pricing = PRICING[tier];
+
+  if (!pricing.priceId) {
+    throw new Error(`Price ID not configured for ${tier}`);
+  }
+
+  const session = await stripe.checkout.sessions.create({
+    mode: 'payment',
+    line_items: [
+      {
+        price: pricing.priceId,
+        quantity: 1,
+      },
+    ],
+    success_url: successUrl,
+    cancel_url: cancelUrl,
+    metadata: {
+      product_id: pricing.id,
+      product_name: pricing.name,
+      tier,
+      ...metadata,
+    },
+  });
+
+  if (!session.url) {
+    throw new Error('Failed to create checkout session');
+  }
+
+  return {
+    sessionId: session.id,
+    url: session.url,
+  };
+}
+
+/**
+ * Checkout Session を取得
+ */
+export async function getCheckoutSession(
+  sessionId: string
+): Promise<{ success: boolean; metadata?: Record<string, string>; tier?: string }> {
+  const stripe = getStripe();
+
+  try {
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+    if (session.payment_status === 'paid') {
+      return {
+        success: true,
+        metadata: session.metadata as Record<string, string>,
+        tier: session.metadata?.tier,
+      };
+    }
+
+    return { success: false };
+  } catch (error) {
+    console.error('Session retrieval error:', error);
+    return { success: false };
+  }
+}
+
+/**
+ * 支払いインテントを作成（後方互換性のため維持）
  */
 export async function createPaymentIntent(
   tier: PricingTier,

@@ -72,7 +72,10 @@ export function PaymentSection() {
         return;
       }
 
-      // 本番: Stripe決済（500円）
+      // 新聞データをlocalStorageに保存（決済後に復元するため）
+      localStorage.setItem('omoide_newspaper_data', JSON.stringify(newspaperData));
+
+      // 本番: Stripe Checkoutへリダイレクト
       const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -85,15 +88,14 @@ export function PaymentSection() {
       });
 
       const data = await response.json();
-      if (!data.success) {
-        throw new Error(data.error || '決済に失敗しました');
+      if (data.success && data.url) {
+        // Stripe Checkoutページへリダイレクト
+        window.location.href = data.url;
+      } else {
+        throw new Error(data.error || '決済の準備に失敗しました');
       }
-
-      // 決済成功後に画像生成
-      await startImageGeneration();
     } catch (error) {
       setPaymentError(error instanceof Error ? error.message : '決済に失敗しました');
-    } finally {
       setIsProcessing(false);
     }
   };
