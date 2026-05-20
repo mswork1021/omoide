@@ -100,6 +100,7 @@ export function PaymentSection() {
       }
     } catch (error) {
       setPaymentError(error instanceof Error ? error.message : '決済に失敗しました');
+    } finally {
       setIsProcessing(false);
     }
   };
