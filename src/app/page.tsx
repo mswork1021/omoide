@@ -33,20 +33,14 @@ export default function Home() {
     <div className="min-h-screen bg-[#f5f0e6]">
       {/* LINEブラウザ警告バナー */}
       {isLineBrowser && showLineBanner && (
-        <div className="bg-yellow-500 text-black px-4 py-3 relative">
+        <div className="bg-yellow-500 text-black px-4 py-3">
           <div className="max-w-4xl mx-auto flex items-center gap-3">
             <AlertTriangle className="w-5 h-5 flex-shrink-0" />
             <div className="flex-1 text-sm">
               <strong>LINEアプリ内ブラウザでは一部機能が制限されます。</strong>
               <br />
-              右上の「︙」→「Safariで開く」で外部ブラウザをご利用ください。
+              画面右上または右下の「︙」メニューから「ブラウザで開く」を選択してください。
             </div>
-            <button
-              onClick={() => setShowLineBanner(false)}
-              className="p-1 hover:bg-yellow-600 rounded"
-            >
-              <X className="w-5 h-5" />
-            </button>
           </div>
         </div>
       )}
