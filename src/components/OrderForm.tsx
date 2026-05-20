@@ -448,15 +448,78 @@ export function OrderForm() {
         </div>
       )}
 
-      {/* 送信ボタン */}
+      {/* 送信ボタン - Stripe決済 */}
       <button
         type="submit"
-        disabled={!targetDate || isSubmitting || isGenerating || isGenerated || (TEST_MODE && !isTestCodeValid)}
+        disabled={!targetDate || isSubmitting || isGenerating || isGenerated}
+        onClick={(e) => {
+          // TEST_MODEでテストコードが有効な場合は通常のsubmitでテスト生成
+          // それ以外はStripe決済へ
+          if (TEST_MODE && isTestCodeValid) {
+            // デフォルトのsubmit動作（handleSubmit）を使用
+            return;
+          }
+          // Stripe決済用の処理
+          e.preventDefault();
+          if (!targetDate) return;
+
+          // LINEブラウザの場合は警告してブロック
+          if (isLineBrowser()) {
+            alert(
+              '⚠️ LINEアプリ内ブラウザではPDFをダウンロードできません！\n\n' +
+              '【必ず外部ブラウザで開き直してください】\n\n' +
+              '手順：画面右上または右下の「︙」メニュー → 「ブラウザで開く」\n\n' +
+              '※このまま購入するとPDFを受け取れません'
+            );
+            return;
+          }
+
+          // Stripe Checkoutへリダイレクト
+          (async () => {
+            setIsSubmitting(true);
+            try {
+              const formData = {
+                targetDate: targetDate.toISOString(),
+                style,
+                recipientName,
+                senderName,
+                personalMessage,
+                occasion,
+                accuracy,
+                humorLevel,
+                appearInArticle,
+                appearanceType,
+                appearanceTargets,
+              };
+              localStorage.setItem('omoide_form_data', JSON.stringify(formData));
+
+              const response = await fetch('/api/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  purchaseType: 'text_only',
+                  metadata: { targetDate: targetDate.toISOString(), style },
+                }),
+              });
+
+              const data = await response.json();
+              if (data.success && data.url) {
+                window.location.href = data.url;
+              } else {
+                throw new Error(data.error || '決済の準備に失敗しました');
+              }
+            } catch (error) {
+              console.error('Checkout error:', error);
+              alert('エラーが発生しました');
+              setIsSubmitting(false);
+            }
+          })();
+        }}
         className={`
           w-full py-4 text-lg font-bold rounded-lg transition-all
           flex items-center justify-center gap-2
           ${
-            !targetDate || isSubmitting || isGenerating || isGenerated || (TEST_MODE && !isTestCodeValid)
+            !targetDate || isSubmitting || isGenerating || isGenerated
               ? 'bg-[#1a1a1a]/20 text-[#1a1a1a]/40 cursor-not-allowed'
               : 'bg-[#8b4513] text-white hover:bg-[#6b3410] active:scale-[0.99]'
           }
@@ -475,7 +538,7 @@ export function OrderForm() {
             <FileText size={20} />
             生成済み（下のプレビューを確認）
           </>
-        ) : TEST_MODE ? (
+        ) : TEST_MODE && isTestCodeValid ? (
           <>
             <Sparkles size={20} />
             テスト生成する（無料）
