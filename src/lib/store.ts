@@ -291,24 +291,29 @@ export const useGenerationFlow = () => {
     store.setIsGenerating(true);
     store.setGenerationStep('pdf');
     store.setError(null);
-    store.setGenerationProgress(0);
+    store.setGenerationProgress(5);
 
     let cloneContainer: HTMLDivElement | null = null;
 
     try {
-      console.log('[PDF] Starting PDF generation...');
-
       // プレビュー要素を取得
       const element = document.getElementById('newspaper-preview-for-pdf');
       if (!element) {
-        throw new Error('プレビュー要素が見つかりません');
+        throw new Error('プレビュー要素が見つかりません。ページを再読み込みしてください。');
       }
 
       store.setGenerationProgress(10);
 
       // 動的インポート
-      const html2canvas = (await import('html2canvas')).default;
-      const jsPDF = (await import('jspdf')).default;
+      let html2canvas: typeof import('html2canvas').default;
+      let jsPDF: typeof import('jspdf').default;
+
+      try {
+        html2canvas = (await import('html2canvas')).default;
+        jsPDF = (await import('jspdf')).default;
+      } catch (importError) {
+        throw new Error('PDF生成ライブラリの読み込みに失敗しました。');
+      }
 
       store.setGenerationProgress(20);
 
