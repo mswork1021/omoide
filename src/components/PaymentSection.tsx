@@ -105,13 +105,19 @@ export function PaymentSection() {
     setIsProcessing(true);
     setPaymentError(null);
 
+    // タイムアウト設定（30秒）
+    const timeoutId = setTimeout(() => {
+      setPaymentError('PDF生成がタイムアウトしました。ページを再読み込みしてもう一度お試しください。');
+      setIsProcessing(false);
+    }, 30000);
+
     try {
-      console.log('[PDF Button] Starting PDF generation...');
       await generatePdf();
-      console.log('[PDF Button] PDF generation completed');
+      clearTimeout(timeoutId);
     } catch (error) {
-      console.error('[PDF Button] Error:', error);
-      setPaymentError(error instanceof Error ? error.message : 'PDF生成に失敗しました');
+      clearTimeout(timeoutId);
+      const errorMessage = error instanceof Error ? error.message : 'PDF生成に失敗しました';
+      setPaymentError(`エラー: ${errorMessage}`);
     } finally {
       setIsProcessing(false);
     }
