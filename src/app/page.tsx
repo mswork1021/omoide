@@ -36,6 +36,7 @@ export default function Home() {
     setOccasion,
     setAccuracy,
     setHumorLevel,
+    setEmail,
     setAppearInArticle,
     setAppearanceType,
     setAppearanceTargets,
@@ -104,6 +105,7 @@ export default function Home() {
               setOccasion(formData.occasion || '');
               setAccuracy(formData.accuracy || 50);
               setHumorLevel(formData.humorLevel || 50);
+              setEmail(formData.email || '');
               setAppearInArticle(formData.appearInArticle || false);
               setAppearanceType(formData.appearanceType || 'protagonist');
               setAppearanceTargets(formData.appearanceTargets || []);
@@ -119,6 +121,12 @@ export default function Home() {
               const npData = JSON.parse(savedNewspaper);
               useAppStore.getState().setNewspaperData(npData);
               localStorage.removeItem('omoide_newspaper_data');
+            }
+            // メールアドレス復元
+            const savedEmail = localStorage.getItem('omoide_email');
+            if (savedEmail) {
+              useAppStore.getState().setEmail(savedEmail);
+              localStorage.removeItem('omoide_email');
             }
             useAppStore.getState().setIsImagesPaid(true);
             await startImageGeneration();
