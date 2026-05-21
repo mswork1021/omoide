@@ -2,10 +2,10 @@
 
 /**
  * PaymentSection Component
- * 新料金体系: テキスト生成済み → 画像追加（500円）→ PDF出力（無料）
+ * 新料金体系: テキスト生成済み → 画像追加（500円）→ PDF出力（自動）
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAppStore, useGenerationFlow } from '@/lib/store';
 import {
   ImagePlus,
@@ -42,12 +42,30 @@ export function PaymentSection() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [testCode, setTestCode] = useState('');
+  const pdfGenerationTriggered = useRef(false);
 
   // テストコードが正しいか
   const isTestCodeValid = testCode === TEST_PASSWORD;
 
   // エラー表示（ローカルとストア両方）
   const displayError = paymentError || storeError;
+
+  // 画像生成完了後、自動でPDF生成を開始
+  useEffect(() => {
+    if (
+      isImagesPaid &&
+      generatedImages &&
+      !pdfUrl &&
+      !isGenerating &&
+      !pdfGenerationTriggered.current
+    ) {
+      pdfGenerationTriggered.current = true;
+      // DOMが画像で更新されるのを待ってからPDF生成
+      setTimeout(() => {
+        generatePdf();
+      }, 500);
+    }
+  }, [isImagesPaid, generatedImages, pdfUrl, isGenerating, generatePdf]);
 
   // 新聞データがなければ表示しない
   if (!newspaperData) {
@@ -102,20 +120,6 @@ export function PaymentSection() {
       }
     } catch (error) {
       setPaymentError(error instanceof Error ? error.message : '決済に失敗しました');
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  // PDF生成処理
-  const handlePdfGeneration = async () => {
-    setIsProcessing(true);
-    setPaymentError(null);
-
-    try {
-      await generatePdf();
-    } catch (error) {
-      setPaymentError(error instanceof Error ? error.message : 'PDF生成に失敗しました');
     } finally {
       setIsProcessing(false);
     }
@@ -192,48 +196,18 @@ export function PaymentSection() {
     );
   }
 
-  // 画像購入済み → PDF生成ボタン
-  if (isImagesPaid && generatedImages) {
+  // 画像購入済み、PDF生成待ち（自動生成されるので待機表示）
+  if (isImagesPaid && generatedImages && !pdfUrl) {
     return (
       <div className="payment-section bg-blue-50 rounded-lg p-6 border-2 border-blue-500">
         <div className="text-center">
           <div className="w-16 h-16 mx-auto mb-4 bg-blue-500 rounded-full flex items-center justify-center">
-            <Camera className="w-8 h-8 text-white" />
+            <Loader2 className="w-8 h-8 text-white animate-spin" />
           </div>
-          <h3 className="text-xl font-bold text-blue-800 mb-2">画像が追加されました</h3>
+          <h3 className="text-xl font-bold text-blue-800 mb-2">PDFを準備中...</h3>
           <p className="text-blue-700 mb-4">
-            PDFを生成してダウンロードできます（無料）
+            完成したらメールでもお届けします
           </p>
-
-          {displayError && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
-              {displayError}
-            </div>
-          )}
-
-          <button
-            onClick={handlePdfGeneration}
-            disabled={isProcessing}
-            className={`
-              inline-flex items-center gap-2 px-8 py-4 font-bold rounded-lg transition-colors
-              ${isProcessing
-                ? 'bg-blue-300 cursor-not-allowed'
-                : 'bg-blue-600 hover:bg-blue-700 text-white'
-              }
-            `}
-          >
-            {isProcessing ? (
-              <>
-                <Loader2 className="animate-spin" size={20} />
-                処理中...
-              </>
-            ) : (
-              <>
-                <FileText size={20} />
-                PDFを生成（無料）
-              </>
-            )}
-          </button>
         </div>
       </div>
     );
