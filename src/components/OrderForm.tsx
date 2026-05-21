@@ -7,7 +7,7 @@
 
 import React, { useState } from 'react';
 import { DatePicker } from './DatePicker';
-import { Calendar, Gift, Sparkles, User, ChevronDown, ChevronUp, Loader2, FileText, Target, Smile, Star } from 'lucide-react';
+import { Calendar, Gift, Sparkles, User, ChevronDown, ChevronUp, Loader2, FileText, Target, Smile, Star, Mail } from 'lucide-react';
 import { useAppStore, useGenerationFlow } from '@/lib/store';
 
 // テストモード（Stripeスキップ）
@@ -40,6 +40,8 @@ export function OrderForm() {
     setAccuracy,
     humorLevel,
     setHumorLevel,
+    email,
+    setEmail,
     appearInArticle,
     setAppearInArticle,
     appearanceType,
@@ -55,6 +57,9 @@ export function OrderForm() {
 
   // テストコードが正しいか
   const isTestCodeValid = testCode === TEST_PASSWORD;
+
+  // メールアドレスの簡易バリデーション
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const { isGenerating, generationStep, generationProgress, error } = useAppStore();
   const { startTextGeneration } = useGenerationFlow();
@@ -107,6 +112,7 @@ export function OrderForm() {
         occasion,
         accuracy,
         humorLevel,
+        email,
         appearInArticle,
         appearanceType,
         appearanceTargets,
@@ -426,6 +432,30 @@ export function OrderForm() {
         )}
       </div>
 
+      {/* メールアドレス入力（PDF送信用） */}
+      <div className="form-section">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-6 h-6 rounded-full bg-[#8b4513] text-white flex items-center justify-center text-sm font-bold">
+            5
+          </div>
+          <label className="text-lg font-bold flex items-center gap-2">
+            <Mail size={20} />
+            メールアドレス
+          </label>
+        </div>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="example@email.com"
+          className="w-full px-3 py-2 text-sm border border-[#1a1a1a]/20 rounded bg-white"
+          required
+        />
+        <p className="text-xs text-[#1a1a1a]/50 mt-2">
+          完成したPDFをメールでお届けします（必須）
+        </p>
+      </div>
+
       {/* テストコード入力（テストモード時のみ） */}
       {TEST_MODE && (
         <div className="form-section">
@@ -451,7 +481,7 @@ export function OrderForm() {
       {/* 送信ボタン - Stripe決済 */}
       <button
         type="submit"
-        disabled={!targetDate || isSubmitting || isGenerating || isGenerated}
+        disabled={!targetDate || !isEmailValid || isSubmitting || isGenerating || isGenerated}
         onClick={(e) => {
           // TEST_MODEでテストコードが有効な場合は通常のsubmitでテスト生成
           // それ以外はStripe決済へ
@@ -487,6 +517,7 @@ export function OrderForm() {
                 occasion,
                 accuracy,
                 humorLevel,
+                email,
                 appearInArticle,
                 appearanceType,
                 appearanceTargets,
@@ -519,7 +550,7 @@ export function OrderForm() {
           w-full py-4 text-lg font-bold rounded-lg transition-all
           flex items-center justify-center gap-2
           ${
-            !targetDate || isSubmitting || isGenerating || isGenerated
+            !targetDate || !isEmailValid || isSubmitting || isGenerating || isGenerated
               ? 'bg-[#1a1a1a]/20 text-[#1a1a1a]/40 cursor-not-allowed'
               : 'bg-[#8b4513] text-white hover:bg-[#6b3410] active:scale-[0.99]'
           }

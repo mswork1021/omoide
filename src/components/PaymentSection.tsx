@@ -33,6 +33,7 @@ export function PaymentSection() {
     generationProgress,
     isGenerating,
     style,
+    email,
     error: storeError,
   } = useAppStore();
 
@@ -76,8 +77,9 @@ export function PaymentSection() {
         return;
       }
 
-      // 新聞データをlocalStorageに保存（決済後に復元するため）
+      // 新聞データとメールをlocalStorageに保存（決済後に復元するため）
       localStorage.setItem('omoide_newspaper_data', JSON.stringify(newspaperData));
+      localStorage.setItem('omoide_email', email);
 
       // 本番: Stripe Checkoutへリダイレクト
       const response = await fetch('/api/checkout', {

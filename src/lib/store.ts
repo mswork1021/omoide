@@ -16,6 +16,7 @@ interface AppState {
   occasion: string;
   accuracy: number;      // 正確性（0-100）
   humorLevel: number;    // ユーモア度（0-100）
+  email: string;         // PDF送信用メールアドレス
 
   // 記事登場設定
   appearInArticle: boolean;                           // 宛名の人を記事に登場させるか
@@ -52,6 +53,7 @@ interface AppState {
   setOccasion: (occasion: string) => void;
   setAccuracy: (accuracy: number) => void;
   setHumorLevel: (humorLevel: number) => void;
+  setEmail: (email: string) => void;
   setAppearInArticle: (appear: boolean) => void;
   setAppearanceType: (type: 'protagonist' | 'commentator') => void;
   setAppearanceTargets: (targets: string[]) => void;
@@ -80,6 +82,7 @@ const initialState = {
   occasion: '',
   accuracy: 50,         // デフォルト50%
   humorLevel: 50,       // デフォルト50%
+  email: '',            // PDF送信用
   appearInArticle: false,
   appearanceType: 'protagonist' as const,
   appearanceTargets: [] as string[],
@@ -107,6 +110,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   setOccasion: (occasion) => set({ occasion }),
   setAccuracy: (accuracy) => set({ accuracy }),
   setHumorLevel: (humorLevel) => set({ humorLevel }),
+  setEmail: (email) => set({ email }),
   setAppearInArticle: (appear) => set({ appearInArticle: appear }),
   setAppearanceType: (type) => set({ appearanceType: type }),
   setAppearanceTargets: (targets) => set({ appearanceTargets: targets }),
@@ -433,6 +437,33 @@ export const useGenerationFlow = () => {
       store.setPdfUrl(pdfUrl);
 
       console.log('[PDF] PDF generated successfully');
+
+      // メール送信（バックグラウンドで実行）
+      const currentEmail = useAppStore.getState().email;
+      if (currentEmail) {
+        try {
+          // PDFをBase64に変換
+          const pdfBase64 = pdf.output('datauristring').split(',')[1];
+          const emailResponse = await fetch('/api/send-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              to: currentEmail,
+              pdfBase64,
+              date: store.newspaperData?.date,
+            }),
+          });
+          const emailResult = await emailResponse.json();
+          if (emailResult.success) {
+            console.log('[PDF] Email sent successfully');
+          } else {
+            console.warn('[PDF] Email sending failed:', emailResult.error);
+          }
+        } catch (emailError) {
+          console.warn('[PDF] Email sending error:', emailError);
+        }
+      }
+
       store.setGenerationProgress(100);
       store.setGenerationStep('complete');
     } catch (error) {
