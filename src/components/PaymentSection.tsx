@@ -15,7 +15,9 @@ import {
   Shield,
   FileText,
   Sparkles,
-  Camera
+  Camera,
+  Mail,
+  AlertCircle
 } from 'lucide-react';
 
 // テストモード用パスワード（OrderFormと同じ）
@@ -181,9 +183,23 @@ export function PaymentSection() {
             <Check className="w-10 h-10 text-white" />
           </div>
           <h3 className="text-2xl font-bold text-green-800 mb-2">完成しました！</h3>
-          <p className="text-green-700 mb-6">
+          <p className="text-green-700 mb-4">
             あなただけの記念日新聞が完成しました
           </p>
+
+          {/* メール送信済み通知 */}
+          {email && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4 text-left">
+              <div className="flex items-center gap-2 text-blue-800 font-medium text-sm mb-1">
+                <Mail size={16} />
+                メール送信済み
+              </div>
+              <p className="text-xs text-blue-700">
+                {email} にPDFを送信しました
+              </p>
+            </div>
+          )}
+
           <button
             onClick={handleDownload}
             className="inline-flex items-center gap-2 px-8 py-4 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-colors"
@@ -191,6 +207,20 @@ export function PaymentSection() {
             <Download size={20} />
             PDFをダウンロード
           </button>
+
+          {/* 注意書き */}
+          <div className="mt-4 bg-orange-50 border border-orange-200 rounded-lg p-3 text-left">
+            <div className="flex items-start gap-2">
+              <AlertCircle size={16} className="text-orange-500 flex-shrink-0 mt-0.5" />
+              <div className="text-xs text-orange-700">
+                <p className="font-medium mb-1">念のためダウンロードをおすすめします</p>
+                <p>
+                  メールアドレスの入力ミスがあった場合、メールが届かない可能性があります。
+                  上のボタンからPDFをダウンロードして保存しておくことをおすすめします。
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
