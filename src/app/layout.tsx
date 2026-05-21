@@ -4,7 +4,7 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'TimeTravel Press | 記念日新聞生成サービス',
   description:
-    'あの日の新聞をAIで再現。誕生日、結婚記念日、還暦祝いなど、大切な記念日をヴィンテージ新聞風にお届けします。Gemini 3.0 & Nano Banana Pro による最高品質の生成。',
+    'あの日の新聞をAIで再現。誕生日、結婚記念日、還暦祝いなど、大切な記念日をヴィンテージ新聞風にお届けします。Gemini AI による高品質な生成。',
   keywords: [
     '記念日新聞',
     'オリジナル新聞',

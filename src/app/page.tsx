@@ -180,7 +180,7 @@ export default function Home() {
                   TimeTravel Press
                 </h1>
                 <p className="text-xs text-[#1a1a1a]/60">
-                  Gemini 3.0 Edition
+                  Powered by Gemini AI
                 </p>
               </div>
             </div>
@@ -216,7 +216,7 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-2 bg-white/80 px-4 py-2 rounded-full shadow-sm">
               <Sparkles size={18} className="text-[#8b4513]" />
-              <span className="text-sm font-medium">Gemini 3.0搭載</span>
+              <span className="text-sm font-medium">Gemini AI搭載</span>
             </div>
             <div className="flex items-center gap-2 bg-white/80 px-4 py-2 rounded-full shadow-sm">
               <Gift size={18} className="text-[#8b4513]" />
@@ -392,7 +392,7 @@ export default function Home() {
               <div>
                 <h4 className="font-bold mb-1">事実に基づいた記事</h4>
                 <p className="text-sm text-[#1a1a1a]/60">
-                  Gemini 3.0のGoogle Grounding機能で、実際のその日の出来事を調査して記事を生成します。
+                  Gemini AIのGoogle検索連携機能で、実際のその日の出来事を調査して記事を生成します。
                 </p>
               </div>
             </div>
@@ -401,7 +401,7 @@ export default function Home() {
               <div>
                 <h4 className="font-bold mb-1">ヴィンテージ画像</h4>
                 <p className="text-sm text-[#1a1a1a]/60">
-                  Nano Banana Proによる網点処理やインク滲み効果で、本物の古新聞のような質感を再現。
+                  AI画像生成による網点処理やインク滲み効果で、本物の古新聞のような質感を再現。
                 </p>
               </div>
             </div>
@@ -483,8 +483,7 @@ export default function Home() {
                 TimeTravel Press
               </h4>
               <p className="text-sm text-[#1a1a1a]/60">
-                最新AI技術（Gemini 3.0 + Nano Banana
-                Pro）を活用した、記念日新聞生成サービスです。
+                最新AI技術（Gemini AI）を活用した、記念日新聞生成サービスです。
               </p>
             </div>
 
@@ -525,7 +524,7 @@ export default function Home() {
               &copy; {new Date().getFullYear()} TimeTravel Press. All rights reserved.
             </p>
             <p className="mt-1">
-              Powered by Gemini 3.0 & Nano Banana Pro
+              Powered by Gemini AI
             </p>
           </div>
         </div>
