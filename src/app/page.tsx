@@ -506,15 +506,30 @@ export default function Home() {
               </ul>
             </div>
 
-            {/* 安全性 */}
+            {/* 安全性・リンク */}
             <div>
-              <h4 className="font-bold mb-3">安全なサービス</h4>
+              <h4 className="font-bold mb-3">ご利用について</h4>
               <ul className="text-sm text-[#1a1a1a]/60 space-y-2">
-                <li className="flex items-center gap-2">
-                  <Shield size={14} />
-                  Stripe による安全な決済
+                <li>
+                  <a href="/legal/tokushoho" className="hover:text-[#8b4513] hover:underline">
+                    特定商取引法に基づく表記
+                  </a>
                 </li>
-                <li>データは自動削除</li>
+                <li>
+                  <a href="/legal/privacy" className="hover:text-[#8b4513] hover:underline">
+                    プライバシーポリシー
+                  </a>
+                </li>
+                <li>
+                  <a href="/legal/terms" className="hover:text-[#8b4513] hover:underline">
+                    利用規約
+                  </a>
+                </li>
+                <li>
+                  <a href="mailto:timetravelpress.support@gmail.com" className="hover:text-[#8b4513] hover:underline">
+                    お問い合わせ
+                  </a>
+                </li>
               </ul>
             </div>
           </div>
