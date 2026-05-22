@@ -451,9 +451,14 @@ export function OrderForm() {
           className="w-full px-3 py-2 text-sm border border-[#1a1a1a]/20 rounded bg-white"
           required
         />
-        <p className="text-xs text-[#1a1a1a]/50 mt-2">
-          完成したPDFをメールでお届けします（必須）
-        </p>
+        <div className="mt-2 space-y-1">
+          <p className="text-xs text-[#1a1a1a]/50">
+            画像追加（¥500）後、完成したPDFをメールでお届けします
+          </p>
+          <p className="text-xs text-orange-600">
+            ※ 記事生成（¥80）のみではメールは送信されません
+          </p>
+        </div>
       </div>
 
       {/* テストコード入力（テストモード時のみ） */}
