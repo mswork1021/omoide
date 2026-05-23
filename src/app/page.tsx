@@ -526,6 +526,11 @@ export default function Home() {
                   </a>
                 </li>
                 <li>
+                  <a href="/faq" className="hover:text-[#8b4513] hover:underline">
+                    よくあるご質問
+                  </a>
+                </li>
+                <li>
                   <a href="/contact" className="hover:text-[#8b4513] hover:underline">
                     お問い合わせ
                   </a>
