@@ -65,9 +65,9 @@ export function OrderForm() {
   const { startTextGeneration } = useGenerationFlow();
 
   const styleOptions = [
-    { value: 'showa', label: '昭和風', description: '重厚な活字文化' },
-    { value: 'heisei', label: '平成風', description: 'バブル期の華やかさ' },
-    { value: 'reiwa', label: '令和風', description: 'レトロモダン' },
+    { value: 'showa', label: '昭和風', description: '重厚な活字文化', recommended: false },
+    { value: 'heisei', label: '平成風', description: 'バブル期の華やかさ', recommended: false },
+    { value: 'reiwa', label: '令和風', description: 'レトロモダン', recommended: true },
   ] as const;
 
   const occasionPresets = [
@@ -186,7 +186,7 @@ export function OrderForm() {
               type="button"
               onClick={() => setStyle(option.value)}
               className={`
-                p-3 border-2 rounded-lg text-center transition-all text-sm
+                relative p-3 border-2 rounded-lg text-center transition-all text-sm
                 ${
                   style === option.value
                     ? 'border-[#8b4513] bg-[#8b4513] text-white'
@@ -194,6 +194,14 @@ export function OrderForm() {
                 }
               `}
             >
+              {option.recommended && (
+                <span className={`
+                  absolute -top-2 -right-2 px-1.5 py-0.5 text-[10px] font-bold rounded-full
+                  ${style === option.value ? 'bg-yellow-400 text-[#8b4513]' : 'bg-[#8b4513] text-white'}
+                `}>
+                  オススメ
+                </span>
+              )}
               <div className="font-bold">{option.label}</div>
               <div className="text-xs mt-0.5 opacity-80">{option.description}</div>
             </button>
