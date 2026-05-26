@@ -20,6 +20,9 @@ import {
   AlertCircle
 } from 'lucide-react';
 
+// テストモード（環境変数で制御）
+const TEST_MODE = process.env.NEXT_PUBLIC_TEST_MODE === 'true';
+
 // テストモード用パスワード（OrderFormと同じ）
 const TEST_PASSWORD = 'omoide2025';
 
@@ -292,25 +295,27 @@ export function PaymentSection() {
         </div>
       </div>
 
-      {/* テストコード入力 */}
-      <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
-        <label className="block text-sm font-medium text-orange-800 mb-2">
-          🔐 テストコード（無料生成用）
-        </label>
-        <input
-          type="password"
-          value={testCode}
-          onChange={(e) => setTestCode(e.target.value)}
-          placeholder="テストコードを入力"
-          className="w-full px-3 py-2 text-sm border border-orange-300 rounded bg-white"
-        />
-        {testCode && !isTestCodeValid && (
-          <p className="text-xs text-red-500 mt-1">コードが正しくありません</p>
-        )}
-        {isTestCodeValid && (
-          <p className="text-xs text-green-600 mt-1">✓ 認証OK - 無料で生成できます</p>
-        )}
-      </div>
+      {/* テストコード入力（テストモード時のみ） */}
+      {TEST_MODE && (
+        <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
+          <label className="block text-sm font-medium text-orange-800 mb-2">
+            🔐 テストコード（無料生成用）
+          </label>
+          <input
+            type="password"
+            value={testCode}
+            onChange={(e) => setTestCode(e.target.value)}
+            placeholder="テストコードを入力"
+            className="w-full px-3 py-2 text-sm border border-orange-300 rounded bg-white"
+          />
+          {testCode && !isTestCodeValid && (
+            <p className="text-xs text-red-500 mt-1">コードが正しくありません</p>
+          )}
+          {isTestCodeValid && (
+            <p className="text-xs text-green-600 mt-1">✓ 認証OK - 無料で生成できます</p>
+          )}
+        </div>
+      )}
 
       {/* エラー表示 */}
       {displayError && (
