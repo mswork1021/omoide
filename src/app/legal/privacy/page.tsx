@@ -87,7 +87,7 @@ export default function PrivacyPage() {
             <section>
               <h2 className="text-lg font-bold mb-3">7. お問い合わせ</h2>
               <p>
-                個人情報の取り扱いに関するお問い合わせは、下記までご連絡ください。
+                本ポリシーに関するご質問は、下記までご連絡ください。
               </p>
               <p className="mt-2">
                 メールアドレス:{' '}
