@@ -493,7 +493,7 @@ export default function Home() {
               <ul className="text-sm text-[#1a1a1a]/60 space-y-2">
                 <li className="flex items-center gap-2">
                   <Sparkles size={14} />
-                  Google Grounding による事実確認
+                  AIによる時代背景の調査・生成
                 </li>
                 <li className="flex items-center gap-2">
                   <Printer size={14} />
