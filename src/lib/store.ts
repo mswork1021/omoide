@@ -75,7 +75,7 @@ interface AppState {
 
 const initialState = {
   targetDate: null,
-  style: 'showa' as const,
+  style: 'reiwa' as const,
   recipientName: '',
   senderName: '',
   personalMessage: '',
