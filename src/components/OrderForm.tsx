@@ -10,10 +10,10 @@ import { DatePicker } from './DatePicker';
 import { Calendar, Gift, Sparkles, User, ChevronDown, ChevronUp, Loader2, FileText, Target, Smile, Star, Mail } from 'lucide-react';
 import { useAppStore, useGenerationFlow } from '@/lib/store';
 
-// テストモード（Stripeスキップ）
-const TEST_MODE = true;
+// テストモード（環境変数で制御）
+const TEST_MODE = process.env.NEXT_PUBLIC_TEST_MODE === 'true';
 
-// テスト用パスワード（変更してください）
+// テスト用パスワード
 const TEST_PASSWORD = 'omoide2025';
 
 // LINEブラウザ検出
