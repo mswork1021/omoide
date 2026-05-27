@@ -429,9 +429,10 @@ export function OrderForm() {
                       )}
                     </div>
 
-                    <p className="text-xs text-[#1a1a1a]/50">
-                      ※ どのように登場するかはお楽しみ！
-                    </p>
+                    <div className="text-xs text-[#1a1a1a]/50 space-y-1">
+                      <p>※ どのように登場するかはお楽しみ！</p>
+                      <p>※ AIが職業や年齢などを創作して記事に書くことがあります。架空の設定もぜひお楽しみください！</p>
+                    </div>
                   </div>
                 )}
               </div>
