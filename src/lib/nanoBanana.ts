@@ -37,6 +37,7 @@ Style requirements:
 - Aged paper texture
 - Classic photojournalism composition
 - Nostalgic, historical atmosphere
+- IMPORTANT: Do NOT include any text, letters, words, signs, captions, or typography in the image
 
 Subject: {subject}`,
 
@@ -48,6 +49,7 @@ Style requirements:
 - Dynamic composition
 - Pop culture aesthetic
 - Energetic, optimistic atmosphere
+- IMPORTANT: Do NOT include any text, letters, words, signs, captions, or typography in the image
 
 Subject: {subject}`,
 
@@ -59,6 +61,7 @@ Style requirements:
 - Professional photography lighting
 - Contemporary Japanese style
 - Sleek, sophisticated atmosphere
+- IMPORTANT: Do NOT include any text, letters, words, signs, captions, or typography in the image
 
 Subject: {subject}`,
 };
