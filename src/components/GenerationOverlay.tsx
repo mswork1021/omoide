@@ -106,7 +106,7 @@ export function GenerationOverlay() {
             </p>
             <p className="text-xs text-orange-600 mt-1">
               生成が完了するまでお待ちください。
-              ページを閉じると最初からやり直しになります。
+              ページを閉じると生成が中断され、完了しません。
             </p>
           </div>
         </div>
