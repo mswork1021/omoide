@@ -438,7 +438,7 @@ export function PaymentSection() {
     const mainArticle = newspaperData.mainArticle;
     const subArticles = newspaperData.subArticles || [];
 
-    let text = `【${newspaperData.title}】\n`;
+    let text = `【${newspaperData.masthead}】\n`;
     text += `${newspaperData.date}\n\n`;
 
     if (mainArticle) {
@@ -454,13 +454,13 @@ export function PaymentSection() {
     });
 
     if (newspaperData.editorial) {
-      text += `【社説】${newspaperData.editorial.title}\n`;
+      text += `【社説】${newspaperData.editorial.headline}\n`;
       text += `${newspaperData.editorial.content}\n\n`;
     }
 
-    if (newspaperData.column) {
-      text += `【コラム】${newspaperData.column.title}\n`;
-      text += `${newspaperData.column.content}\n`;
+    if (newspaperData.columnTitle) {
+      text += `【コラム】${newspaperData.columnTitle}\n`;
+      text += `${newspaperData.columnContent}\n`;
     }
 
     try {
