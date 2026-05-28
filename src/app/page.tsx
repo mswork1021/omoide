@@ -448,14 +448,28 @@ export default function Home() {
             </div>
 
             {/* シェア手順 */}
-            <div className="bg-white rounded-lg p-4 max-w-md mx-auto text-left shadow-sm">
+            <div className="bg-white rounded-lg p-4 max-w-md mx-auto text-left shadow-sm mb-6">
               <p className="text-sm font-bold text-[#1a1a1a] mb-2">📱 シェアの手順</p>
               <ol className="text-sm text-[#1a1a1a]/70 space-y-1">
                 <li>1. 新聞完成後「画像として保存」で画像を保存</li>
-                <li>2. X（Twitter）やInstagramを開く</li>
+                <li>2. 下のボタンからXの投稿画面を開く</li>
                 <li>3. 保存した画像を添付して投稿！</li>
               </ol>
             </div>
+
+            {/* Xでシェアボタン */}
+            <button
+              onClick={() => {
+                const shareText = `記念日新聞を作りました！🗞️✨\n\n#TimeTravelPress #記念日新聞 #AIで作る新聞`;
+                const shareUrl = 'https://timetravel-press.com';
+                const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+                window.open(twitterUrl, '_blank');
+              }}
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-black text-white font-bold rounded-full hover:bg-gray-800 transition-colors"
+            >
+              <Share2 size={20} />
+              Xでシェアする
+            </button>
           </div>
         </section>
       </main>
