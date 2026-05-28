@@ -200,10 +200,11 @@ export default function Home() {
           <p className="text-lg md:text-xl text-[#1a1a1a]/60 mb-2">
             誕生日に。記念日に。還暦に。
           </p>
-          <h2 className="text-3xl md:text-5xl font-black mb-4 leading-tight font-serif">
-            「この日の新聞があったの？」
+          <h2 className="text-2xl md:text-5xl font-black mb-4 leading-tight font-serif">
+            <span className="whitespace-nowrap">「この日の新聞があったの！？」</span>
             <br />
-            <span className="text-[#8b4513]">そんな驚きをプレゼントに。</span>
+            <span className="text-[#8b4513] whitespace-nowrap">そんな驚きを</span>
+            <span className="text-[#8b4513]">プレゼントに。</span>
           </h2>
           <p className="text-base md:text-lg text-[#1a1a1a]/70 mb-8 max-w-2xl mx-auto">
             昭和のレトロ、平成の懐かしさ、令和のモダン。
