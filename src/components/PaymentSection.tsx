@@ -267,6 +267,90 @@ export function PaymentSection() {
       document.body.removeChild(cloneContainer);
       cloneContainer = null;
 
+      // ウォーターマーク（URL）を追加
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        const watermarkHeight = 60; // ウォーターマーク領域の高さ
+        const newCanvas = document.createElement('canvas');
+        newCanvas.width = canvas.width;
+        newCanvas.height = canvas.height + watermarkHeight;
+
+        const newCtx = newCanvas.getContext('2d');
+        if (newCtx) {
+          // 元の画像を描画
+          newCtx.drawImage(canvas, 0, 0);
+
+          // ウォーターマーク背景
+          newCtx.fillStyle = '#1a1a1a';
+          newCtx.fillRect(0, canvas.height, newCanvas.width, watermarkHeight);
+
+          // URLテキスト
+          newCtx.fillStyle = '#ffffff';
+          newCtx.font = 'bold 28px sans-serif';
+          newCtx.textAlign = 'center';
+          newCtx.textBaseline = 'middle';
+          newCtx.fillText('🗞️ timetravel-press.com', newCanvas.width / 2, canvas.height + watermarkHeight / 2);
+
+          // 新しいcanvasを使用
+          const imageDataUrl = newCanvas.toDataURL('image/png');
+          const dateStr = new Date(newspaperData.date).toISOString().split('T')[0];
+
+          // iOSの場合
+          if (isIOS() && newWindow) {
+            newWindow.document.open();
+            newWindow.document.write(`
+              <html>
+                <head>
+                  <title>画像を保存</title>
+                  <meta name="viewport" content="width=device-width, initial-scale=1">
+                  <style>
+                    body {
+                      margin: 0;
+                      padding: 20px;
+                      background: #f5f0e6;
+                      text-align: center;
+                      font-family: sans-serif;
+                    }
+                    .info {
+                      background: #fff;
+                      padding: 15px;
+                      border-radius: 10px;
+                      margin-bottom: 20px;
+                      font-size: 14px;
+                      color: #333;
+                    }
+                    img {
+                      max-width: 100%;
+                      height: auto;
+                      border-radius: 8px;
+                      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    }
+                  </style>
+                </head>
+                <body>
+                  <div class="info">
+                    📱 画像を長押しして「写真に追加」を選んでください
+                  </div>
+                  <img src="${imageDataUrl}" alt="記念日新聞" />
+                </body>
+              </html>
+            `);
+            newWindow.document.close();
+            return;
+          }
+
+          // PC/Androidの場合は通常のダウンロード
+          const link = document.createElement('a');
+          link.href = imageDataUrl;
+          link.download = `timetravel-press-${dateStr}.png`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          return;
+        }
+      }
+
+      // フォールバック（ウォーターマーク追加失敗時）
       const imageDataUrl = canvas.toDataURL('image/png');
       const dateStr = new Date(newspaperData.date).toISOString().split('T')[0];
 
