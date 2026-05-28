@@ -165,8 +165,8 @@ export function PaymentSection() {
 
   // 画像としてダウンロード
   const handleImageDownload = async () => {
-    const preview = document.getElementById('newspaper-preview-for-pdf');
-    if (!preview) {
+    const element = document.getElementById('newspaper-preview-for-pdf');
+    if (!element) {
       alert('プレビューが見つかりません');
       return;
     }
@@ -201,13 +201,71 @@ export function PaymentSection() {
       }
     }
 
+    let cloneContainer: HTMLDivElement | null = null;
+
     try {
-      const canvas = await html2canvas(preview, {
+      // PDF生成と同じ方式：固定幅でクローンを作成
+      const previewWidth = 800;
+
+      cloneContainer = document.createElement('div');
+      cloneContainer.style.cssText = `
+        position: fixed;
+        left: -9999px;
+        top: 0;
+        width: ${previewWidth}px;
+        background: white;
+        z-index: -1;
+      `;
+
+      const clone = element.cloneNode(true) as HTMLElement;
+      clone.style.width = `${previewWidth}px`;
+      clone.style.margin = '0';
+      clone.style.boxSizing = 'border-box';
+      clone.style.background = '#ffffff';
+
+      // スケーリングをリセット
+      const innerPreview = clone.querySelector('#newspaper-preview') as HTMLElement;
+      if (innerPreview) {
+        innerPreview.style.width = '100%';
+        innerPreview.style.boxShadow = 'none';
+        innerPreview.style.minHeight = 'auto';
+
+        const parent = innerPreview.parentElement;
+        if (parent) {
+          parent.style.transform = 'none';
+          parent.style.width = `${previewWidth}px`;
+          parent.style.minHeight = 'auto';
+        }
+        const grandParent = parent?.parentElement;
+        if (grandParent) {
+          grandParent.style.width = `${previewWidth}px`;
+          grandParent.style.height = 'auto';
+          grandParent.style.minHeight = 'auto';
+          grandParent.style.overflow = 'visible';
+        }
+      }
+
+      cloneContainer.appendChild(clone);
+      document.body.appendChild(cloneContainer);
+
+      // レンダリングを待つ
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      const naturalHeight = cloneContainer.scrollHeight;
+
+      const canvas = await html2canvas(cloneContainer, {
         scale: 2,
         useCORS: true,
+        allowTaint: true,
         backgroundColor: '#ffffff',
         logging: false,
+        width: previewWidth,
+        height: naturalHeight,
       });
+
+      // クリーンアップ
+      document.body.removeChild(cloneContainer);
+      cloneContainer = null;
 
       const imageDataUrl = canvas.toDataURL('image/png');
       const dateStr = new Date(newspaperData.date).toISOString().split('T')[0];
@@ -265,6 +323,9 @@ export function PaymentSection() {
       document.body.removeChild(link);
     } catch (error) {
       console.error('Image download error:', error);
+      if (cloneContainer && document.body.contains(cloneContainer)) {
+        document.body.removeChild(cloneContainer);
+      }
       if (newWindow) newWindow.close();
       alert('画像のダウンロードに失敗しました。もう一度お試しください。');
     }
