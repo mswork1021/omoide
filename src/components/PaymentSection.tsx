@@ -17,8 +17,11 @@ import {
   Sparkles,
   Camera,
   Mail,
-  AlertCircle
+  AlertCircle,
+  Image,
+  Share2
 } from 'lucide-react';
+import html2canvas from 'html2canvas';
 
 // テストモード（環境変数で制御）
 const TEST_MODE = process.env.NEXT_PUBLIC_TEST_MODE === 'true';
@@ -154,6 +157,43 @@ export function PaymentSection() {
     link.click();
   };
 
+  // 画像としてダウンロード
+  const handleImageDownload = async () => {
+    const preview = document.getElementById('newspaper-preview-for-pdf');
+    if (!preview) return;
+
+    try {
+      const canvas = await html2canvas(preview, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+      });
+
+      const link = document.createElement('a');
+      link.href = canvas.toDataURL('image/png');
+      const dateStr = new Date(newspaperData.date).toISOString().split('T')[0];
+      link.download = `timetravel-press-${dateStr}.png`;
+      link.click();
+    } catch (error) {
+      console.error('Image download error:', error);
+      alert('画像のダウンロードに失敗しました');
+    }
+  };
+
+  // Xでシェア
+  const handleShareToX = async () => {
+    // まず画像をダウンロードしてもらう
+    await handleImageDownload();
+
+    // シェア用のテキスト
+    const shareText = `記念日新聞を作りました！🗞️✨\n\n#TimeTravelPress #記念日新聞 #AIで作る新聞`;
+    const shareUrl = 'https://timetravel-press.com';
+
+    // X投稿画面を開く
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+    window.open(twitterUrl, '_blank');
+  };
+
   // 生成中の表示
   if (isGenerating) {
     return (
@@ -210,6 +250,24 @@ export function PaymentSection() {
             <Download size={20} />
             PDFをダウンロード
           </button>
+
+          {/* 画像保存・シェアボタン */}
+          <div className="mt-4 flex flex-col sm:flex-row gap-2 justify-center">
+            <button
+              onClick={handleImageDownload}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#8b4513] text-white font-medium rounded-lg hover:bg-[#6d3610] transition-colors text-sm"
+            >
+              <Image size={16} />
+              画像として保存
+            </button>
+            <button
+              onClick={handleShareToX}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-black text-white font-medium rounded-lg hover:bg-gray-800 transition-colors text-sm"
+            >
+              <Share2 size={16} />
+              Xでシェア
+            </button>
+          </div>
 
           {/* 注意書き */}
           <div className="mt-4 bg-orange-50 border border-orange-200 rounded-lg p-3 text-left">
