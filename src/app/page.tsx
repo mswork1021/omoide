@@ -197,30 +197,33 @@ export default function Home() {
       {/* ヒーローセクション */}
       <section className="py-12 md:py-16 bg-gradient-to-b from-[#faf8f3] to-[#f5f0e6]">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-5xl font-black mb-6 leading-tight font-serif">
-            あの日の新聞を、
+          <p className="text-lg md:text-xl text-[#1a1a1a]/60 mb-2">
+            誕生日に。記念日に。還暦に。
+          </p>
+          <h2 className="text-3xl md:text-5xl font-black mb-4 leading-tight font-serif">
+            「この日の新聞があったの？」
             <br />
-            <span className="text-[#8b4513]">AIで再現</span>
+            <span className="text-[#8b4513]">そんな驚きをプレゼントに。</span>
           </h2>
-          <p className="text-lg md:text-xl text-[#1a1a1a]/70 mb-8 max-w-2xl mx-auto">
-            誕生日、結婚記念日、還暦祝い...
+          <p className="text-base md:text-lg text-[#1a1a1a]/70 mb-8 max-w-2xl mx-auto">
+            昭和のレトロ、平成の懐かしさ、令和のモダン。
             <br />
-            大切な記念日を、昭和・平成のレトロ新聞風にお届けします。
+            3つの時代から選べます。
           </p>
 
           {/* 特徴バッジ */}
           <div className="flex flex-wrap justify-center gap-4">
             <div className="flex items-center gap-2 bg-white/80 px-4 py-2 rounded-full shadow-sm">
-              <Clock size={18} className="text-[#8b4513]" />
-              <span className="text-sm font-medium">1900年〜対応</span>
+              <span className="text-[#8b4513] font-bold">¥80〜</span>
+              <span className="text-sm font-medium">お手頃価格</span>
+            </div>
+            <div className="flex items-center gap-2 bg-white/80 px-4 py-2 rounded-full shadow-sm">
+              <Zap size={18} className="text-[#8b4513]" />
+              <span className="text-sm font-medium">約1分で完成</span>
             </div>
             <div className="flex items-center gap-2 bg-white/80 px-4 py-2 rounded-full shadow-sm">
               <Sparkles size={18} className="text-[#8b4513]" />
-              <span className="text-sm font-medium">Gemini AI搭載</span>
-            </div>
-            <div className="flex items-center gap-2 bg-white/80 px-4 py-2 rounded-full shadow-sm">
-              <Gift size={18} className="text-[#8b4513]" />
-              <span className="text-sm font-medium">メッセージ追加可</span>
+              <span className="text-sm font-medium">スマホで簡単</span>
             </div>
           </div>
         </div>
