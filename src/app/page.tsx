@@ -258,7 +258,7 @@ export default function Home() {
               { step: 1, title: '日付を選択', desc: '1900年〜現在まで対応', price: '' },
               { step: 2, title: '記事を生成', desc: 'AIがその日の出来事を調査', price: '¥80' },
               { step: 3, title: '画像を追加', desc: '気に入ったら画像をプラス', price: '¥500' },
-              { step: 4, title: 'PDFダウンロード', desc: '高画質PDFで保存', price: '無料' },
+              { step: 4, title: 'ダウンロード', desc: '高画質PDF・画像で保存', price: '無料' },
             ].map((item) => (
               <div key={item.step} className="text-center">
                 <div className="w-12 h-12 rounded-full bg-[#8b4513] text-white flex items-center justify-center text-xl font-bold mx-auto mb-3">
