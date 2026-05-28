@@ -455,14 +455,16 @@ export default function Home() {
                 <li>2. 下のボタンからXの投稿画面を開く</li>
                 <li>3. 保存した画像を添付して投稿！</li>
               </ol>
+              <p className="text-xs text-[#1a1a1a]/50 mt-2">
+                💡 サイトURL: timetravel-press.com
+              </p>
             </div>
 
             {/* Xでシェアボタン */}
             <button
               onClick={() => {
                 const shareText = `記念日新聞を作りました！🗞️✨\n\n#TimeTravelPress #記念日新聞 #AIで作る新聞`;
-                const shareUrl = 'https://timetravel-press.com';
-                const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+                const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
                 window.open(twitterUrl, '_blank');
               }}
               className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-black text-white font-bold rounded-full hover:bg-gray-800 transition-colors"

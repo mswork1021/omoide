@@ -333,12 +333,11 @@ export function PaymentSection() {
 
   // Xでシェア
   const handleShareToX = () => {
-    // シェア用のテキスト
+    // シェア用のテキスト（URLなし - 画像添付を優先）
     const shareText = `記念日新聞を作りました！🗞️✨\n\n#TimeTravelPress #記念日新聞 #AIで作る新聞`;
-    const shareUrl = 'https://timetravel-press.com';
 
     // 先にX投稿画面を開く（ポップアップブロック回避）
-    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
     window.open(twitterUrl, '_blank');
 
     // 画像保存の案内
