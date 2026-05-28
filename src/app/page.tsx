@@ -463,7 +463,7 @@ export default function Home() {
             {/* Xでシェアボタン */}
             <button
               onClick={() => {
-                const shareText = `記念日新聞を作りました！🗞️✨\n\n#TimeTravelPress #記念日新聞 #AIで作る新聞`;
+                const shareText = `記念日新聞を作りました！🗞️✨\n\n#TimeTravelPress #記念日新聞 #AIで作る新聞\n\ntimetravel-press.com`;
                 const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
                 window.open(twitterUrl, '_blank');
               }}
