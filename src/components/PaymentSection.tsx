@@ -417,15 +417,15 @@ export function PaymentSection() {
 
   // Xでシェア
   const handleShareToX = () => {
-    // シェア用のテキスト（https://なしでプレビューカード回避）
-    const shareText = `記念日新聞を作りました！🗞️✨\n\n#TimeTravelPress #記念日新聞 #AIで作る新聞\n\ntimetravel-press.com`;
+    // シェア用のテキスト（URLは画像内にあるので不要）
+    const shareText = `記念日新聞を作りました！🗞️✨\n\n#TimeTravelPress #記念日新聞 #AIで作る新聞`;
 
     // 先にX投稿画面を開く（ポップアップブロック回避）
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
     window.open(twitterUrl, '_blank');
 
     // 画像保存の案内
-    alert('Xの投稿画面が開きました。\n\n画像を添付する場合は「画像として保存」ボタンで画像を保存してから、投稿画面で添付してください。');
+    alert('Xの投稿画面が開きました。\n\n「画像として保存」で保存した画像を添付してください。\n※画像にサイトURLが入っています');
   };
 
   // 生成中の表示

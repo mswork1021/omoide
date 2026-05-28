@@ -456,14 +456,14 @@ export default function Home() {
                 <li>3. 保存した画像を添付して投稿！</li>
               </ol>
               <p className="text-xs text-[#1a1a1a]/50 mt-2">
-                💡 サイトURL: timetravel-press.com
+                💡 画像にサイトURLが入っているので自動で拡散されます
               </p>
             </div>
 
             {/* Xでシェアボタン */}
             <button
               onClick={() => {
-                const shareText = `記念日新聞を作りました！🗞️✨\n\n#TimeTravelPress #記念日新聞 #AIで作る新聞\n\ntimetravel-press.com`;
+                const shareText = `記念日新聞を作りました！🗞️✨\n\n#TimeTravelPress #記念日新聞 #AIで作る新聞`;
                 const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
                 window.open(twitterUrl, '_blank');
               }}
