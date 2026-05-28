@@ -19,7 +19,9 @@ import {
   Mail,
   AlertCircle,
   Image,
-  Share2
+  Share2,
+  Copy,
+  AlertTriangle
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 
@@ -428,6 +430,54 @@ export function PaymentSection() {
     alert('Xの投稿画面が開きました。\n\n「画像として保存」で保存した画像を添付してください。\n※画像にサイトURLが入っています');
   };
 
+  // 記事テキストをコピー
+  const handleCopyText = async () => {
+    if (!newspaperData) return;
+
+    // 記事テキストを組み立て
+    const mainArticle = newspaperData.mainArticle;
+    const subArticles = newspaperData.subArticles || [];
+
+    let text = `【${newspaperData.title}】\n`;
+    text += `${newspaperData.date}\n\n`;
+
+    if (mainArticle) {
+      text += `■ ${mainArticle.headline}\n`;
+      text += `${mainArticle.content}\n\n`;
+    }
+
+    subArticles.forEach((article, index) => {
+      if (article) {
+        text += `■ ${article.headline}\n`;
+        text += `${article.content}\n\n`;
+      }
+    });
+
+    if (newspaperData.editorial) {
+      text += `【社説】${newspaperData.editorial.title}\n`;
+      text += `${newspaperData.editorial.content}\n\n`;
+    }
+
+    if (newspaperData.column) {
+      text += `【コラム】${newspaperData.column.title}\n`;
+      text += `${newspaperData.column.content}\n`;
+    }
+
+    try {
+      await navigator.clipboard.writeText(text);
+      alert('記事テキストをコピーしました！\nメモ帳などに貼り付けて保存できます。');
+    } catch (error) {
+      // フォールバック: テキストエリアを使用
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      alert('記事テキストをコピーしました！\nメモ帳などに貼り付けて保存できます。');
+    }
+  };
+
   // 生成中の表示
   if (isGenerating) {
     return (
@@ -547,6 +597,30 @@ export function PaymentSection() {
           画像を追加して、より本格的な新聞に仕上げましょう
         </p>
       </div>
+
+      {/* 警告：画面を閉じるとデータが消える */}
+      <div className="bg-red-50 border-2 border-red-300 rounded-lg p-4">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="text-red-500 flex-shrink-0 mt-0.5" size={20} />
+          <div>
+            <p className="text-sm font-bold text-red-700 mb-1">
+              この画面を閉じるとデータが消えます
+            </p>
+            <p className="text-xs text-red-600">
+              生成した記事は保存されません。画像を追加しない場合でも、下のボタンでテキストをコピーして保存できます。
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* テキストコピーボタン */}
+      <button
+        onClick={handleCopyText}
+        className="w-full py-3 border-2 border-[#8b4513] text-[#8b4513] font-bold rounded-lg hover:bg-[#8b4513]/10 transition-colors flex items-center justify-center gap-2"
+      >
+        <Copy size={18} />
+        記事テキストをコピーする
+      </button>
 
       {/* 画像追加オプション */}
       <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-6 border-2 border-purple-300">
