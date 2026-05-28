@@ -9,7 +9,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { SampleCarousel, OrderForm, NewspaperPreview, PaymentSection, GenerationOverlay } from '@/components';
-import { Newspaper, Clock, Sparkles, Gift, Printer, Shield, CheckCircle, X, Lightbulb, Star, Zap, Users, AlertTriangle } from 'lucide-react';
+import { Newspaper, Clock, Sparkles, Gift, Printer, Shield, CheckCircle, X, Lightbulb, Star, Zap, Users, AlertTriangle, Share2, Hash } from 'lucide-react';
 import { useAppStore, useGenerationFlow } from '@/lib/store';
 
 // LINEブラウザ検出
@@ -413,6 +413,48 @@ export default function Home() {
                   高解像度PDFで出力。額装してプレゼントにも最適です。
                 </p>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* SNSシェア促進セクション */}
+        <section className="mt-16 py-10 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-100">
+          <div className="text-center px-6">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full mb-4">
+              <Share2 className="text-white" size={28} />
+            </div>
+            <h3 className="text-2xl font-bold mb-2 font-serif">
+              作った新聞をシェアしよう！
+            </h3>
+            <p className="text-[#1a1a1a]/60 mb-6 max-w-lg mx-auto">
+              完成した記念日新聞をSNSでシェアして、<br className="hidden sm:inline" />
+              みんなに見せてみませんか？
+            </p>
+
+            {/* ハッシュタグ */}
+            <div className="flex flex-wrap justify-center gap-2 mb-6">
+              <span className="inline-flex items-center gap-1 px-4 py-2 bg-white rounded-full shadow-sm border border-blue-200 text-blue-600 font-medium">
+                <Hash size={16} />
+                TimeTravelPress
+              </span>
+              <span className="inline-flex items-center gap-1 px-4 py-2 bg-white rounded-full shadow-sm border border-purple-200 text-purple-600 font-medium">
+                <Hash size={16} />
+                記念日新聞
+              </span>
+              <span className="inline-flex items-center gap-1 px-4 py-2 bg-white rounded-full shadow-sm border border-pink-200 text-pink-600 font-medium">
+                <Hash size={16} />
+                AIで作る新聞
+              </span>
+            </div>
+
+            {/* シェア手順 */}
+            <div className="bg-white rounded-lg p-4 max-w-md mx-auto text-left shadow-sm">
+              <p className="text-sm font-bold text-[#1a1a1a] mb-2">📱 シェアの手順</p>
+              <ol className="text-sm text-[#1a1a1a]/70 space-y-1">
+                <li>1. 新聞完成後「画像として保存」で画像を保存</li>
+                <li>2. X（Twitter）やInstagramを開く</li>
+                <li>3. 保存した画像を添付して投稿！</li>
+              </ol>
             </div>
           </div>
         </section>
