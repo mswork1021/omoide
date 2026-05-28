@@ -157,21 +157,91 @@ export function PaymentSection() {
     link.click();
   };
 
+  // iOS検出
+  const isIOS = () => {
+    if (typeof window === 'undefined') return false;
+    return /iPad|iPhone|iPod/.test(navigator.userAgent);
+  };
+
   // 画像としてダウンロード
   const handleImageDownload = async () => {
     const preview = document.getElementById('newspaper-preview-for-pdf');
     if (!preview) return;
 
     try {
+      // スクロール位置を保存
+      const scrollX = window.scrollX;
+      const scrollY = window.scrollY;
+
+      // プレビュー要素のサイズを取得
+      const rect = preview.getBoundingClientRect();
+
       const canvas = await html2canvas(preview, {
         scale: 2,
         useCORS: true,
         backgroundColor: '#ffffff',
+        scrollX: -scrollX,
+        scrollY: -scrollY,
+        windowWidth: document.documentElement.scrollWidth,
+        windowHeight: document.documentElement.scrollHeight,
+        x: 0,
+        y: 0,
+        width: preview.scrollWidth,
+        height: preview.scrollHeight,
       });
 
-      const link = document.createElement('a');
-      link.href = canvas.toDataURL('image/png');
+      const imageDataUrl = canvas.toDataURL('image/png');
       const dateStr = new Date(newspaperData.date).toISOString().split('T')[0];
+
+      // iOSの場合は新しいタブで画像を表示（長押しで保存してもらう）
+      if (isIOS()) {
+        const newWindow = window.open('', '_blank');
+        if (newWindow) {
+          newWindow.document.write(`
+            <html>
+              <head>
+                <title>画像を保存</title>
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <style>
+                  body {
+                    margin: 0;
+                    padding: 20px;
+                    background: #f5f0e6;
+                    text-align: center;
+                    font-family: sans-serif;
+                  }
+                  .info {
+                    background: #fff;
+                    padding: 15px;
+                    border-radius: 10px;
+                    margin-bottom: 20px;
+                    font-size: 14px;
+                    color: #333;
+                  }
+                  img {
+                    max-width: 100%;
+                    height: auto;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                  }
+                </style>
+              </head>
+              <body>
+                <div class="info">
+                  📱 画像を長押しして「写真に保存」を選んでください
+                </div>
+                <img src="${imageDataUrl}" alt="記念日新聞" />
+              </body>
+            </html>
+          `);
+          newWindow.document.close();
+        }
+        return;
+      }
+
+      // PC/Androidの場合は通常のダウンロード
+      const link = document.createElement('a');
+      link.href = imageDataUrl;
       link.download = `timetravel-press-${dateStr}.png`;
       link.click();
     } catch (error) {
@@ -181,17 +251,17 @@ export function PaymentSection() {
   };
 
   // Xでシェア
-  const handleShareToX = async () => {
-    // まず画像をダウンロードしてもらう
-    await handleImageDownload();
-
+  const handleShareToX = () => {
     // シェア用のテキスト
     const shareText = `記念日新聞を作りました！🗞️✨\n\n#TimeTravelPress #記念日新聞 #AIで作る新聞`;
     const shareUrl = 'https://timetravel-press.com';
 
-    // X投稿画面を開く
+    // 先にX投稿画面を開く（ポップアップブロック回避）
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
     window.open(twitterUrl, '_blank');
+
+    // 画像保存の案内
+    alert('Xの投稿画面が開きました。\n\n画像を添付する場合は「画像として保存」ボタンで画像を保存してから、投稿画面で添付してください。');
   };
 
   // 生成中の表示
