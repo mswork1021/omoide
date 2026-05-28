@@ -652,6 +652,10 @@ export function PaymentSection() {
                 <Check size={14} />
                 PDF出力が無料
               </li>
+              <li className="flex items-center gap-2">
+                <Check size={14} />
+                画像出力が無料
+              </li>
             </ul>
             <div className="text-2xl font-black text-purple-800">
               ¥500
@@ -732,7 +736,7 @@ export function PaymentSection() {
 
       {/* 料金説明 */}
       <p className="text-center text-xs text-[#1a1a1a]/60">
-        画像を追加するとPDF出力が無料になります
+        画像を追加するとPDF・画像出力が無料になります
       </p>
     </div>
   );
