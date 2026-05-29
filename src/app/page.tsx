@@ -394,9 +394,9 @@ export default function Home() {
             <div className="flex gap-4">
               <CheckCircle className="text-[#8b4513] flex-shrink-0" size={24} />
               <div>
-                <h4 className="font-bold mb-1">事実に基づいた記事</h4>
+                <h4 className="font-bold mb-1">AIが調べて記事を生成</h4>
                 <p className="text-sm text-[#1a1a1a]/60">
-                  Gemini AIのGoogle検索連携機能で、実際のその日の出来事を調査して記事を生成します。
+                  Gemini AIがその日の出来事を調査し、時代の雰囲気を感じる記事を生成します。
                 </p>
               </div>
             </div>
@@ -412,9 +412,9 @@ export default function Home() {
             <div className="flex gap-4">
               <CheckCircle className="text-[#8b4513] flex-shrink-0" size={24} />
               <div>
-                <h4 className="font-bold mb-1">印刷対応品質</h4>
+                <h4 className="font-bold mb-1">高画質で保存</h4>
                 <p className="text-sm text-[#1a1a1a]/60">
-                  高解像度PDFで出力。額装してプレゼントにも最適です。
+                  PDF・画像で高画質保存。大切な人へのプレゼントにも最適です。
                 </p>
               </div>
             </div>
