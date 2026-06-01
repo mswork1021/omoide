@@ -21,18 +21,33 @@ function useIsLineBrowser() {
   return isLine;
 }
 
-// X（Twitter）アプリ内ブラウザ検出
-function useIsTwitterBrowser() {
-  const [isTwitter, setIsTwitter] = useState(false);
+// アプリ内ブラウザ検出（LINE以外）& ポップアップ表示
+function useInAppBrowserAlert() {
   useEffect(() => {
     const ua = navigator.userAgent;
-    // Twitter/X app patterns: "Twitter", "X-Twitter", or in-app webview indicators
+    // LINEは別で処理するのでスキップ
+    if (/Line/i.test(ua)) return;
+
+    // Twitter/X app patterns
     const isTwitterApp = /Twitter/i.test(ua) || /X-Twitter/i.test(ua);
-    // Also detect generic in-app browser (iOS webview without Safari)
+    // iOS webview (WebKit without Safari)
     const isIOSWebView = /iPhone|iPad|iPod/.test(ua) && /AppleWebKit/.test(ua) && !/Safari/.test(ua);
-    setIsTwitter(isTwitterApp || isIOSWebView);
+    // Android webview
+    const isAndroidWebView = /Android/.test(ua) && /wv/.test(ua);
+
+    if (isTwitterApp || isIOSWebView || isAndroidWebView) {
+      // 一度だけ表示（セッション中）
+      const shown = sessionStorage.getItem('inapp_alert_shown');
+      if (!shown) {
+        sessionStorage.setItem('inapp_alert_shown', 'true');
+        alert(
+          '⚠️ アプリ内ブラウザでは一部機能が制限されます\n\n' +
+          '画像保存やPDFダウンロードが正常に動作しない場合があります。\n\n' +
+          '【推奨】メニューから「Safariで開く」または「ブラウザで開く」を選択してください。'
+        );
+      }
+    }
   }, []);
-  return isTwitter;
 }
 
 export default function Home() {
@@ -59,9 +74,8 @@ export default function Home() {
 
   const { startTextGeneration, startImageGeneration } = useGenerationFlow();
   const isLineBrowser = useIsLineBrowser();
-  const isTwitterBrowser = useIsTwitterBrowser();
+  useInAppBrowserAlert(); // アプリ内ブラウザ警告ポップアップ（LINE以外）
   const [showLineBanner, setShowLineBanner] = useState(true);
-  const [showTwitterBanner, setShowTwitterBanner] = useState(true);
   const [paymentProcessing, setPaymentProcessing] = useState(false);
 
   // Stripe決済後のコールバック処理
@@ -180,20 +194,6 @@ export default function Home() {
               <strong>LINEアプリ内ブラウザでは一部機能が制限されます。</strong>
               <br />
               画面右上または右下の「︙」メニューから「ブラウザで開く」を選択してください。
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* アプリ内ブラウザ警告バナー（X/その他） */}
-      {isTwitterBrowser && showTwitterBanner && !isLineBrowser && (
-        <div className="bg-blue-500 text-white px-4 py-3">
-          <div className="max-w-4xl mx-auto flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 flex-shrink-0" />
-            <div className="flex-1 text-sm">
-              <strong>アプリ内ブラウザでは一部機能が制限されます。</strong>
-              <br />
-              メニューから「Safariで開く」または「ブラウザで開く」を選択してください。
             </div>
           </div>
         </div>
