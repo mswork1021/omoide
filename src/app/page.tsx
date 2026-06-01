@@ -25,6 +25,14 @@ function useIsLineBrowser() {
 function useInAppBrowserAlert() {
   useEffect(() => {
     const ua = navigator.userAgent;
+    const params = new URLSearchParams(window.location.search);
+    const forceShow = params.get('debug') === '1';
+
+    // デバッグモード: UAを表示
+    if (forceShow) {
+      alert('User-Agent:\n' + ua);
+    }
+
     // LINEは別で処理するのでスキップ
     if (/Line/i.test(ua)) return;
 
@@ -35,11 +43,11 @@ function useInAppBrowserAlert() {
     // Android webview
     const isAndroidWebView = /Android/.test(ua) && /wv/.test(ua);
 
-    if (isTwitterApp || isIOSWebView || isAndroidWebView) {
-      // 一度だけ表示（セッション中）
+    if (isTwitterApp || isIOSWebView || isAndroidWebView || forceShow) {
+      // 一度だけ表示（セッション中）- デバッグ時は毎回表示
       const shown = sessionStorage.getItem('inapp_alert_shown');
-      if (!shown) {
-        sessionStorage.setItem('inapp_alert_shown', 'true');
+      if (!shown || forceShow) {
+        if (!forceShow) sessionStorage.setItem('inapp_alert_shown', 'true');
         alert(
           '⚠️ アプリ内ブラウザでは一部機能が制限されます\n\n' +
           '画像保存やPDFダウンロードが正常に動作しない場合があります。\n\n' +
