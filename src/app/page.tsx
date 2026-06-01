@@ -25,48 +25,33 @@ function useIsLineBrowser() {
 function useInAppBrowserAlert() {
   useEffect(() => {
     const ua = navigator.userAgent;
-    const params = new URLSearchParams(window.location.search);
-    const forceShow = params.get('debug') === '1';
-
-    // リセットモード: タイムスタンプをクリア
-    if (params.get('reset') === '1') {
-      localStorage.removeItem('inapp_alert_timestamp');
-    }
-
-    // デバッグモード: UAを表示
-    if (forceShow) {
-      alert('User-Agent:\n' + ua);
-    }
 
     // LINEは別で処理するのでスキップ
     if (/Line/i.test(ua)) return;
 
     // Twitter/X app patterns
     const isTwitterApp = /Twitter/i.test(ua) || /X-Twitter/i.test(ua);
-    // iOS webview (WebKit without Safari) - Xアプリ含む多くのアプリ内ブラウザ
+    // iOS webview (WebKit without Safari) - 多くのアプリ内ブラウザ
+    // Note: XアプリはSafariと同じUAを使うため検出不可
     const isIOSWebView = /iPhone|iPad|iPod/.test(ua) && /AppleWebKit/.test(ua) && !/Safari/i.test(ua);
     // Android webview
     const isAndroidWebView = /Android/.test(ua) && /wv/.test(ua);
 
     const isInAppBrowser = isTwitterApp || isIOSWebView || isAndroidWebView;
 
-    if (isInAppBrowser || forceShow) {
-      // 10分間は再表示しない（localStorageでXアプリでも永続化）
+    if (isInAppBrowser) {
+      // 10分間は再表示しない
       const lastShown = localStorage.getItem('inapp_alert_timestamp');
       const now = Date.now();
       const tenMinutes = 10 * 60 * 1000;
 
-      if (!lastShown || (now - parseInt(lastShown)) > tenMinutes || forceShow) {
-        if (!forceShow && isInAppBrowser) {
-          localStorage.setItem('inapp_alert_timestamp', now.toString());
-        }
-        if (isInAppBrowser || forceShow) {
-          alert(
-            '⚠️ アプリ内ブラウザでは一部機能が制限されます\n\n' +
-            '画像保存やPDFダウンロードが正常に動作しない場合があります。\n\n' +
-            '【推奨】メニューから「Safariで開く」または「ブラウザで開く」を選択してください。'
-          );
-        }
+      if (!lastShown || (now - parseInt(lastShown)) > tenMinutes) {
+        localStorage.setItem('inapp_alert_timestamp', now.toString());
+        alert(
+          '⚠️ アプリ内ブラウザでは一部機能が制限されます\n\n' +
+          '画像保存やPDFダウンロードが正常に動作しない場合があります。\n\n' +
+          '【推奨】メニューから「Safariで開く」または「ブラウザで開く」を選択してください。'
+        );
       }
     }
   }, []);

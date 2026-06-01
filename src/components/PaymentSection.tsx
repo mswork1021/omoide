@@ -563,6 +563,9 @@ export function PaymentSection() {
                   メールアドレスの入力ミスがあった場合、メールが届かない可能性があります。
                   上のボタンからPDFをダウンロードして保存しておくことをおすすめします。
                 </p>
+                <p className="mt-2 text-orange-600">
+                  💡 <span className="font-medium">アプリ内でご利用の場合:</span> PDFダウンロード → 戻る → 画像保存 の順がおすすめです
+                </p>
               </div>
             </div>
           </div>
