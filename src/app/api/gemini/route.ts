@@ -27,12 +27,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 日付の範囲チェック（1900年〜現在）
+    // 日付の範囲チェック（1900年〜1年後まで）
     const minDate = new Date('1900-01-01');
-    const maxDate = new Date();
+    const maxDate = new Date(new Date().setFullYear(new Date().getFullYear() + 1));
     if (targetDate < minDate || targetDate > maxDate) {
       return NextResponse.json(
-        { success: false, error: 'Date must be between 1900 and today' },
+        { success: false, error: 'Date must be between 1900 and 1 year from now' },
         { status: 400 }
       );
     }

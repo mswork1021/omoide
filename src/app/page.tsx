@@ -295,7 +295,7 @@ export default function Home() {
           <h3 className="text-2xl font-bold text-center mb-8 font-serif">ご利用の流れ</h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {[
-              { step: 1, title: '日付を選択', desc: '1900年〜現在まで対応', price: '' },
+              { step: 1, title: '日付を選択', desc: '1900年〜1年後まで対応', price: '' },
               { step: 2, title: '記事を生成', desc: 'AIがその日の出来事を調査', price: '¥80' },
               { step: 3, title: '画像を追加', desc: '気に入ったら画像をプラス', price: '¥500' },
               { step: 4, title: 'ダウンロード', desc: '高画質PDF・画像で保存', price: '無料' },
