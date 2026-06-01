@@ -28,6 +28,11 @@ function useInAppBrowserAlert() {
     const params = new URLSearchParams(window.location.search);
     const forceShow = params.get('debug') === '1';
 
+    // リセットモード: タイムスタンプをクリア
+    if (params.get('reset') === '1') {
+      localStorage.removeItem('inapp_alert_timestamp');
+    }
+
     // デバッグモード: UAを表示
     if (forceShow) {
       alert('User-Agent:\n' + ua);
@@ -38,21 +43,30 @@ function useInAppBrowserAlert() {
 
     // Twitter/X app patterns
     const isTwitterApp = /Twitter/i.test(ua) || /X-Twitter/i.test(ua);
-    // iOS webview (WebKit without Safari)
-    const isIOSWebView = /iPhone|iPad|iPod/.test(ua) && /AppleWebKit/.test(ua) && !/Safari/.test(ua);
+    // iOS webview (WebKit without Safari) - Xアプリ含む多くのアプリ内ブラウザ
+    const isIOSWebView = /iPhone|iPad|iPod/.test(ua) && /AppleWebKit/.test(ua) && !/Safari/i.test(ua);
     // Android webview
     const isAndroidWebView = /Android/.test(ua) && /wv/.test(ua);
 
-    if (isTwitterApp || isIOSWebView || isAndroidWebView || forceShow) {
-      // 一度だけ表示（セッション中）- デバッグ時は毎回表示
-      const shown = sessionStorage.getItem('inapp_alert_shown');
-      if (!shown || forceShow) {
-        if (!forceShow) sessionStorage.setItem('inapp_alert_shown', 'true');
-        alert(
-          '⚠️ アプリ内ブラウザでは一部機能が制限されます\n\n' +
-          '画像保存やPDFダウンロードが正常に動作しない場合があります。\n\n' +
-          '【推奨】メニューから「Safariで開く」または「ブラウザで開く」を選択してください。'
-        );
+    const isInAppBrowser = isTwitterApp || isIOSWebView || isAndroidWebView;
+
+    if (isInAppBrowser || forceShow) {
+      // 10分間は再表示しない（localStorageでXアプリでも永続化）
+      const lastShown = localStorage.getItem('inapp_alert_timestamp');
+      const now = Date.now();
+      const tenMinutes = 10 * 60 * 1000;
+
+      if (!lastShown || (now - parseInt(lastShown)) > tenMinutes || forceShow) {
+        if (!forceShow && isInAppBrowser) {
+          localStorage.setItem('inapp_alert_timestamp', now.toString());
+        }
+        if (isInAppBrowser || forceShow) {
+          alert(
+            '⚠️ アプリ内ブラウザでは一部機能が制限されます\n\n' +
+            '画像保存やPDFダウンロードが正常に動作しない場合があります。\n\n' +
+            '【推奨】メニューから「Safariで開く」または「ブラウザで開く」を選択してください。'
+          );
+        }
       }
     }
   }, []);
