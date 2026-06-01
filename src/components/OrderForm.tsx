@@ -425,7 +425,7 @@ export function OrderForm() {
                         ))}
                       </div>
                       {appearanceTargets.length === 0 && (
-                        <p className="text-xs text-orange-600 mt-1">※ 少なくとも1つ選択してください</p>
+                        <p className="text-xs text-red-600 mt-1 font-bold">⚠️ 少なくとも1つ選択してください（選択しないと生成できません）</p>
                       )}
                     </div>
 
@@ -495,7 +495,7 @@ export function OrderForm() {
       {/* 送信ボタン - Stripe決済 */}
       <button
         type="submit"
-        disabled={!targetDate || !isEmailValid || isSubmitting || isGenerating || isGenerated}
+        disabled={!targetDate || !isEmailValid || isSubmitting || isGenerating || isGenerated || (appearInArticle && appearanceTargets.length === 0)}
         onClick={(e) => {
           // TEST_MODEでテストコードが有効な場合は通常のsubmitでテスト生成
           // それ以外はStripe決済へ
