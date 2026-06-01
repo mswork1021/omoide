@@ -164,7 +164,7 @@ export function OrderForm() {
           placeholder="例: 1990/04/01"
         />
         <p className="text-xs text-[#1a1a1a]/50 mt-2">
-          1900年〜現在までの日付を選択できます
+          1900年〜1年後までの日付を選択できます
         </p>
       </div>
 

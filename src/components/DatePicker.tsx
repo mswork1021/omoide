@@ -22,7 +22,7 @@ export function DatePicker({
   value,
   onChange,
   minDate = new Date('1900-01-01'),
-  maxDate = new Date(),
+  maxDate = new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
   placeholder = '日付を選択',
 }: DatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
