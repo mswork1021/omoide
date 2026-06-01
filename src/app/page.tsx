@@ -201,10 +201,9 @@ export default function Home() {
             誕生日に。記念日に。還暦に。
           </p>
           <h2 className="text-2xl md:text-5xl font-black mb-4 leading-tight font-serif">
-            <span className="whitespace-nowrap">「この日の新聞があったの！？」</span>
+            大切な人を、人生の主役に。
             <br />
-            <span className="text-[#8b4513] whitespace-nowrap">そんな驚きを</span>
-            <span className="text-[#8b4513]">プレゼントに。</span>
+            <span className="text-[#8b4513]">新聞をプレゼントしよう。</span>
           </h2>
           <p className="text-base md:text-lg text-[#1a1a1a]/70 mb-8 max-w-2xl mx-auto">
             昭和のレトロ、平成の懐かしさ、令和のモダン。
