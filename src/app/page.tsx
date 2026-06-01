@@ -21,6 +21,16 @@ function useIsLineBrowser() {
   return isLine;
 }
 
+// X（Twitter）アプリ内ブラウザ検出
+function useIsTwitterBrowser() {
+  const [isTwitter, setIsTwitter] = useState(false);
+  useEffect(() => {
+    // Twitter app uses custom user agent containing "Twitter"
+    setIsTwitter(/Twitter/i.test(navigator.userAgent));
+  }, []);
+  return isTwitter;
+}
+
 export default function Home() {
   const {
     newspaperData,
@@ -45,7 +55,9 @@ export default function Home() {
 
   const { startTextGeneration, startImageGeneration } = useGenerationFlow();
   const isLineBrowser = useIsLineBrowser();
+  const isTwitterBrowser = useIsTwitterBrowser();
   const [showLineBanner, setShowLineBanner] = useState(true);
+  const [showTwitterBanner, setShowTwitterBanner] = useState(true);
   const [paymentProcessing, setPaymentProcessing] = useState(false);
 
   // Stripe決済後のコールバック処理
@@ -164,6 +176,20 @@ export default function Home() {
               <strong>LINEアプリ内ブラウザでは一部機能が制限されます。</strong>
               <br />
               画面右上または右下の「︙」メニューから「ブラウザで開く」を選択してください。
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* X（Twitter）アプリ内ブラウザ警告バナー */}
+      {isTwitterBrowser && showTwitterBanner && (
+        <div className="bg-blue-500 text-white px-4 py-3">
+          <div className="max-w-4xl mx-auto flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+            <div className="flex-1 text-sm">
+              <strong>Xアプリ内ブラウザでは一部機能が制限されます。</strong>
+              <br />
+              画面右下の「…」メニューから「Safariで開く」を選択してください。
             </div>
           </div>
         </div>
