@@ -25,8 +25,12 @@ function useIsLineBrowser() {
 function useIsTwitterBrowser() {
   const [isTwitter, setIsTwitter] = useState(false);
   useEffect(() => {
-    // Twitter app uses custom user agent containing "Twitter"
-    setIsTwitter(/Twitter/i.test(navigator.userAgent));
+    const ua = navigator.userAgent;
+    // Twitter/X app patterns: "Twitter", "X-Twitter", or in-app webview indicators
+    const isTwitterApp = /Twitter/i.test(ua) || /X-Twitter/i.test(ua);
+    // Also detect generic in-app browser (iOS webview without Safari)
+    const isIOSWebView = /iPhone|iPad|iPod/.test(ua) && /AppleWebKit/.test(ua) && !/Safari/.test(ua);
+    setIsTwitter(isTwitterApp || isIOSWebView);
   }, []);
   return isTwitter;
 }
@@ -181,15 +185,15 @@ export default function Home() {
         </div>
       )}
 
-      {/* X（Twitter）アプリ内ブラウザ警告バナー */}
-      {isTwitterBrowser && showTwitterBanner && (
+      {/* アプリ内ブラウザ警告バナー（X/その他） */}
+      {isTwitterBrowser && showTwitterBanner && !isLineBrowser && (
         <div className="bg-blue-500 text-white px-4 py-3">
           <div className="max-w-4xl mx-auto flex items-center gap-3">
             <AlertTriangle className="w-5 h-5 flex-shrink-0" />
             <div className="flex-1 text-sm">
-              <strong>Xアプリ内ブラウザでは一部機能が制限されます。</strong>
+              <strong>アプリ内ブラウザでは一部機能が制限されます。</strong>
               <br />
-              画面右下の「…」メニューから「Safariで開く」を選択してください。
+              メニューから「Safariで開く」または「ブラウザで開く」を選択してください。
             </div>
           </div>
         </div>
