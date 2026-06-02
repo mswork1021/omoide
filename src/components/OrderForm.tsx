@@ -5,16 +5,14 @@
  * 新料金体系: テキスト生成（80円）→ 画像追加（500円）
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { DatePicker } from './DatePicker';
 import { Calendar, Gift, Sparkles, User, ChevronDown, ChevronUp, Loader2, FileText, Target, Smile, Star, Mail } from 'lucide-react';
 import { useAppStore, useGenerationFlow } from '@/lib/store';
 
 // テストモード（環境変数で制御）
 const TEST_MODE = process.env.NEXT_PUBLIC_TEST_MODE === 'true';
-
-// テスト用パスワード
-const TEST_PASSWORD = 'omoide2025';
+const AUTH_TOKEN_KEY = 'admin_auth_token';
 
 // LINEブラウザ検出
 const isLineBrowser = () => {
@@ -54,9 +52,46 @@ export function OrderForm() {
   const [showPersonalMessage, setShowPersonalMessage] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [testCode, setTestCode] = useState('');
+  const [isTestCodeValid, setIsTestCodeValid] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
 
-  // テストコードが正しいか
-  const isTestCodeValid = testCode === TEST_PASSWORD;
+  // テストコードをAPIで検証
+  const validateTestCode = useCallback(async (code: string) => {
+    if (!code) {
+      setIsTestCodeValid(false);
+      return;
+    }
+    setIsValidating(true);
+    try {
+      const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: code }),
+      });
+      const data = await response.json();
+      if (data.success && data.token) {
+        localStorage.setItem(AUTH_TOKEN_KEY, data.token);
+        setIsTestCodeValid(true);
+      } else {
+        setIsTestCodeValid(false);
+      }
+    } catch {
+      setIsTestCodeValid(false);
+    }
+    setIsValidating(false);
+  }, []);
+
+  // テストコード入力時にデバウンスして検証
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (testCode) {
+        validateTestCode(testCode);
+      } else {
+        setIsTestCodeValid(false);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [testCode, validateTestCode]);
 
   // メールアドレスの簡易バリデーション
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);

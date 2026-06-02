@@ -5,7 +5,7 @@
  * 新料金体系: テキスト生成済み → 画像追加（500円）→ PDF出力（自動）
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAppStore, useGenerationFlow } from '@/lib/store';
 import {
   ImagePlus,
@@ -27,9 +27,7 @@ import html2canvas from 'html2canvas';
 
 // テストモード（環境変数で制御）
 const TEST_MODE = process.env.NEXT_PUBLIC_TEST_MODE === 'true';
-
-// テストモード用パスワード（OrderFormと同じ）
-const TEST_PASSWORD = 'omoide2025';
+const AUTH_TOKEN_KEY = 'admin_auth_token';
 
 export function PaymentSection() {
   const {
@@ -52,10 +50,47 @@ export function PaymentSection() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [testCode, setTestCode] = useState('');
+  const [isTestCodeValid, setIsTestCodeValid] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
   const pdfGenerationTriggered = useRef(false);
 
-  // テストコードが正しいか
-  const isTestCodeValid = testCode === TEST_PASSWORD;
+  // テストコードをAPIで検証
+  const validateTestCode = useCallback(async (code: string) => {
+    if (!code) {
+      setIsTestCodeValid(false);
+      return;
+    }
+    setIsValidating(true);
+    try {
+      const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: code }),
+      });
+      const data = await response.json();
+      if (data.success && data.token) {
+        localStorage.setItem(AUTH_TOKEN_KEY, data.token);
+        setIsTestCodeValid(true);
+      } else {
+        setIsTestCodeValid(false);
+      }
+    } catch {
+      setIsTestCodeValid(false);
+    }
+    setIsValidating(false);
+  }, []);
+
+  // テストコード入力時にデバウンスして検証
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (testCode) {
+        validateTestCode(testCode);
+      } else {
+        setIsTestCodeValid(false);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [testCode, validateTestCode]);
 
   // エラー表示（ローカルとストア両方）
   const displayError = paymentError || storeError;
