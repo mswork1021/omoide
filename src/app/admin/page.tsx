@@ -203,12 +203,12 @@ export default function AdminPage() {
       </main>
 
       {/* プレビューモーダル */}
-      {showModal && (
+      {showModal && newspaperData && (
         <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 overflow-y-auto py-8">
           <div className="bg-[#f5f0e6] rounded-lg shadow-2xl max-w-4xl w-full mx-4 my-auto">
             <div className="p-6">
               <h2 className="text-2xl font-bold mb-4 text-center">プレビュー</h2>
-              <NewspaperPreview />
+              <NewspaperPreview data={newspaperData} />
               <div className="mt-6">
                 <AdminPaymentSection />
               </div>
