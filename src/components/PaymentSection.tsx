@@ -5,7 +5,7 @@
  * 新料金体系: テキスト生成済み → 画像追加（500円）→ PDF出力（自動）
  */
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAppStore, useGenerationFlow } from '@/lib/store';
 import {
   ImagePlus,
@@ -24,10 +24,6 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
-
-// テストモード（環境変数で制御）
-const TEST_MODE = process.env.NEXT_PUBLIC_TEST_MODE === 'true';
-const AUTH_TOKEN_KEY = 'admin_auth_token';
 
 export function PaymentSection() {
   const {
@@ -49,48 +45,7 @@ export function PaymentSection() {
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
-  const [testCode, setTestCode] = useState('');
-  const [isTestCodeValid, setIsTestCodeValid] = useState(false);
-  const [isValidating, setIsValidating] = useState(false);
   const pdfGenerationTriggered = useRef(false);
-
-  // テストコードをAPIで検証
-  const validateTestCode = useCallback(async (code: string) => {
-    if (!code) {
-      setIsTestCodeValid(false);
-      return;
-    }
-    setIsValidating(true);
-    try {
-      const response = await fetch('/api/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: code }),
-      });
-      const data = await response.json();
-      if (data.success && data.token) {
-        localStorage.setItem(AUTH_TOKEN_KEY, data.token);
-        setIsTestCodeValid(true);
-      } else {
-        setIsTestCodeValid(false);
-      }
-    } catch {
-      setIsTestCodeValid(false);
-    }
-    setIsValidating(false);
-  }, []);
-
-  // テストコード入力時にデバウンスして検証
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (testCode) {
-        validateTestCode(testCode);
-      } else {
-        setIsTestCodeValid(false);
-      }
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [testCode, validateTestCode]);
 
   // エラー表示（ローカルとストア両方）
   const displayError = paymentError || storeError;
@@ -134,12 +89,6 @@ export function PaymentSection() {
     setPaymentError(null);
 
     try {
-      // テストコードが正しい場合は無料で生成
-      if (isTestCodeValid) {
-        await startImageGeneration();
-        return;
-      }
-
       // 新聞データとメールをlocalStorageに保存（決済後に復元するため）
       localStorage.setItem('omoide_newspaper_data', JSON.stringify(newspaperData));
       localStorage.setItem('omoide_email', email);
@@ -703,28 +652,6 @@ export function PaymentSection() {
         </div>
       </div>
 
-      {/* テストコード入力（テストモード時のみ） */}
-      {TEST_MODE && (
-        <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
-          <label className="block text-sm font-medium text-orange-800 mb-2">
-            🔐 テストコード（無料生成用）
-          </label>
-          <input
-            type="password"
-            value={testCode}
-            onChange={(e) => setTestCode(e.target.value)}
-            placeholder="テストコードを入力"
-            className="w-full px-3 py-2 text-sm border border-orange-300 rounded bg-white"
-          />
-          {testCode && !isTestCodeValid && (
-            <p className="text-xs text-red-500 mt-1">コードが正しくありません</p>
-          )}
-          {isTestCodeValid && (
-            <p className="text-xs text-green-600 mt-1">✓ 認証OK - 無料で生成できます</p>
-          )}
-        </div>
-      )}
-
       {/* エラー表示 */}
       {displayError && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
@@ -751,11 +678,6 @@ export function PaymentSection() {
             <Loader2 className="animate-spin" size={20} />
             処理中...
           </>
-        ) : isTestCodeValid ? (
-          <>
-            <Sparkles size={20} />
-            テスト: 画像を追加（無料）
-          </>
         ) : (
           <>
             <ImagePlus size={20} />
@@ -765,12 +687,10 @@ export function PaymentSection() {
       </button>
 
       {/* セキュリティバッジ */}
-      {!isTestCodeValid && (
-        <div className="flex items-center justify-center gap-2 text-sm text-[#1a1a1a]/60">
-          <Shield size={16} />
-          Stripeによる安全な決済
-        </div>
-      )}
+      <div className="flex items-center justify-center gap-2 text-sm text-[#1a1a1a]/60">
+        <Shield size={16} />
+        Stripeによる安全な決済
+      </div>
 
       {/* 料金説明 */}
       <p className="text-center text-xs text-[#1a1a1a]/60">

@@ -5,14 +5,10 @@
  * 新料金体系: テキスト生成（80円）→ 画像追加（500円）
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import { DatePicker } from './DatePicker';
 import { Calendar, Gift, Sparkles, User, ChevronDown, ChevronUp, Loader2, FileText, Target, Smile, Star, Mail } from 'lucide-react';
 import { useAppStore, useGenerationFlow } from '@/lib/store';
-
-// テストモード（環境変数で制御）
-const TEST_MODE = process.env.NEXT_PUBLIC_TEST_MODE === 'true';
-const AUTH_TOKEN_KEY = 'admin_auth_token';
 
 // LINEブラウザ検出
 const isLineBrowser = () => {
@@ -51,47 +47,6 @@ export function OrderForm() {
 
   const [showPersonalMessage, setShowPersonalMessage] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [testCode, setTestCode] = useState('');
-  const [isTestCodeValid, setIsTestCodeValid] = useState(false);
-  const [isValidating, setIsValidating] = useState(false);
-
-  // テストコードをAPIで検証
-  const validateTestCode = useCallback(async (code: string) => {
-    if (!code) {
-      setIsTestCodeValid(false);
-      return;
-    }
-    setIsValidating(true);
-    try {
-      const response = await fetch('/api/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: code }),
-      });
-      const data = await response.json();
-      if (data.success && data.token) {
-        localStorage.setItem(AUTH_TOKEN_KEY, data.token);
-        setIsTestCodeValid(true);
-      } else {
-        setIsTestCodeValid(false);
-      }
-    } catch {
-      setIsTestCodeValid(false);
-    }
-    setIsValidating(false);
-  }, []);
-
-  // テストコード入力時にデバウンスして検証
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (testCode) {
-        validateTestCode(testCode);
-      } else {
-        setIsTestCodeValid(false);
-      }
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [testCode, validateTestCode]);
 
   // メールアドレスの簡易バリデーション
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -124,12 +79,6 @@ export function OrderForm() {
         '手順：画面右上または右下の「︙」メニュー → 「ブラウザで開く」\n\n' +
         '※このまま購入するとPDFを受け取れません'
       );
-      return;
-    }
-
-    // テストモード: Stripeスキップして直接テキスト生成
-    if (TEST_MODE) {
-      await startTextGeneration();
       return;
     }
 
@@ -505,40 +454,11 @@ export function OrderForm() {
         </div>
       </div>
 
-      {/* テストコード入力（テストモード時のみ） */}
-      {TEST_MODE && (
-        <div className="form-section">
-          <label className="block text-sm font-medium mb-2">
-            🔐 テストコードを入力
-          </label>
-          <input
-            type="password"
-            value={testCode}
-            onChange={(e) => setTestCode(e.target.value)}
-            placeholder="テストコードを入力してください"
-            className="w-full px-3 py-2 text-sm border border-[#1a1a1a]/20 rounded bg-white"
-          />
-          {testCode && !isTestCodeValid && (
-            <p className="text-xs text-red-500 mt-1">コードが正しくありません</p>
-          )}
-          {isTestCodeValid && (
-            <p className="text-xs text-green-600 mt-1">✓ 認証OK</p>
-          )}
-        </div>
-      )}
-
       {/* 送信ボタン - Stripe決済 */}
       <button
         type="submit"
         disabled={!targetDate || !isEmailValid || isSubmitting || isGenerating || isGenerated || (appearInArticle && appearanceTargets.length === 0)}
         onClick={(e) => {
-          // TEST_MODEでテストコードが有効な場合は通常のsubmitでテスト生成
-          // それ以外はStripe決済へ
-          if (TEST_MODE && isTestCodeValid) {
-            // デフォルトのsubmit動作（handleSubmit）を使用
-            return;
-          }
-          // Stripe決済用の処理
           e.preventDefault();
           if (!targetDate) return;
 
@@ -618,11 +538,6 @@ export function OrderForm() {
             <FileText size={20} />
             生成済み（下のプレビューを確認）
           </>
-        ) : TEST_MODE && isTestCodeValid ? (
-          <>
-            <Sparkles size={20} />
-            テスト生成する（無料）
-          </>
         ) : (
           <>
             <FileText size={20} />
@@ -642,11 +557,6 @@ export function OrderForm() {
       <div className="text-center text-xs text-[#1a1a1a]/60 space-y-1">
         <p>記事生成: ¥80 / 画像追加: ¥500</p>
         <p>画像を追加すると、PDF・画像出力が無料でできます</p>
-        {TEST_MODE && (
-          <p className="text-orange-600 bg-orange-50 p-2 rounded mt-2">
-            🧪 テストモード有効: 上のテストコード欄に正しいコードを入力すると無料で生成できます
-          </p>
-        )}
       </div>
 
       {/* 注意書き・免責事項 */}
