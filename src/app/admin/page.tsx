@@ -539,6 +539,10 @@ function AdminOrderForm() {
   const { startTextGeneration } = useGenerationFlow();
 
   const [showPersonalMessage, setShowPersonalMessage] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const isGenerated = !!newspaperData;
@@ -556,8 +560,37 @@ function AdminOrderForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!targetDate) return;
-    // 管理者モードでは直接生成（決済なし）
-    await startTextGeneration();
+    // パスワード確認モーダルを表示
+    setShowPasswordModal(true);
+    setConfirmPassword('');
+    setPasswordError(false);
+  };
+
+  const handlePasswordConfirm = async () => {
+    setIsVerifying(true);
+    setPasswordError(false);
+
+    try {
+      // パスワードを検証
+      const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: confirmPassword }),
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        setShowPasswordModal(false);
+        setConfirmPassword('');
+        // 生成開始
+        await startTextGeneration();
+      } else {
+        setPasswordError(true);
+      }
+    } catch {
+      setPasswordError(true);
+    }
+    setIsVerifying(false);
   };
 
   return (
@@ -933,6 +966,73 @@ function AdminOrderForm() {
           <span className="font-bold">免責事項:</span> 本サービスで生成される新聞記事はAIによるフィクションです。内容の正確性・事実性は保証しておりません。生成された記事に関して、当サービスは一切の責任を負いません。
         </p>
       </div>
+
+      {/* パスワード確認モーダル */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full">
+            <div className="text-center mb-4">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mb-3">
+                <Lock className="text-blue-600" size={24} />
+              </div>
+              <h3 className="text-lg font-bold">生成の確認</h3>
+              <p className="text-sm text-[#1a1a1a]/60 mt-1">
+                管理者パスワードを入力してください
+              </p>
+            </div>
+
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                setPasswordError(false);
+              }}
+              placeholder="パスワード"
+              className="w-full px-4 py-3 border-2 border-[#1a1a1a]/20 rounded-lg focus:border-blue-500 focus:outline-none mb-2"
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handlePasswordConfirm();
+                }
+              }}
+            />
+            {passwordError && (
+              <p className="text-red-500 text-sm mb-2">パスワードが正しくありません</p>
+            )}
+
+            <div className="flex gap-2 mt-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowPasswordModal(false);
+                  setConfirmPassword('');
+                  setPasswordError(false);
+                }}
+                className="flex-1 py-2 border-2 border-[#1a1a1a]/20 rounded-lg font-bold hover:bg-[#1a1a1a]/5"
+              >
+                キャンセル
+              </button>
+              <button
+                type="button"
+                onClick={handlePasswordConfirm}
+                disabled={isVerifying || !confirmPassword}
+                className="flex-1 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isVerifying ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    確認中...
+                  </>
+                ) : (
+                  '生成開始'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   );
 }
@@ -956,6 +1056,10 @@ function AdminPaymentSection() {
   const { startImageGeneration, generatePdf } = useGenerationFlow();
 
   const pdfGenerationTriggered = useRef(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   // 画像生成完了後、自動でPDF生成を開始
   useEffect(() => {
@@ -977,10 +1081,38 @@ function AdminPaymentSection() {
     return null;
   }
 
-  // 画像追加（管理者モードでは無料で直接生成）
-  const handleImageGenerate = async () => {
-    setIsImagesPaid(true);
-    await startImageGeneration();
+  // パスワード確認モーダルを表示
+  const handleImageGenerateClick = () => {
+    setShowPasswordModal(true);
+    setConfirmPassword('');
+    setPasswordError(false);
+  };
+
+  // パスワード確認後に画像生成
+  const handlePasswordConfirm = async () => {
+    setIsVerifying(true);
+    setPasswordError(false);
+
+    try {
+      const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: confirmPassword }),
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        setShowPasswordModal(false);
+        setConfirmPassword('');
+        setIsImagesPaid(true);
+        await startImageGeneration();
+      } else {
+        setPasswordError(true);
+      }
+    } catch {
+      setPasswordError(true);
+    }
+    setIsVerifying(false);
   };
 
   // iOS検出
@@ -1385,7 +1517,7 @@ function AdminPaymentSection() {
 
       {/* 生成ボタン */}
       <button
-        onClick={handleImageGenerate}
+        onClick={handleImageGenerateClick}
         disabled={isGenerating}
         className={`
           w-full py-4 text-lg font-bold rounded-lg transition-all
@@ -1409,6 +1541,73 @@ function AdminPaymentSection() {
           </>
         )}
       </button>
+
+      {/* パスワード確認モーダル */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full">
+            <div className="text-center mb-4">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mb-3">
+                <Lock className="text-blue-600" size={24} />
+              </div>
+              <h3 className="text-lg font-bold">画像追加の確認</h3>
+              <p className="text-sm text-[#1a1a1a]/60 mt-1">
+                管理者パスワードを入力してください
+              </p>
+            </div>
+
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                setPasswordError(false);
+              }}
+              placeholder="パスワード"
+              className="w-full px-4 py-3 border-2 border-[#1a1a1a]/20 rounded-lg focus:border-blue-500 focus:outline-none mb-2"
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handlePasswordConfirm();
+                }
+              }}
+            />
+            {passwordError && (
+              <p className="text-red-500 text-sm mb-2">パスワードが正しくありません</p>
+            )}
+
+            <div className="flex gap-2 mt-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowPasswordModal(false);
+                  setConfirmPassword('');
+                  setPasswordError(false);
+                }}
+                className="flex-1 py-2 border-2 border-[#1a1a1a]/20 rounded-lg font-bold hover:bg-[#1a1a1a]/5"
+              >
+                キャンセル
+              </button>
+              <button
+                type="button"
+                onClick={handlePasswordConfirm}
+                disabled={isVerifying || !confirmPassword}
+                className="flex-1 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isVerifying ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    確認中...
+                  </>
+                ) : (
+                  '画像を追加'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
